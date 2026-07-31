@@ -6,9 +6,8 @@
 ![BTP](https://img.shields.io/badge/SAP-BTP-2570B8?logo=sap&logoColor=white)
 ![Postman](https://img.shields.io/badge/Testing-Postman-FF6C37?logo=postman&logoColor=white)
 ![Status](https://img.shields.io/badge/status-in%20development-yellow)
-![License](https://img.shields.io/badge/license-MIT-green)
 
-Hands-on project for studying, developing, and preparing for the **SAP Integration Suite** certification, following the official [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite) learning journey.
+Hands-on project for studying, developing, and preparing for the **SAP Integration Suite** certification. The project follows the official [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite) learning journey **and goes beyond it**, adding complementary scenarios that are highly valued in the market.
 
 The goal goes beyond theory: to build **real end-to-end integration scenarios**, document each step, and generate execution evidences, forming a solid technical portfolio.
 
@@ -20,13 +19,14 @@ The goal goes beyond theory: to build **real end-to-end integration scenarios**,
 - [Main capabilities](#-main-capabilities)
 - [Cloud Integration (CPI)](#-cloud-integration-cpi)
 - [API and API Management](#-api-and-api-management)
+- [Two-layer approach](#-two-layer-approach)
 - [Project goal](#-project-goal)
 - [Market-standard patterns covered](#-market-standard-patterns-covered)
 - [Repository structure](#-repository-structure)
 - [Practice blocks and scenarios](#-practice-blocks-and-scenarios)
 - [Tools used](#-tools-used)
 - [Workflow](#-workflow)
-- [Certification roadmap](#-certification-roadmap)
+- [Official SAP references](#-official-sap-references)
 - [Author](#-author)
 
 ---
@@ -90,11 +90,38 @@ An **API (Application Programming Interface)** is the contract that allows syste
 
 ---
 
+## 🧭 Two-layer approach
+
+This project is organized into **two complementary layers**. The idea is to master the core required for the certification and, at the same time, go beyond it with scenarios that make a difference in the real market.
+
+### 🥇 Layer 1 — Official SAP journey (certification core)
+
+Follows the official repertoire of the [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite) journey, focusing on:
+
+- Cloud Integration (CPI) and Integration Flows
+- API Management
+- Mappings and message transformation
+- Monitoring and operations
+
+### 🥈 Layer 2 — Complementary scenarios (market differentiator)
+
+Goes **beyond the official journey**, covering topics highly valued in real projects that are **not deeply covered** in the certification's official repertoire:
+
+- **Event-Driven Integration** with Event Mesh / Advanced Event Mesh
+- **B2B / EDI** (purchase order, invoice, ASN)
+- **OData / API-First** (S/4HANA standard)
+- **Hybrid integration** (cloud + on-premise via Cloud Connector)
+
+> ⚠️ **Note:** Layer 2 scenarios are studied from **topic-specific** official SAP content (outside the main journey). For example, Event Mesh has its own learning journey: [Discovering Event-Driven Integration with SAP Integration Suite, advanced event mesh](https://learning.sap.com/courses/discovering-event-driven-integration-with-sap-integration-suite-advanved-event-mesh). In other words, the project intentionally goes **beyond the exam scope**, adding extra processes and practices.
+
+---
+
 ## 🎯 Project goal
 
 - Master **Cloud Integration (CPI)** and **API Management** in practice
 - Apply **enterprise integration patterns** (EIP)
 - Implement **security, error handling, and resilience**
+- Explore **event-driven architecture** (Event Mesh)
 - Simulate **SAP MM, PP, and QM processes** in realistic scenarios
 - Build a **documented technical portfolio** with evidences
 - Prepare for the **official SAP Integration Suite certification**
@@ -125,7 +152,9 @@ An **API (Application Programming Interface)** is the contract that allows syste
 
 ## 🧱 Practice blocks and scenarios
 
-### 🅰️ Block A — CPI Fundamentals
+> 🥇 = Layer 1 (official journey) &nbsp;|&nbsp; 🥈 = Layer 2 (complementary / beyond the journey)
+
+### 🅰️ Block A — CPI Fundamentals 🥇
 | # | Scenario | Goal |
 |---|---|---|
 | A1 | HTTP → Content Modifier → Webhook.site | First iFlow: receive, adjust, and forward a message |
@@ -133,7 +162,7 @@ An **API (Application Programming Interface)** is the contract that allows syste
 | A3 | Message Mapping (JSON → JSON / JSON → XML) | Message transformation |
 | A4 | Groovy Script for payload manipulation | Custom logic in the flow |
 
-### 🅱️ Block B — CPI Integration Patterns
+### 🅱️ Block B — CPI Integration Patterns 🥇
 | # | Scenario | Goal |
 |---|---|---|
 | B1 | Content-Based Router | Route messages by condition |
@@ -142,7 +171,7 @@ An **API (Application Programming Interface)** is the contract that allows syste
 | B4 | Aggregator / Gather | Consolidate responses |
 | B5 | Multicast | Send to multiple destinations |
 
-### 🇨 Block C — CPI Resilience and Errors
+### 🇨 Block C — CPI Resilience and Errors 🥇
 | # | Scenario | Goal |
 |---|---|---|
 | C1 | Exception Subprocess | Standardized error handling |
@@ -150,7 +179,7 @@ An **API (Application Programming Interface)** is the contract that allows syste
 | C3 | Dead Letter / reprocessing | Recovery of failed messages |
 | C4 | Data Store | Temporary message persistence |
 
-### 🇩 Block D — CPI Connectivity / Adapters
+### 🇩 Block D — CPI Connectivity / Adapters 🥇
 | # | Scenario | Goal |
 |---|---|---|
 | D1 | OData Adapter | Integration in the SAP S/4HANA standard |
@@ -158,7 +187,7 @@ An **API (Application Programming Interface)** is the contract that allows syste
 | D3 | SFTP Adapter | File-based integration |
 | D4 | ProcessDirect | Call an iFlow from another iFlow |
 
-### 🇪 Block E — API Management
+### 🇪 Block E — API Management 🥇
 | # | Scenario | Goal |
 |---|---|---|
 | E1 | API Proxy pointing to backend | Expose a controlled API |
@@ -172,7 +201,7 @@ An **API (Application Programming Interface)** is the contract that allows syste
 | E9 | Developer Portal | API publishing |
 | E10 | API Analytics | Usage monitoring |
 
-### 🇫 Block F — Security (cross-cutting)
+### 🇫 Block F — Security (cross-cutting) 🥇
 | # | Scenario | Goal |
 |---|---|---|
 | F1 | Basic Authentication | Simple authentication |
@@ -180,24 +209,26 @@ An **API (Application Programming Interface)** is the contract that allows syste
 | F3 | OAuth 2.0 | Secure authorization |
 | F4 | Certificates / Keystore | Certificate-based security |
 
-### 🇬 Block G — SAP MM / PP / QM Scenarios
+### 🇬 Block G — SAP MM / PP / QM Scenarios 🥈
 | # | Scenario | Goal |
 |---|---|---|
 | G1 | SAP MM — Material validation | Validate stock movement |
 | G2 | SAP PP — Production order | Process production confirmation |
 | G3 | SAP QM — Quality inspection | Handle inspection results |
 
-### 🇭 Block H — Final End-to-End Scenario
+### 🇭 Block H — Event-Driven and Final End-to-End Scenario 🥈
 | # | Scenario | Goal |
 |---|---|---|
-| H1 | MES → Integration Suite → MM/PP/QM validation → Destination → Monitoring | Complete end-to-end integration |
+| H1 | Event Mesh — publish/subscribe | Event-driven integration |
+| H2 | CPI consuming/publishing events on Event Mesh | Connect Cloud Integration to the event architecture |
+| H3 | MES → Integration Suite → MM/PP/QM validation → Destination → Monitoring | Complete end-to-end integration |
 
 ---
 
 ## 🧰 Tools used
 
 - **SAP BTP** (Business Technology Platform)
-- **SAP Integration Suite** (Cloud Integration + API Management)
+- **SAP Integration Suite** (Cloud Integration + API Management + Event Mesh)
 - **Postman** (message sending and testing)
 - **Webhook.site** (message reception validation)
 - **Public APIs** (e.g., JSONPlaceholder) to simulate backends
@@ -219,13 +250,12 @@ An **API (Application Programming Interface)** is the contract that allows syste
 
 ---
 
-## 🎓 Certification roadmap
+## 📚 Official SAP references
 
-This project follows SAP's official learning journey and serves as hands-on preparation for the integration developer certification.
-
-- 📚 Official journey: [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite)
-- 🧪 Practice exams per block + final exam (in the `simulados/` folder)
-- ✅ Main focus: **Cloud Integration (CPI)** and **API Management**
+- 🥇 Main journey: [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite)
+- 🥈 Event-Driven: [Discovering Event-Driven Integration with SAP Integration Suite, advanced event mesh](https://learning.sap.com/courses/discovering-event-driven-integration-with-sap-integration-suite-advanved-event-mesh)
+- 🥈 AEM Tutorials: [Get Started with SAP Integration Suite, advanced event mesh](https://developers.sap.com/mission.advanced-event-mesh-get-started.html)
+- 📖 Overview: [SAP Integration Suite — SAP Learning](https://learning.sap.com/products/business-technology-platform/integration-suite)
 
 ---
 

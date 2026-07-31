@@ -1,60 +1,261 @@
-# SAP Integration Suite Learning
+# 🔗 SAP Integration Suite Learning
 
-**🌐 Idioma / Language:** 🇧🇷 **Português** | README.en.md
+**🌐 Idioma / Language:** 🇧🇷 **Português** | [🇺🇸 English](README.en.md)
+
+![SAP](https://img.shields.io/badge/SAP-Integration%20Suite-0FAAFF?logo=sap&logoColor=white)
+![BTP](https://img.shields.io/badge/SAP-BTP-2570B8?logo=sap&logoColor=white)
+![Postman](https://img.shields.io/badge/Testes-Postman-FF6C37?logo=postman&logoColor=white)
+![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
+
+Projeto prático de estudo, desenvolvimento e preparação para a certificação **SAP Integration Suite**. O projeto acompanha a trilha oficial [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite) **e vai além dela**, incluindo cenários complementares muito valorizados no mercado.
+
+O objetivo é ir além da teoria: construir **cenários reais de integração** de ponta a ponta, documentar cada etapa e gerar evidências de execução, formando um portfólio técnico consistente.
 
 ---
 
-Projeto prático de estudo, desenvolvimento e preparação para a certificação **SAP Integration Suite**, acompanhando a trilha oficial [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite).
+## 📑 Índice
 
-## 🎯 Objetivo
+- [O que é SAP Integration Suite](#-o-que-é-sap-integration-suite)
+- [Principais capabilities](#-principais-capabilities)
+- [Cloud Integration (CPI)](#-cloud-integration-cpi)
+- [API e API Management](#-api-e-api-management)
+- [Abordagem em duas camadas](#-abordagem-em-duas-camadas)
+- [Objetivo do projeto](#-objetivo-do-projeto)
+- [Padrões de mercado abordados](#-padrões-de-mercado-abordados)
+- [Estrutura do repositório](#-estrutura-do-repositório)
+- [Blocos e cenários de prática](#-blocos-e-cenários-de-prática)
+- [Ferramentas utilizadas](#-ferramentas-utilizadas)
+- [Fluxo de trabalho](#-fluxo-de-trabalho)
+- [Referências oficiais SAP](#-referências-oficiais-sap)
+- [Autor](#-autor)
 
-Construir cenários reais de integração utilizando SAP Integration Suite, com foco em **Cloud Integration (CPI)** e **API Management**, além de segurança, tratamento de erros, transformação de mensagens e padrões de mercado aplicados a processos SAP.
+---
 
-## 🧭 Foco do projeto
+## 🧩 O que é SAP Integration Suite
 
-- Cloud Integration (CPI)
+O **SAP Integration Suite** é a plataforma de integração como serviço (**iPaaS – Integration Platform as a Service**) da SAP, executada no **SAP Business Technology Platform (BTP)**. Ela conecta aplicações, processos, dados e eventos em ambientes **cloud, on-premise e híbridos**, permitindo que sistemas SAP e não-SAP se comuniquem de forma padronizada, segura e escalável.
+
+É a evolução do antigo **SAP Cloud Platform Integration (CPI)** e reúne, em um único ambiente, diversas capabilities de integração, além de recursos de inteligência (assistência por IA) e de aceleração por meio de conteúdo pré-construído.
+
+---
+
+## 🛠️ Principais capabilities
+
+| Capability | Descrição |
+|---|---|
+| **Cloud Integration (CPI)** | Desenvolvimento de fluxos de integração (Integration Flows / iFlows) entre sistemas |
+| **API Management** | Criação, publicação, segurança, governança e monitoramento de APIs |
+| **Event Mesh / Advanced Event Mesh** | Integração orientada a eventos (event-driven) |
+| **Open Connectors** | Conectores prontos para aplicações de terceiros (SaaS) |
+| **Integration Advisor** | Aceleração de integrações B2B/EDI com apoio de IA |
+| **Trading Partner Management** | Gestão de parceiros comerciais em cenários B2B |
+| **Graph** | Modelo de dados unificado para acesso via API |
+
+---
+
+## 🔄 Cloud Integration (CPI)
+
+O **Cloud Integration**, historicamente chamado de **CPI**, é o coração da plataforma. Nele são desenvolvidos os **Integration Flows (iFlows)** — fluxos que recebem, transformam, roteiam e entregam mensagens entre sistemas.
+
+Principais recursos praticados neste projeto:
+
+- **Adapters** (HTTP, HTTPS, SOAP, OData, SFTP, ProcessDirect, etc.)
+- **Content Modifier** (manipulação de headers, properties e body)
+- **Message Mapping** (transformação JSON ↔ XML)
+- **Groovy Script** (lógica customizada)
+- **Router / Splitter / Aggregator / Multicast** (padrões de integração)
+- **Exception Subprocess** (tratamento de erros)
+- **Data Store** (persistência temporária)
+- **Monitoramento** (Message Processing, logs e payloads)
+
+---
+
+## 🌐 API e API Management
+
+Uma **API (Application Programming Interface)** é o contrato que permite que sistemas troquem dados de forma padronizada. Em integrações modernas, o modelo **API-First** é padrão — especialmente no **S/4HANA**, que expõe grande parte de suas funções via **APIs OData e REST**.
+
+O **API Management** é a capability responsável por **expor, proteger e governar** essas APIs. Com ele é possível:
+
+- Criar **API Proxies** que abstraem o backend real
+- Aplicar **Policies** de segurança e controle:
+  - Verify API Key
+  - OAuth
+  - Quota (limite de chamadas)
+  - Spike Arrest (proteção contra picos de tráfego)
+  - JSON ↔ XML
+  - Assign Message (manipulação de request/response)
+- Agrupar APIs em **API Products** e planos de consumo
+- Publicar no **Developer Portal**
+- Monitorar uso e performance via **Analytics**
+
+---
+
+## 🧭 Abordagem em duas camadas
+
+Este projeto é organizado em **duas camadas complementares**. A ideia é dominar o núcleo exigido na certificação e, ao mesmo tempo, ir além com cenários que fazem diferença no mercado real.
+
+### 🥇 Camada 1 — Trilha oficial SAP (núcleo da certificação)
+
+Segue o repertório oficial da trilha [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite), com foco em:
+
+- Cloud Integration (CPI) e Integration Flows
 - API Management
-- Segurança e autenticação (OAuth, API Key, certificados)
-- Tratamento de erros e resiliência
-- Padrões de integração corporativos
-- Aplicação em cenários SAP MM, PP e QM
+- Mapeamentos e transformação de mensagens
+- Monitoramento e operações
+
+### 🥈 Camada 2 — Cenários complementares (diferencial de mercado)
+
+Vai **além da trilha oficial**, cobrindo temas muito valorizados em projetos reais que **não são aprofundados** no repertório oficial da certificação:
+
+- **Event-Driven Integration** com Event Mesh / Advanced Event Mesh
+- **B2B / EDI** (pedido de compra, nota fiscal, ASN)
+- **OData / API-First** (padrão S/4HANA)
+- **Integração híbrida** (cloud + on-premise via Cloud Connector)
+
+> ⚠️ **Importante:** os cenários da Camada 2 são estudados a partir de conteúdos oficiais SAP **específicos de cada tema** (fora da trilha principal). Por exemplo, o Event Mesh tem sua própria jornada de aprendizagem: [Discovering Event-Driven Integration with SAP Integration Suite, advanced event mesh](https://learning.sap.com/courses/discovering-event-driven-integration-with-sap-integration-suite-advanved-event-mesh). Ou seja, o projeto vai propositalmente **além do escopo da prova**, agregando processos e práticas extras.
+
+---
+
+## 🎯 Objetivo do projeto
+
+- Dominar **Cloud Integration (CPI)** e **API Management** na prática
+- Aplicar **padrões corporativos de integração** (EIP)
+- Implementar **segurança, tratamento de erros e resiliência**
+- Explorar **arquitetura orientada a eventos** (Event Mesh)
+- Simular **processos SAP MM, PP e QM** em cenários realistas
+- Construir um **portfólio técnico documentado** com evidências
+- Preparar para a **certificação oficial SAP Integration Suite**
+
+---
 
 ## 🌍 Padrões de mercado abordados
 
-- **Event-Driven Integration** (SAP Event Mesh / Advanced Event Mesh)
-- **API-First / OData** (padrão de integração do S/4HANA)
-- **B2B / EDI** (pedido de compra, nota fiscal, ASN)
-- **Integração híbrida** (cloud e on-premise via Cloud Connector)
+- **Event-Driven Integration** (SAP Event Mesh / Advanced Event Mesh) — arquitetura orientada a eventos, tendência forte no mercado.
+- **API-First / OData** — padrão de integração do S/4HANA.
+- **B2B / EDI** (pedido de compra, nota fiscal, ASN) — muito usado no setor industrial.
+- **Integração híbrida** (cloud + on-premise via Cloud Connector) — conceito essencial e recorrente em provas e projetos.
+
+---
 
 ## 📁 Estrutura do repositório
 
 | Pasta | Descrição |
 |---|---|
-| `docs/` | Documentação técnica de cada cenário |
-| `iflows/` | Integration Flows exportados do Integration Suite |
-| `payloads/` | Mensagens de entrada e saída (JSON/XML) |
-| `postman/` | Coleções de testes |
-| `evidences/` | Evidências de execução e monitoramento |
-| `simulados/` | Simulados de preparação para a certificação |
+| `docs/` | Documentação técnica de cada cenário (objetivo, arquitetura, passo a passo e aprendizados) |
+| `iflows/` | Integration Flows exportados do Integration Suite (artefatos `.zip`) |
+| `payloads/` | Mensagens de entrada e saída utilizadas nos testes (JSON/XML) |
+| `postman/` | Coleções de testes do Postman para envio de mensagens |
+| `evidences/` | Evidências de execução: prints do monitoramento, logs e payloads processados |
+| `simulados/` | Simulados de preparação para a certificação, com correção comentada |
 
-## 🧱 Blocos de cenários
+---
 
-- **Bloco A** — CPI Fundamentos
-- **Bloco B** — CPI Padrões de Integração (Router, Enricher, Splitter, Aggregator, Multicast)
-- **Bloco C** — CPI Resiliência e Erros (Exception Subprocess, Retry, Data Store)
-- **Bloco D** — CPI Conectividade / Adapters (OData, SOAP, SFTP, ProcessDirect)
-- **Bloco E** — API Management (Proxy, Policies, Quota, OAuth, Developer Portal)
-- **Bloco F** — Segurança (transversal)
-- **Bloco G** — Cenários SAP MM / PP / QM
-- **Bloco H** — Cenário final End-to-End
+## 🧱 Blocos e cenários de prática
 
-## 📚 Trilha oficial SAP
+> 🥇 = Camada 1 (trilha oficial) &nbsp;|&nbsp; 🥈 = Camada 2 (complementar / além da trilha)
 
-[Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite)
+### 🅰️ Bloco A — CPI Fundamentos 🥇
+| # | Cenário | Objetivo |
+|---|---|---|
+| A1 | HTTP → Content Modifier → Webhook.site | Primeiro iFlow: receber, ajustar e encaminhar mensagem |
+| A2 | Timer → Request Reply → API pública | Consumir API externa de forma agendada |
+| A3 | Message Mapping (JSON → JSON / JSON → XML) | Transformação de mensagens |
+| A4 | Groovy Script para manipulação de payload | Lógica customizada no fluxo |
 
-## 🚦 Status
+### 🅱️ Bloco B — CPI Padrões de Integração 🥇
+| # | Cenário | Objetivo |
+|---|---|---|
+| B1 | Content-Based Router | Rotear mensagens por condição |
+| B2 | Content Enricher (Request Reply) | Enriquecer dados a partir de outra fonte |
+| B3 | Splitter | Quebrar lote de itens em mensagens individuais |
+| B4 | Aggregator / Gather | Consolidar respostas |
+| B5 | Multicast | Enviar para múltiplos destinos |
 
-Projeto em desenvolvimento ativo.
+### 🇨 Bloco C — CPI Resiliência e Erros 🥇
+| # | Cenário | Objetivo |
+|---|---|---|
+| C1 | Exception Subprocess | Tratamento padronizado de erros |
+| C2 | Retry e tratamento de timeout | Resiliência em falhas temporárias |
+| C3 | Dead Letter / reprocessamento | Recuperação de mensagens com falha |
+| C4 | Data Store | Persistência temporária de mensagens |
+
+### 🇩 Bloco D — CPI Conectividade / Adapters 🥇
+| # | Cenário | Objetivo |
+|---|---|---|
+| D1 | OData Adapter | Integração no padrão SAP S/4HANA |
+| D2 | SOAP Adapter | Integração com serviços SOAP |
+| D3 | SFTP Adapter | Integração de arquivos |
+| D4 | ProcessDirect | Chamar um iFlow a partir de outro |
+
+### 🇪 Bloco E — API Management 🥇
+| # | Cenário | Objetivo |
+|---|---|---|
+| E1 | API Proxy apontando para backend | Expor API controlada |
+| E2 | Policy: Verify API Key | Autenticação básica por chave |
+| E3 | Policy: OAuth | Autenticação segura |
+| E4 | Policy: Quota | Limitar número de chamadas |
+| E5 | Policy: Spike Arrest | Proteção contra picos de tráfego |
+| E6 | Policy: JSON ↔ XML | Conversão de formatos |
+| E7 | Policy: Assign Message | Manipular request/response |
+| E8 | API Products e planos | Agrupar e distribuir APIs |
+| E9 | Developer Portal | Publicação de API |
+| E10 | Analytics de API | Monitoramento de uso |
+
+### 🇫 Bloco F — Segurança (transversal) 🥇
+| # | Cenário | Objetivo |
+|---|---|---|
+| F1 | Basic Authentication | Autenticação simples |
+| F2 | API Key | Controle de acesso por chave |
+| F3 | OAuth 2.0 | Autorização segura |
+| F4 | Certificados / Keystore | Segurança baseada em certificados |
+
+### 🇬 Bloco G — Cenários SAP MM / PP / QM 🥈
+| # | Cenário | Objetivo |
+|---|---|---|
+| G1 | SAP MM — Validação de material | Validar movimentação de estoque |
+| G2 | SAP PP — Ordem de produção | Processar confirmação de produção |
+| G3 | SAP QM — Inspeção de qualidade | Tratar resultado de inspeção |
+
+### 🇭 Bloco H — Event-Driven e Cenário final End-to-End 🥈
+| # | Cenário | Objetivo |
+|---|---|---|
+| H1 | Event Mesh — publish/subscribe | Integração orientada a eventos (event-driven) |
+| H2 | CPI consumindo/publicando eventos no Event Mesh | Conectar Cloud Integration à arquitetura de eventos |
+| H3 | MES → Integration Suite → Validação MM/PP/QM → Destino → Monitoramento | Integração completa de ponta a ponta |
+
+---
+
+## 🧰 Ferramentas utilizadas
+
+- **SAP BTP** (Business Technology Platform)
+- **SAP Integration Suite** (Cloud Integration + API Management + Event Mesh)
+- **Postman** (envio e teste de mensagens)
+- **Webhook.site** (validação de recebimento de mensagens)
+- **APIs públicas** (ex.: JSONPlaceholder) para simulação de backends
+- **VS Code + Git** (versionamento e documentação)
+- **GitHub** (portfólio e controle de versão)
+
+---
+
+## 🔁 Fluxo de trabalho
+
+```text
+1. Desenvolver o iFlow no SAP Integration Suite (navegador)
+2. Testar e capturar evidências (prints do monitoramento)
+3. Exportar o iFlow (.zip) do Integration Suite
+4. Adicionar o artefato em iflows/ e as evidências em evidences/
+5. Documentar o cenário em docs/
+6. Commit e push via VS Code (Source Control)
+```
+
+---
+
+## 📚 Referências oficiais SAP
+
+- 🥇 Trilha principal: [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite)
+- 🥈 Event-Driven: [Discovering Event-Driven Integration with SAP Integration Suite, advanced event mesh](https://learning.sap.com/courses/discovering-event-driven-integration-with-sap-integration-suite-advanved-event-mesh)
+- 🥈 Tutoriais AEM: [Get Started with SAP Integration Suite, advanced event mesh](https://developers.sap.com/mission.advanced-event-mesh-get-started.html)
+- 📖 Visão geral: [SAP Integration Suite — SAP Learning](https://learning.sap.com/products/business-technology-platform/integration-suite)
 
 ---
 
@@ -63,4 +264,8 @@ Projeto em desenvolvimento ativo.
 **Orlando Caetano**
 Especialista SAP • Integração • IA
 
-[![GitHub](https://img.shields.io/badge/GitHub-OrlandoCaetano?logo=github](https://github.com/OrlandoCaetano2026)
+[![GitHub](https://img.shields.io/badge/GitHub-OrlandoCaetano2026-181717?logo=github)](https://github.com/OrlandoCaetano2026)
+
+---
+
+> 📌 Projeto de estudo e portfólio. Os cenários SAP MM, PP e QM são simulações educativas para prática de integração.
