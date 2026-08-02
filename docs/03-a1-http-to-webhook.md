@@ -18,24 +18,11 @@ Construir o primeiro iFlow do projeto, exercitando o ciclo completo de uma integ
 
 ## 🏗️ Arquitetura
 
-```text
-┌────────────┐        ┌──────────────────────────────┐        ┌────────────────┐
-│  Postman   │  POST  │     SAP Integration Suite      │  POST  │  Webhook.site  │
-│ (emissor)  │ ─────► │  HTTPS Sender → Content Mod.   │ ─────► │   (destino)    │
-│            │        │        → HTTP Receiver         │        │                │
-└────────────┘        └──────────────────────────────┘        └────────────────┘
-                              (recebe e transforma)             (valida recebimento)
+```mermaid
+flowchart LR
+    A["📤 Postman<br/>(emissor)"] -->|POST| B["⚙️ SAP Integration Suite<br/>HTTPS Sender → Content Modifier → HTTP Receiver<br/><i>recebe e transforma</i>"]
+    B -->|POST| C["✅ Webhook.site<br/>(destino)<br/><i>valida recebimento</i>"]
 ```
-
-| Componente | Papel |
-|---|---|
-| **Postman** | Sistema emissor — envia o JSON de entrada |
-| **HTTPS Sender** | Ponto de entrada do iFlow (endpoint `/lab01`) |
-| **Content Modifier** | Transforma a mensagem, adicionando dados de contexto |
-| **HTTP Receiver** | Envia a mensagem transformada ao destino |
-| **Webhook.site** | Sistema de destino — comprova o recebimento |
-
----
 
 ## ⚙️ Passo a passo da construção
 
