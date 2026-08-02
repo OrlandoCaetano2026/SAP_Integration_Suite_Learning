@@ -139,7 +139,7 @@ As evidências abaixo seguem a ordem cronológica da execução: do desenho do i
 
 ### 1. iFlow construído no SAP Integration Suite
 Fluxo `HTTPS → JSON to XML Converter → Message Mapping → End → HTTP`, deployado e com status **Started**.
-![iFlow no SAP](../evidences/lab03/01-iflow-design.png)
+![iFlow no SAP](../evidences/lab03/01-monitor-pipeline.png)
 
 ### 2. Disparo no Postman — JSON enviado e `200 OK`
 Requisição POST com o JSON de entrada e resposta de sucesso.
