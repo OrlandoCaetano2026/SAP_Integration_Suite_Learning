@@ -289,4 +289,5 @@ Com este laboratório, o **Bloco A — CPI Fundamentos** é concluído (A1 a A4)
 **Recursos praticados:** Groovy Script · JsonSlurper (streaming) · BigDecimal · Lógica condicional · UUID · SimpleDateFormat · Headers/Properties · JsonBuilder · Monitoring/Trace
 
 **Cenário anterior:** [A3 — Message Mapping (JSON → XML)](./05-a3-message-mapping.md)
-**Próximo bloco:** Bloco B — Padrões de Integração (Router, Enricher, Splitter, Aggregator, Multicast)
+
+**Próximo bloco:** [B1 — Content-Based Router](./07-b1-content-based-router.md) _(Bloco B — Padrões de Integração)_
