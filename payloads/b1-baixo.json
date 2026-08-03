@@ -1,0 +1,7 @@
+{
+  "pedido": {
+    "numero": "PED-3003",
+    "cliente": "Orlando",
+    "valor": 500
+  }
+}

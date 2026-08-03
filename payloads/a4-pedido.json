@@ -1,0 +1,8 @@
+{
+  "pedido": "PED-2001",
+  "cliente": "Orlando Caetano",
+  "material": "Balança Industrial BK-3000",
+  "quantidade": 5,
+  "valorUnitario": 700.00,
+  "centro": "1000"
+}

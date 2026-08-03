@@ -259,13 +259,19 @@ Vai **além da trilha oficial**, cobrindo temas muito valorizados em projetos re
 
 ---
 
-## 👤 Autor
+## 👤 Autor / 📬 Contato
+
+https://img.shields.io/badge/LinkedIn-Orlando%20Caetano-0A66C2?logo=linkedin&logoColor=white](https://www.linkedin.com/in/orlando-caetano/)
+https://img.shields.io/badge/GitHub-OrlandoCaetano2026-181717?logo=github&logoColor=white](https://github.com/OrlandoCaetano2026)
 
 **Orlando Caetano**
-Especialista SAP • Integração • IA
+Especialista SAP • Integração • Inteligência Artificial
+Consultor SAP MM com know-how em PP, QM e WM
 
-[![GitHub](https://img.shields.io/badge/GitHub-OrlandoCaetano2026-181717?logo=github)](https://github.com/OrlandoCaetano2026)
-
+https://img.shields.io/badge/SAP-MM-0FAAFF?logo=sap&logoColor=white
+https://img.shields.io/badge/SAP-PP-0FAAFF?logo=sap&logoColor=white
+https://img.shields.io/badge/SAP-QM-0FAAFF?logo=sap&logoColor=white
+https://img.shields.io/badge/SAP-WM-0FAAFF?logo=sap&logoColor=white
 ---
 
 > 📌 Projeto de estudo e portfólio. Os cenários SAP MM, PP e QM são simulações educativas para prática de integração.

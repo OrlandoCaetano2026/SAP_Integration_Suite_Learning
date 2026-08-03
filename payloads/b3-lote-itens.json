@@ -1,0 +1,12 @@
+{
+  "pedido": {
+    "numero": "PED-5001",
+    "itens": {
+      "item": [
+        { "produto": "Balança Industrial", "quantidade": 2 },
+        { "produto": "Etiqueta Térmica", "quantidade": 100 },
+        { "produto": "Impressora Zebra", "quantidade": 5 }
+      ]
+    }
+  }
+}
