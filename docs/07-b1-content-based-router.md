@@ -23,7 +23,7 @@ flowchart LR
     A["📤 Postman<br/>(pedido)"] -->|POST JSON| B["🔀 JSON to XML<br/>Converter"]
     B --> C{"◆ Router<br/>(Decision)"}
     C -->|valor ≥ 4000| D["🏁 End_Alto_Valor"]
-    C -->|1500 ≤ valor < 4000| E["🏁 End_Medio_Valor"]
+    C -->|1500 ≥ valor < 4000| E["🏁 End_Medio_Valor"]
     C -->|default| F["🏁 End_Baixo_Valor"]
 ```
 
