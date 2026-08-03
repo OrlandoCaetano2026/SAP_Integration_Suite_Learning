@@ -117,19 +117,6 @@ flowchart LR
 
 ---
 
-## 🐛 Troubleshooting / Observações
-
-### 💡 "No Monitor apareceram 2 mensagens, mas no Webhook chegaram 6"
-- **Observação:** ao testar, o Monitor mostrava execuções do iFlow, enquanto o Webhook mostrava mais requisições.
-- **Explicação:** cada **execução do iFlow** (1 lote) gera **N requisições ao destino** (1 por item). Ao enviar o teste 2 vezes, o resultado foi `2 execuções × 3 itens = 6 requisições` no Webhook. Não é erro — é o Splitter operando: 1 mensagem de entrada → várias mensagens de saída.
-
-> 📚 **Lições-chave:**
-> 1. O **General Splitter** divide via **XPath** e o **Grouping** controla quantos itens por mensagem.
-> 2. A contagem no destino = (execuções) × (itens por lote).
-> 3. O General Splitter **preserva o contexto** do elemento pai em cada mensagem gerada.
-
----
-
 ## 📸 Evidências
 
 ### 1. iFlow com o General Splitter (fluxo + configuração)
