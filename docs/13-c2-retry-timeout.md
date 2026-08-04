@@ -24,8 +24,12 @@ Os objetivos são:
 flowchart LR
     A["📤 Confirmação<br/>de Produção"] --> B["🔄 Request Reply"]
     B -->|"HTTP + Retry (3x, 5s)"| C["🌐 Sistema de destino<br/>(Beeceptor)"]
-    B -.->|se esgotar os retries| D["⚠️ Exception Subprocess<br/>(resposta 503 tratada)"]
+    C -->|"200 - disponível"| E["✅ Sucesso<br/>(resposta 200)"]
+    C -->|"500 - indisponível"| B
+    B -.->|"esgotou os 3 retries"| D["⚠️ Exception Subprocess<br/>(resposta 503 tratada)"]
 ```
+
+
 
 | Componente | Papel |
 |---|---|
