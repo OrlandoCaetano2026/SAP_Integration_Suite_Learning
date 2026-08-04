@@ -9,7 +9,8 @@
 
 Uma **Ordem de Produção** disparada de uma vez e entregue **simultaneamente** a três sistemas (MES, PLM e ERP):
 
-https://github.com/OrlandoCaetano2026/SAP_Integration_Suite_Learning/raw/main/evidences/lab09/B5_Multicast.mp4
+https://github.com/user-attachments/assets/5c71b12a-3f7e-40bd-b172-b12fff664cf0
+
 
 > 💡 Uma única requisição no SAP Integration Suite → três sistemas notificados ao mesmo tempo, em paralelo.
 >
