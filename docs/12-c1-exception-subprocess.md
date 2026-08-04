@@ -17,20 +17,18 @@ Os objetivos são:
 - Capturar o erro no **Exception Subprocess** e retornar uma resposta `422` detalhada
 
 ---
-
 ## 🧠 O conceito — try/catch visual
 
-```text
-Em código (Java/Python):        No SAP Integration Suite:
-try {                           Integration Process (fluxo normal)
-   validarOrdem()                  → valida; se falhar, throw
-} catch (erro) {                Exception Subprocess (o "catch")
-   tratarErro()                    → captura e trata o erro
-}
-```
+O Exception Subprocess funciona como o `try/catch` das linguagens de programação:
 
-Quando **qualquer** passo do fluxo principal falha, o CPI desvia automaticamente a execução para o Exception Subprocess.
+| Programação (Java/Python) | SAP Integration Suite |
+|---|---|
+| `try { ... }` | **Integration Process** (fluxo normal) |
+| código que pode falhar | valida a ordem; se falhar, faz `throw` |
+| `catch (erro) { ... }` | **Exception Subprocess** (o "catch") |
+| tratar o erro | captura e devolve resposta estruturada |
 
+> 💡 Quando qualquer passo do fluxo principal falha, o CPI desvia automaticamente para o Exception Subprocess.
 ---
 
 ## 🏗️ Arquitetura
