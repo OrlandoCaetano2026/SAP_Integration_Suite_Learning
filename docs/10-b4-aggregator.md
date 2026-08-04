@@ -115,12 +115,49 @@ def Message processData(Message message) {
 
 ### Saída — 1 mensagem consolidada (multimap:Messages)
 ```xml
+<?xml version="1.0" encoding="UTF-8"?>
 <multimap:Messages xmlns:multimap="http://sap.com/xi/XI/SplitAndMerge">
   <multimap:Message1>
-    <pedido><numero>PED-6002</numero>...MAT-001...<ultimo>false</ultimo></pedido>
-    <pedido>...MAT-002...<ultimo>false</ultimo></pedido>
-    ...
-    <pedido>...MAT-008...<ultimo>true</ultimo></pedido>
+    <pedido>
+      <numero>PED-6002</numero><cliente>Orlan_tech</cliente><centro>1000</centro>
+      <itens><item><codigo>MAT-001</codigo><produto>Balança Industrial BK-3000</produto><quantidade>2</quantidade><valorUnitario>3500.00</valorUnitario></item></itens>
+      <ultimo>false</ultimo>
+    </pedido>
+    <pedido>
+      <numero>PED-6002</numero><cliente>Orlan_tech</cliente><centro>1000</centro>
+      <itens><item><codigo>MAT-002</codigo><produto>Etiqueta Térmica 100x150</produto><quantidade>5000</quantidade><valorUnitario>0.15</valorUnitario></item></itens>
+      <ultimo>false</ultimo>
+    </pedido>
+    <pedido>
+      <numero>PED-6002</numero><cliente>Orlan_tech</cliente><centro>1000</centro>
+      <itens><item><codigo>MAT-003</codigo><produto>Impressora Zebra ZT411</produto><quantidade>3</quantidade><valorUnitario>4200.00</valorUnitario></item></itens>
+      <ultimo>false</ultimo>
+    </pedido>
+    <pedido>
+      <numero>PED-6002</numero><cliente>Orlan_tech</cliente><centro>1000</centro>
+      <itens><item><codigo>MAT-004</codigo><produto>Ribbon Cera 110x300</produto><quantidade>50</quantidade><valorUnitario>28.90</valorUnitario></item></itens>
+      <ultimo>false</ultimo>
+    </pedido>
+    <pedido>
+      <numero>PED-6002</numero><cliente>Orlan_tech</cliente><centro>1000</centro>
+      <itens><item><codigo>MAT-005</codigo><produto>Célula de Carga 500kg</produto><quantidade>8</quantidade><valorUnitario>890.00</valorUnitario></item></itens>
+      <ultimo>false</ultimo>
+    </pedido>
+    <pedido>
+      <numero>PED-6002</numero><cliente>Orlan_tech</cliente><centro>1000</centro>
+      <itens><item><codigo>MAT-006</codigo><produto>Cabo Blindado 4 vias</produto><quantidade>200</quantidade><valorUnitario>12.50</valorUnitario></item></itens>
+      <ultimo>false</ultimo>
+    </pedido>
+    <pedido>
+      <numero>PED-6002</numero><cliente>Orlan_tech</cliente><centro>1000</centro>
+      <itens><item><codigo>MAT-007</codigo><produto>Terminal Indicador T500</produto><quantidade>4</quantidade><valorUnitario>1750.00</valorUnitario></item></itens>
+      <ultimo>false</ultimo>
+    </pedido>
+    <pedido>
+      <numero>PED-6002</numero><cliente>Orlan_tech</cliente><centro>1000</centro>
+      <itens><item><codigo>MAT-008</codigo><produto>Plataforma Inox 1x1m</produto><quantidade>6</quantidade><valorUnitario>2300.00</valorUnitario></item></itens>
+      <ultimo>true</ultimo>
+    </pedido>
   </multimap:Message1>
 </multimap:Messages>
 ```
@@ -186,13 +223,13 @@ Script que injeta o marcador `<ultimo>` no XML.
 Registro da chegada da mensagem no Monitor Message Processing.
 ![Log de chegada no Monitor](../evidences/lab08/04-monitor-log-chegada.png)
 
-### 5. Postman — envio do lote (itens 1–4)
-Envio do pedido com os 8 itens (parte 1) e retorno `200 OK`.
-![Postman envio](../evidences/lab08/05-postman-envio.png)
+### 5. Postman — envio do lote (parte 1/2)
+Envio do pedido com os 8 itens (itens 1–4) e retorno `200 OK`.
+![Postman envio 1](../evidences/lab08/05-postman-envio1-2.png)
 
-### 6. Postman — envio do lote (itens 5–8) e resposta
-Continuação do lote e resposta em XML (sem `<root>`).
-![Postman resposta](../evidences/lab08/06-postman-resposta.png)
+### 6. Postman — envio do lote (parte 2/2) e resposta
+Continuação do lote (itens 5–8) e resposta em XML (sem `<root>`).
+![Postman envio 2](../evidences/lab08/06-postman-envio2-2.png)
 
 ### 7. Monitor — Runs do Aggregator
 Os itens ficam em **Processing** aguardando; ao chegar o último, o grupo é **Completed**.
