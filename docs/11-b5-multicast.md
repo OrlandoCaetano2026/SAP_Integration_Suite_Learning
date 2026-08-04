@@ -9,8 +9,11 @@
 
 Uma **Ordem de Produção** disparada de uma vez e entregue **simultaneamente** a três sistemas (MES, PLM e ERP):
 
-![Demonstração do Multicast]<img src="../evidences/lab09/B5_Multicast.gif" alt="Demonstracao" width="800">
+https://github.com/OrlandoCaetano2026/SAP_Integration_Suite_Learning/raw/main/evidences/lab09/B5_Multicast.mp4
+
 > 💡 Uma única requisição no SAP Integration Suite → três sistemas notificados ao mesmo tempo, em paralelo.
+>
+> ▶️ Caso o player não carregue, [clique aqui para assistir ao vídeo](../evidences/lab09/B5_Multicast.mp4).
 
 ---
 
@@ -151,4 +154,4 @@ Com este laboratório, o **Bloco B — Padrões de Integração** é concluído 
 
 **Cenário anterior:** [B4 — Aggregator](./10-b4-aggregator.md)
 
-**Próximo bloco:** [C1 — Exception Subprocess](./d _Bloco C — Resiliência e Erros (Exception Subprocess, Retry, Data Store)_
+**Próximo bloco:** [C1 — Exception Subprocess](./12-c1-exception-subprocess.md) _(Bloco C — Resiliência e Erros)_
