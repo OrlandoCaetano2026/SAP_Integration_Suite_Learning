@@ -23,14 +23,27 @@ SAP Integration Suite → Design → pacote de destino
 
 ## 📋 iFlows do projeto
 
+### 🅰️ Bloco A — CPI Fundamentos
 | Arquivo | Cenário | Doc |
 |---|---|---|
 | `A1_HTTP_To_Webhook.zip` | HTTP → Content Modifier → Webhook | [doc](../docs/03-a1-http-to-webhook.md) |
 | `A2_Timer_To_API.zip` | Timer → Request Reply → API pública | [doc](../docs/04-a2-timer-to-api.md) |
 | `A3_Message_Mapping.zip` | Message Mapping (JSON → XML) | [doc](../docs/05-a3-message-mapping.md) |
 | `A4_Groovy_Script.zip` | Groovy Script (enriquecimento) | [doc](../docs/06-a4-groovy-script.md) |
+
+### 🅱️ Bloco B — Padrões de Integração
+| Arquivo | Cenário | Doc |
+|---|---|---|
 | `B1_Content_Based_Router.zip` | Content-Based Router | [doc](../docs/07-b1-content-based-router.md) |
 | `B2_Content_Enricher.zip` | Content Enricher (OData V4) | [doc](../docs/08-b2-content-enricher.md) |
 | `B3_Splitter.zip` | Splitter | [doc](../docs/09-b3-splitter.md) |
+| `B4_Aggregator.zip` | Aggregator (CamelSplitComplete) | [doc](../docs/10-b4-aggregator.md) |
+| `B5_Multicast.zip` | Multicast (MES/PLM/ERP) | [doc](../docs/11-b5-multicast.md) |
+
+### 🇨 Bloco C — Resiliência e Erros
+| Arquivo | Cenário | Doc |
+|---|---|---|
+| `C1_Exception_Subprocess.zip` | Exception Subprocess | [doc](../docs/12-c1-exception-subprocess.md) |
+| `C2_Retry.zip` | Retry (HTTP Adapter) | [doc](../docs/13-c2-retry-timeout.md) |
 
 > 💡 Ao adicionar novos iFlows, mantenha o nome do `.zip` igual ao nome do artefato no Integration Suite.

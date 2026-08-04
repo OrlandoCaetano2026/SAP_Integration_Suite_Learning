@@ -40,9 +40,9 @@
 
 | Cenário | Doc | Descrição |
 |---|---|---|
-| C1 | _em breve_ | Exception Subprocess |
-| C2 | _em breve_ | Retry e Timeout |
-| C3 | _em breve_ | Dead Letter / reprocessamento |
+| C1 | [12 — Exception Subprocess](./12-c1-exception-subprocess.md) | Tratamento de erros (try/catch visual) |
+| C2 | [13 — Retry](./13-c2-retry-timeout.md) | Reenvio automático em falhas temporárias |
+| C3 | _em breve_ | Dead Letter / Reprocessamento (JMS) |
 | C4 | _em breve_ | Data Store |
 
 ---
@@ -53,7 +53,7 @@
 |---|---|
 | D | Conectividade / Adapters (OData, SOAP, SFTP, ProcessDirect) |
 | E | API Management (Proxy, Policies, OAuth, Developer Portal) |
-| F | Segurança (Basic, API Key, OAuth, Certificados) |
+| F | Segurança (CSRF real, Client Certificate, OAuth 2.0, Keystore) |
 | G | Cenários SAP MM / PP / QM |
 | H | Event-Driven e End-to-End |
 

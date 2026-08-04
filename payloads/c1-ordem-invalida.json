@@ -1,0 +1,12 @@
+{
+  "ordemProducao": {
+    "numero": "OP-8002",
+    "cliente": "Orlan_tech",
+    "centro": "9999",
+    "produto": "Balança Industrial BK-3000",
+    "quantidadeProduzir": 0,
+    "dataInicio": "2026-08-20",
+    "dataFim": "2026-08-10",
+    "componentes": { "item": [] }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "pedido": {
+    "numero": "PED-6002",
+    "cliente": "Orlan_tech",
+    "centro": "1000",
+    "itens": {
+      "item": [
+        { "codigo": "MAT-001", "produto": "Balança Industrial BK-3000", "quantidade": 2, "valorUnitario": 3500.00 },
+        { "codigo": "MAT-002", "produto": "Etiqueta Térmica 100x150", "quantidade": 5000, "valorUnitario": 0.15 },
+        { "codigo": "MAT-003", "produto": "Impressora Zebra ZT411", "quantidade": 3, "valorUnitario": 4200.00 },
+        { "codigo": "MAT-004", "produto": "Ribbon Cera 110x300", "quantidade": 50, "valorUnitario": 28.90 },
+        { "codigo": "MAT-005", "produto": "Célula de Carga 500kg", "quantidade": 8, "valorUnitario": 890.00 },
+        { "codigo": "MAT-006", "produto": "Cabo Blindado 4 vias", "quantidade": 200, "valorUnitario": 12.50 },
+        { "codigo": "MAT-007", "produto": "Terminal Indicador T500", "quantidade": 4, "valorUnitario": 1750.00 },
+        { "codigo": "MAT-008", "produto": "Plataforma Inox 1x1m", "quantidade": 6, "valorUnitario": 2300.00 }
+      ]
+    }
+  }
+}

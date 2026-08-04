@@ -27,16 +27,23 @@ Trilha oficial: [Developing with SAP Integration Suite](https://learning.sap.com
 | B1 | Content-Based Router | 03/08/2026 | ✅ |
 | B2 | Content Enricher (OData V4) | 03/08/2026 | ✅ |
 | B3 | Splitter | 03/08/2026 | ✅ |
-| B4 | Aggregator | — | ⬜ |
-| B5 | Multicast | — | ⬜ |
+| B4 | Aggregator (CamelSplitComplete) | 04/08/2026 | ✅ |
+| B5 | Multicast (MES/PLM/ERP) | 04/08/2026 | ✅ |
+
+### 🇨 Bloco C — Resiliência e Erros
+| Cenário | Descrição | Data | Status |
+|---|---|---|---|
+| C1 | Exception Subprocess | 04/08/2026 | ✅ |
+| C2 | Retry (HTTP Adapter) | 04/08/2026 | ✅ |
+| C3 | Dead Letter / Reprocessamento (JMS) | — | ⬜ |
+| C4 | Data Store | — | ⬜ |
 
 ### 🔜 Próximos blocos
 | Bloco | Descrição | Status |
 |---|---|---|
-| C | Resiliência e Erros | ⬜ |
-| D | Conectividade / Adapters | ⬜ |
-| E | API Management | ⬜ |
-| F | Segurança | ⬜ |
+| D | Conectividade / Adapters (OData, SOAP, SFTP, ProcessDirect) | ⬜ |
+| E | API Management (Proxy, Policies, OAuth, Developer Portal) | ⬜ |
+| F | Segurança (CSRF real, Client Certificate, OAuth 2.0, Keystore) | ⬜ |
 | G | Cenários SAP MM / PP / QM | ⬜ |
 | H | Event-Driven e End-to-End | ⬜ |
 
@@ -53,8 +60,8 @@ Trilha oficial: [Developing with SAP Integration Suite](https://learning.sap.com
 | Bloco | Data inicial | Data final | Status |
 |---|---|---|---|
 | **Bloco A** — CPI Fundamentos | 01/08/2026 | 03/08/2026 | ✅ Concluído |
-| **Bloco B** — Padrões de Integração | 03/08/2026 | — | 🔄 Em andamento |
-| **Bloco C** — Resiliência e Erros | — | — | ⏳ Planejado |
+| **Bloco B** — Padrões de Integração | 03/08/2026 | 04/08/2026 | ✅ Concluído |
+| **Bloco C** — Resiliência e Erros | 04/08/2026 | — | 🔄 Em andamento |
 | **Bloco D** — Conectividade / Adapters | — | — | ⏳ Planejado |
 | **Bloco E** — API Management | — | — | ⏳ Planejado |
 | **Bloco F** — Segurança | — | — | ⏳ Planejado |
@@ -69,8 +76,9 @@ Trilha oficial: [Developing with SAP Integration Suite](https://learning.sap.com
 >
 > | Métrica | Valor |
 > |---|---|
-> | **Cenários concluídos** | 7 |
-> | **Blocos concluídos** | 1 de 8 (Bloco A) |
+> | **Cenários concluídos** | 11 |
+> | **Blocos concluídos** | 2 de 8 (A e B) |
+> | **Bloco em andamento** | C — Resiliência e Erros |
 > | **Data de início** | 01/08/2026 |
 > | **Prova de certificação** | ⏳ A agendar |
 >

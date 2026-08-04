@@ -1,0 +1,34 @@
+{
+  "ordemProducao": {
+    "numero": "OP-9500",
+    "cliente": "Orlan_tech",
+    "centro": "1000",
+    "produto": "Balança Industrial BK-3000",
+    "quantidadeProduzir": 50,
+    "operacoes": {
+      "operacao": [
+        {
+          "numeroOperacao": "100",
+          "descricao": "Montagem da estrutura",
+          "centroTrabalho": "CT-MONTAGEM",
+          "componentes": {
+            "item": [
+              { "codigo": "MAT-001", "descricao": "Célula de Carga 500kg", "quantidade": 50 },
+              { "codigo": "MAT-002", "descricao": "Plataforma Inox 1x1m", "quantidade": 50 }
+            ]
+          }
+        },
+        {
+          "numeroOperacao": "200",
+          "descricao": "Teste e calibração",
+          "centroTrabalho": "CT-QUALIDADE",
+          "componentes": {
+            "item": [
+              { "codigo": "MAT-003", "descricao": "Kit Calibração Certificado", "quantidade": 1 }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

@@ -31,7 +31,8 @@
 
 | Lab | Cenário | Evidências | Doc |
 |---|---|---|---|
-| lab10 | C1 — Exception Subprocess | _em breve_ | _em breve_ |
+| lab10 | C1 — Exception Subprocess | [pasta](./lab10) | [doc](../docs/12-c1-exception-subprocess.md) |
+| lab11 | C2 — Retry | [pasta](./lab11) | [doc](../docs/13-c2-retry-timeout.md) |
 
 ---
 

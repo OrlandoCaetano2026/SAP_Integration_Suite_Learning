@@ -1,0 +1,18 @@
+{
+  "ordemProducao": {
+    "numero": "OP-8001",
+    "cliente": "Orlan_tech",
+    "centro": "1000",
+    "produto": "Balança Industrial BK-3000",
+    "quantidadeProduzir": 50,
+    "dataInicio": "2026-08-10",
+    "dataFim": "2026-08-20",
+    "componentes": {
+      "item": [
+        { "codigo": "MAT-001", "descricao": "Célula de Carga 500kg", "quantidade": 50 },
+        { "codigo": "MAT-002", "descricao": "Plataforma Inox 1x1m", "quantidade": 50 },
+        { "codigo": "MAT-003", "descricao": "Terminal Indicador T500", "quantidade": 50 }
+      ]
+    }
+  }
+}

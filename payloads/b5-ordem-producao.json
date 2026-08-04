@@ -1,0 +1,19 @@
+{
+  "ordemProducao": {
+    "numero": "OP-9001",
+    "produto": "Balança Industrial BK-3000",
+    "codigoProduto": "PROD-X-3000",
+    "centro": "1000",
+    "quantidadeProduzir": 50,
+    "dataInicio": "2026-08-10",
+    "componentes": {
+      "item": [
+        { "codigo": "MAT-001", "descricao": "Célula de Carga 500kg", "quantidade": 50 },
+        { "codigo": "MAT-002", "descricao": "Plataforma Inox 1x1m", "quantidade": 50 },
+        { "codigo": "MAT-003", "descricao": "Terminal Indicador T500", "quantidade": 50 },
+        { "codigo": "MAT-004", "descricao": "Cabo Blindado 4 vias", "quantidade": 200 },
+        { "codigo": "MAT-005", "descricao": "Fonte 24V", "quantidade": 50 }
+      ]
+    }
+  }
+}
