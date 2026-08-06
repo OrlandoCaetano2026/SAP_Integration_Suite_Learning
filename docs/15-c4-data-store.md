@@ -420,4 +420,4 @@ Com este laboratório, o **Bloco C — Resiliência e Erros** é concluído (C1 
 
 **Cenário anterior:** [C3 — Dead Letter com JMS](./14-c3-dead-letter.md)
 
-**Próximo bloco:** Bloco D — Conectividade / Adapters (OData, SOAP, SFTP, ProcessDirect)
+**Próximo cenário:** [D1 — Odata Adapter](./16-d1-odata-adapter.md)
