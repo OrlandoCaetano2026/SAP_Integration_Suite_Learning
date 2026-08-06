@@ -236,15 +236,15 @@ O padrão usa um **Local Integration Process** (subprocesso) que o Idempotent Pr
 ```text
 ┌─ Integration Process (principal) ─────────────────────┐
 │  Start → Groovy Extract Key → Idempotent Call → End   │
-│                                    ↓ chama              │
-│  ┌─ Local Integration Process (Process_Dedup) ──────┐  │
-│  │  Start → Router - Duplicate Decision            │  │
-│  │            ├─ CamelDuplicateMessage=true →       │  │
-│  │            │     Groovy Response Duplicate → End  │  │
-│  │            └─ default →                           │  │
-│  │                  Groovy Response Processed → End  │  │
-│  └───────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────┘
+│                                    ↓ chama            │
+│  ┌─ Local Integration Process (Process_Dedup) ──────┐ │
+│  │  Start → Router - Duplicate Decision             │ │
+│  │            ├─ CamelDuplicateMessage=true →       │ │
+│  │            │     Groovy Response Duplicate → End │ │
+│  │            └─ default →                          │ │
+│  │                  Groovy Response Processed → End │ │
+│  └──────────────────────────────────────────────────┘ │
+└───────────────────────────────────────────────────────┘
 ```
 
 ## 🔑 Configuração do Idempotent Process Call
