@@ -336,49 +336,49 @@ Em um ambiente produtivo com ERP, o correto seria **rejeitar** essa mensagem com
 **Construção**
 
 **1. iFlow completo + configuração do Data Store**
-![iFlow Data Store](../evidences/lab14/01-iflow-datastore-config.png)
+![iFlow Data Store](../evidences/lab13/01-iflow-datastore-config.png)
 
 **2. Router — decisão de deduplicação**
-![Router Dedup](../evidences/lab14/02-router-dedup-config.png)
+![Router Dedup](../evidences/lab13/02-router-dedup-config.png)
 
 **3. Write 1 — gravação (caminho New)**
-![Write 1](../evidences/lab14/03-datastore-write1-new.png)
+![Write 1](../evidences/lab13/03-datastore-write1-new.png)
 
 **4. Write 2 — gravação com Overwrite (caminho Update)**
-![Write 2](../evidences/lab14/04-datastore-write2-update.png)
+![Write 2](../evidences/lab13/04-datastore-write2-update.png)
 
 **✅ Fluxo CREATE**
 
 **5. Postman — envio create (201)**
-![Postman Create](../evidences/lab14/05-postman-create-201.png)
+![Postman Create](../evidences/lab13/05-postman-create-201.png)
 
 **6. Integration Flow — caminho até End_New**
-![Flow New](../evidences/lab14/06-flow-path-new.png)
+![Flow New](../evidences/lab13/06-flow-path-new.png)
 
 **7. Message Content — resposta PROCESSED**
-![Message Processed](../evidences/lab14/07-message-content-processed.png)
+![Message Processed](../evidences/lab13/07-message-content-processed.png)
 
 **⛔ Fluxo DUPLICATE**
 
 **8. Postman — reenvio (409)**
-![Postman Duplicate](../evidences/lab14/08-postman-duplicate-409.png)
+![Postman Duplicate](../evidences/lab13/08-postman-duplicate-409.png)
 
 **9. Integration Flow — caminho até End_Duplicate**
-![Flow Duplicate](../evidences/lab14/09-flow-path-duplicate.png)
+![Flow Duplicate](../evidences/lab13/09-flow-path-duplicate.png)
 
 **10. Message Content — resposta REJECTED**
-![Message Rejected](../evidences/lab14/10-message-content-rejected.png)
+![Message Rejected](../evidences/lab13/10-message-content-rejected.png)
 
 **🔄 Fluxo UPDATE**
 
 **11. Postman — envio update (200)**
-![Postman Update](../evidences/lab14/11-postman-update-200.png)
+![Postman Update](../evidences/lab13/11-postman-update-200.png)
 
 **12. Integration Flow — caminho até End_Update**
-![Flow Update](../evidences/lab14/12-flow-path-update.png)
+![Flow Update](../evidences/lab13/12-flow-path-update.png)
 
 **13. Message Content — resposta UPDATED**
-![Message Updated](../evidences/lab14/13-message-content-updated.png)
+![Message Updated](../evidences/lab13/13-message-content-updated.png)
 
 ---
 
@@ -387,32 +387,32 @@ Em um ambiente produtivo com ERP, o correto seria **rejeitar** essa mensagem com
 **Construção**
 
 **14. iFlow B + configuração do Idempotent Process Call**
-![iFlow B Idempotent](../evidences/lab14/14-iflowB-idempotent-config.png)
+![iFlow B Idempotent](../evidences/lab13/14-iflowB-idempotent-config.png)
 
 **15. Router — decisão por CamelDuplicateMessage**
-![Router B](../evidences/lab14/15-routerB-duplicate-decision.png)
+![Router B](../evidences/lab13/15-routerB-duplicate-decision.png)
 
 **✅ Fluxo CREATE**
 
 **16. Postman — envio create (201, IDEM-201)**
-![Postman B Create](../evidences/lab14/16-postmanB-create-201.png)
+![Postman B Create](../evidences/lab13/16-postmanB-create-201.png)
 
 **17. Integration Flow — trilha até End_New**
-![Flow B New](../evidences/lab14/17-flowB-path-new.png)
+![Flow B New](../evidences/lab13/17-flowB-path-new.png)
 
 **18. Message Content — resposta PROCESSED**
-![Message B Processed](../evidences/lab14/18-messageB-content-processed.png)
+![Message B Processed](../evidences/lab13/18-messageB-content-processed.png)
 
 **⛔ Fluxo DUPLICATE**
 
 **19. Postman — reenvio (409, IDEM-409)**
-![Postman B Duplicate](../evidences/lab14/19-postmanB-duplicate-409.png)
+![Postman B Duplicate](../evidences/lab13/19-postmanB-duplicate-409.png)
 
 **20. Integration Flow — trilha até End_Duplicate**
-![Flow B Duplicate](../evidences/lab14/20-flowB-path-duplicate.png)
+![Flow B Duplicate](../evidences/lab13/20-flowB-path-duplicate.png)
 
 **21. Message Content — resposta REJECTED**
-![Message B Rejected](../evidences/lab14/21-messageB-content-rejected.png)
+![Message B Rejected](../evidences/lab13/21-messageB-content-rejected.png)
 
 ---
 
