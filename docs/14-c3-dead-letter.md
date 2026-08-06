@@ -9,7 +9,8 @@
 
 Vídeo do cenário completo: uma confirmação de produção do MES é enviada, o ERP fica indisponível, a mensagem entra em **retry assíncrono** na fila e, quando o ERP volta, é **reprocessada automaticamente** — sem perda de dados.
 
-<!-- ▶️ COLE AQUI O LINK DO VÍDEO (user-attachments) OU ARRASTE O MP4 PELO GITHUB -->
+
+https://github.com/user-attachments/assets/658b0dbc-0a4f-4800-a449-31318380343d
 
 > 💡 O tempo de execução do vídeo foi editado (trechos de espera acelerados) para melhor visualização do retry.
 
@@ -209,45 +210,45 @@ Resposta "estranha" no Postman = prova da criptografia ativa ✅
 ### 🏭 Producer (recebe do MES e grava na fila)
 
 **1. iFlow C3_Producer + configuração da fila JMS**
-![iFlow Producer JMS](../evidences/lab13/01-iflow-producer-jms.png)
+![iFlow Producer JMS](../evidences/lab12/01-iflow-producer-jms.png)
 
 **2. Groovy de enriquecimento**
-![Groovy Enriquecimento](../evidences/lab13/02-groovy-enriquecimento.png)
+![Groovy Enriquecimento](../evidences/lab12/02-groovy-enriquecimento.png)
 
 **3. Postman — envio da confirmação (200, resposta criptografada)**
-![Postman Envio](../evidences/lab13/03-postman-envio.png)
+![Postman Envio](../evidences/lab12/03-postman-envio.png)
 
 **4. Monitor — trace da entrada**
-![Monitor Trace Entrada](../evidences/lab13/04-monitor-trace-entrada.png)
+![Monitor Trace Entrada](../evidences/lab12/04-monitor-trace-entrada.png)
 
 **5. Mensagem enriquecida (status AGUARDANDO_ENTREGA_ERP)**
-![JMS Mensagem Enriquecida](../evidences/lab13/05-jms-mensagem-enriquecida.png)
+![JMS Mensagem Enriquecida](../evidences/lab12/05-jms-mensagem-enriquecida.png)
 
 **6. Fila com a mensagem em Waiting**
-![Queue Waiting](../evidences/lab13/06-queue-waiting.png)
+![Queue Waiting](../evidences/lab12/06-queue-waiting.png)
 
 ---
 
 ### 🔧 Ambiente (Mockoon + ngrok)
 
 **7. Mockoon — rota /erp com as regras de resposta**
-![Mockoon Regras](../evidences/lab13/07-mockoon-regras.png)
+![Mockoon Regras](../evidences/lab12/07-mockoon-regras.png)
 
 **8. ngrok — túnel público ativo**
-![ngrok Tunel](../evidences/lab13/08-ngrok-tunel.png)
+![ngrok Tunel](../evidences/lab12/08-ngrok-tunel.png)
 
 ---
 
 ### 📊 Consumer (consome da fila e entrega ao ERP)
 
 **9. iFlow C3_Consumer + configuração de Retry (Dead-Letter Queue)**
-![iFlow Consumer Retry](../evidences/lab13/09-iflow-consumer-retry.png)
+![iFlow Consumer Retry](../evidences/lab12/09-iflow-consumer-retry.png)
 
 **10. Fila com Retry Count subindo (retry assíncrono)**
-![Fila Retry Count](../evidences/lab13/10-fila-retry-count.png)
+![Fila Retry Count](../evidences/lab12/10-fila-retry-count.png)
 
 **11. Monitor — execução do Consumer**
-![Monitor Consumer](../evidences/lab13/11-monitor-consumer.png)
+![Monitor Consumer](../evidences/lab12/11-monitor-consumer.png)
 
 ---
 
