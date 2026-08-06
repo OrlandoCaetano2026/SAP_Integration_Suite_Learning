@@ -9,7 +9,7 @@ Esta pasta contém os **Integration Flows exportados** do SAP Integration Suite,
 ```text
 SAP Integration Suite → Design → Integrations and APIs
 → abrir o pacote → selecionar o Integration Flow
-→ botão "Download" → gera o arquivo .zip
+→ botão "Download" (Merged Configured and Default Values) → gera o arquivo .zip
 ```
 
 ## 📤 Como importar um iFlow (para reutilizar)
@@ -45,5 +45,14 @@ SAP Integration Suite → Design → pacote de destino
 |---|---|---|
 | `C1_Exception_Subprocess.zip` | Exception Subprocess | [doc](../docs/12-c1-exception-subprocess.md) |
 | `C2_Retry.zip` | Retry (HTTP Adapter) | [doc](../docs/13-c2-retry-timeout.md) |
+| `C3_Producer.zip` | Dead Letter — Producer (grava na fila JMS) | [doc](../docs/14-c3-dead-letter.md) |
+| `C3_Consumer.zip` | Dead Letter — Consumer (consome + retry + dead letter) | [doc](../docs/14-c3-dead-letter.md) |
+| `C4_Data_Store.zip` | Deduplicação — Caminho A (Data Store manual) | [doc](../docs/15-c4-data-store.md) |
+| `C4B_Idempotent_Process_Call.zip` | Deduplicação — Caminho B (Idempotent Process Call) | [doc](../docs/15-c4-data-store.md) |
+
+### 🇩 Bloco D — Conectividade / Adapters
+| Arquivo | Cenário | Doc |
+|---|---|---|
+| `D1_OData_Adapter.zip` | OData Adapter (query dinâmica) | [doc](../docs/16-d1-odata-adapter.md) |
 
 > 💡 Ao adicionar novos iFlows, mantenha o nome do `.zip` igual ao nome do artefato no Integration Suite.

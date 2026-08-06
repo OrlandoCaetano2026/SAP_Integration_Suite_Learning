@@ -25,6 +25,17 @@ Mensagens de entrada (JSON) utilizadas nos testes dos laboratórios. Podem ser i
 ## 🇨 Bloco C — Resiliência e Erros
 | Arquivo | Cenário | Abrir |
 |---|---|---|
-| `c1-ordem-valida.json` | C1 — Exception Subprocess (ordem válida → 200) | [ver](./c1-ordem-valida.json) |
-| `c1-ordem-invalida.json` | C1 — Exception Subprocess (ordem inválida → 422) | [ver](./c1-ordem-invalida.json) |
+| `c1-ordem-valida.json` | C1 — Exception (ordem válida → 200) | [ver](./c1-ordem-valida.json) |
+| `c1-ordem-invalida.json` | C1 — Exception (ordem inválida → 422) | [ver](./c1-ordem-invalida.json) |
 | `c2-confirmacao-producao.json` | C2 — Retry (confirmação de produção) | [ver](./c2-confirmacao-producao.json) |
+| `c3-confirmacao-producao.json` | C3 — Dead Letter (confirmação MES → ERP) | [ver](./c3-confirmacao-producao.json) |
+| `c4-teste1-create.json` | C4 — Data Store (create → 201) | [ver](./c4-teste1-create.json) |
+| `c4-teste2-duplicado.json` | C4 — Data Store (duplicado → 409) | [ver](./c4-teste2-duplicado.json) |
+| `c4-teste3-update.json` | C4 — Data Store (update → 200) | [ver](./c4-teste3-update.json) |
+
+## 🇩 Bloco D — Conectividade / Adapters
+| Arquivo | Cenário | Abrir |
+|---|---|---|
+| `d1-consulta-germany.json` | D1 — OData (Germany + Sales Rep) | [ver](./d1-consulta-germany.json) |
+| `d1-consulta-france.json` | D1 — OData (France) | [ver](./d1-consulta-france.json) |
+| `d1-consulta-nome.json` | D1 — OData (nome contém "Market") | [ver](./d1-consulta-nome.json) |

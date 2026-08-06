@@ -42,8 +42,19 @@
 |---|---|---|
 | C1 | [12 — Exception Subprocess](./12-c1-exception-subprocess.md) | Tratamento de erros (try/catch visual) |
 | C2 | [13 — Retry](./13-c2-retry-timeout.md) | Reenvio automático em falhas temporárias |
-| C3 | _em breve_ | Dead Letter / Reprocessamento (JMS) |
-| C4 | _em breve_ | Data Store |
+| C3 | [14 — Dead Letter (JMS)](./14-c3-dead-letter.md) | Guaranteed delivery, retry assíncrono, dead letter |
+| C4 | [15 — Data Store & Idempotência](./15-c4-data-store.md) | Deduplicação (Data Store + Idempotent Process Call) |
+
+---
+
+## 🇩 Bloco D — Conectividade / Adapters
+
+| Cenário | Doc | Descrição |
+|---|---|---|
+| D1 | [16 — OData Adapter](./16-d1-odata-adapter.md) | Query dinâmica ao OData V4 (Northwind) |
+| D2 | _em breve_ | SOAP Adapter |
+| D3 | _em breve_ | SFTP Adapter |
+| D4 | _em breve_ | ProcessDirect |
 
 ---
 
@@ -51,7 +62,6 @@
 
 | Bloco | Tema |
 |---|---|
-| D | Conectividade / Adapters (OData, SOAP, SFTP, ProcessDirect) |
 | E | API Management (Proxy, Policies, OAuth, Developer Portal) |
 | F | Segurança (CSRF real, Client Certificate, OAuth 2.0, Keystore) |
 | G | Cenários SAP MM / PP / QM |

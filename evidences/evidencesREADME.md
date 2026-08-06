@@ -33,6 +33,16 @@
 |---|---|---|---|
 | lab10 | C1 — Exception Subprocess | [pasta](./lab10) | [doc](../docs/12-c1-exception-subprocess.md) |
 | lab11 | C2 — Retry | [pasta](./lab11) | [doc](../docs/13-c2-retry-timeout.md) |
+| lab12 | C3 — Dead Letter (JMS) | [pasta](./lab12) | [doc](../docs/14-c3-dead-letter.md) |
+| lab13 | C4 — Data Store & Idempotência | [pasta](./lab13) | [doc](../docs/15-c4-data-store.md) |
+
+---
+
+## 🇩 Bloco D — Conectividade / Adapters
+
+| Lab | Cenário | Evidências | Doc |
+|---|---|---|---|
+| lab14 | D1 — OData Adapter | [pasta](./lab14) | [doc](../docs/16-d1-odata-adapter.md) |
 
 ---
 

@@ -35,13 +35,20 @@ Trilha oficial: [Developing with SAP Integration Suite](https://learning.sap.com
 |---|---|---|---|
 | C1 | Exception Subprocess | 04/08/2026 | ✅ |
 | C2 | Retry (HTTP Adapter) | 04/08/2026 | ✅ |
-| C3 | Dead Letter / Reprocessamento (JMS) | — | ⬜ |
-| C4 | Data Store | — | ⬜ |
+| C3 | Dead Letter / Reprocessamento (JMS) | 05/08/2026 | ✅ |
+| C4 | Data Store & Idempotência (2 abordagens) | 06/08/2026 | ✅ |
+
+### 🇩 Bloco D — Conectividade / Adapters
+| Cenário | Descrição | Data | Status |
+|---|---|---|---|
+| D1 | OData Adapter (query dinâmica) | 06/08/2026 | ✅ |
+| D2 | SOAP Adapter | — | ⬜ |
+| D3 | SFTP Adapter | — | ⬜ |
+| D4 | ProcessDirect | — | ⬜ |
 
 ### 🔜 Próximos blocos
 | Bloco | Descrição | Status |
 |---|---|---|
-| D | Conectividade / Adapters (OData, SOAP, SFTP, ProcessDirect) | ⬜ |
 | E | API Management (Proxy, Policies, OAuth, Developer Portal) | ⬜ |
 | F | Segurança (CSRF real, Client Certificate, OAuth 2.0, Keystore) | ⬜ |
 | G | Cenários SAP MM / PP / QM | ⬜ |
@@ -61,8 +68,8 @@ Trilha oficial: [Developing with SAP Integration Suite](https://learning.sap.com
 |---|---|---|---|
 | **Bloco A** — CPI Fundamentos | 01/08/2026 | 03/08/2026 | ✅ Concluído |
 | **Bloco B** — Padrões de Integração | 03/08/2026 | 04/08/2026 | ✅ Concluído |
-| **Bloco C** — Resiliência e Erros | 04/08/2026 | — | 🔄 Em andamento |
-| **Bloco D** — Conectividade / Adapters | — | — | ⏳ Planejado |
+| **Bloco C** — Resiliência e Erros | 04/08/2026 | 06/08/2026 | ✅ Concluído |
+| **Bloco D** — Conectividade / Adapters | 06/08/2026 | — | 🔄 Em andamento |
 | **Bloco E** — API Management | — | — | ⏳ Planejado |
 | **Bloco F** — Segurança | — | — | ⏳ Planejado |
 | **Bloco G** — Cenários SAP MM / PP / QM | — | — | ⏳ Planejado |
@@ -76,9 +83,9 @@ Trilha oficial: [Developing with SAP Integration Suite](https://learning.sap.com
 >
 > | Métrica | Valor |
 > |---|---|
-> | **Cenários concluídos** | 11 |
-> | **Blocos concluídos** | 2 de 8 (A e B) |
-> | **Bloco em andamento** | C — Resiliência e Erros |
+> | **Cenários concluídos** | 14 |
+> | **Blocos concluídos** | 3 de 8 (A, B e C) |
+> | **Bloco em andamento** | D — Conectividade / Adapters |
 > | **Data de início** | 01/08/2026 |
 > | **Prova de certificação** | ⏳ A agendar |
 >
