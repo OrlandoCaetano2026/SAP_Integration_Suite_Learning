@@ -1,4 +1,4 @@
-# 🧪 LAB14 — C4: Data Store & Idempotência (Deduplicação de Pedidos)
+# 🧪 LAB13 — C4: Data Store & Idempotência (Deduplicação de Pedidos)
 
 > **Bloco C — Resiliência e Erros** | Camada 1 (trilha oficial) 🥇
 > Último cenário do Bloco C: garantir que a **mesma mensagem não seja processada duas vezes**, aplicando o conceito de **Idempotência** por meio de duas abordagens — **Data Store manual** (Caminho A) e **Idempotent Process Call** (Caminho B, best practice SAP).
@@ -24,7 +24,7 @@ Em integração, uma operação é **idempotente** quando executá-la **uma vez*
 
 ### 🤔 Por que isso é um problema real?
 
-No mundo real, a **mesma mensagem chega duplicada** com frequência. Alguns exemplos:
+No mundo real, a **mesma mensagem chega duplicada** com frequência:
 
 | Situação | O que acontece |
 |---|---|
@@ -78,7 +78,7 @@ Usamos uma estrutura de **Purchase Order** no padrão SAP MM, com campos genéri
 | **ebeln** | Purchasing Document | **A chave** da deduplicação |
 | **messageFunction** | Message Function (IDoc) | `009` = criação, `004` = atualização |
 
-> 💡 O `messageFunction` é o campo real do SAP que diferencia uma mensagem **nova** (`009`) de uma **atualização** (`004`) — usado nos IDocs. Isso enriquece a lógica: o mesmo `ebeln` pode ser rejeitado (duplicado) ou aceito (update), dependendo desse campo.
+> 💡 O `messageFunction` é o campo real do SAP que diferencia uma mensagem **nova** (`009`) de uma **atualização** (`004`) — usado nos IDocs. O mesmo `ebeln` pode ser rejeitado (duplicado) ou aceito (update), dependendo desse campo.
 
 ---
 
@@ -97,28 +97,25 @@ flowchart LR
     E -->|update| H["Write Overwrite + Resposta 200"]
 ```
 
-## 🔧 Componentes
+### 📸 O iFlow montado
 
-| Componente | Função |
-|---|---|
-| **Groovy - Extract Key** | Extrai `ebeln` e `messageFunction` para properties |
-| **Data Store - Get** | Consulta se a chave já existe (Throw Exception on Missing: desmarcado) |
-| **Groovy - Check Existence** | Lê o header `SAP_DataStoreEntryFound` e define a `decisao` |
-| **Router - Dedup Decision** | Roteia: NEW / DUPLICATE / UPDATE |
-| **Write 1** (New) | Grava a chave (sem overwrite) |
-| **Write 2** (Update) | Sobrescreve a chave (com overwrite) |
-| **Groovys de resposta** | Montam as respostas PROCESSED / REJECTED / UPDATED |
+O fluxo completo com o Data Store, o Router de decisão e os dois Writes (New e Update):
 
-## 🔑 A detecção correta
+**iFlow completo + configuração do Data Store**
+![iFlow Data Store](../evidences/lab13/01-iflow-datastore-config.png)
 
-A chave de tudo é o header que o **Data Store Get** preenche ao consultar:
+---
+
+## 🔑 A detecção — o coração do Caminho A
+
+A chave de tudo é o header que o **Data Store Get** preenche ao consultar a existência da chave:
 
 ```text
 SAP_DataStoreEntryFound = 'true'   → a chave JÁ existe
 SAP_DataStoreEntryFound = 'false'  → a chave NÃO existe
 ```
 
-O Groovy de verificação usa esse header para decidir:
+O Groovy de verificação usa esse header para definir a **decisão** (NEW / DUPLICATE / UPDATE):
 
 ```groovy
 def encontrado = message.getHeaders().get("SAP_DataStoreEntryFound")
@@ -134,11 +131,37 @@ if (messageFunction == "004") {
 message.setProperty("decisao", decisao)
 ```
 
-> 🐛 **Nota de troubleshooting (resumida):** a detecção de existência exigiu iteração. Métodos baseados no corpo da mensagem e em headers específicos de versão (`SapDataStoreEntryId`, `SapDataStoreState`) apresentaram instabilidade. A solução **robusta e confiável** foi o header oficial **`SAP_DataStoreEntryFound`**, que retorna `true`/`false` de forma consistente.
+> 🐛 **Nota de troubleshooting (resumida):** a detecção exigiu iteração. Métodos baseados no corpo da mensagem e em headers específicos de versão (`SapDataStoreEntryId`, `SapDataStoreState`) apresentaram instabilidade. A solução **robusta** foi o header oficial **`SAP_DataStoreEntryFound`**, que retorna `true`/`false` de forma consistente.
 
-## 🧩 Os 3 comportamentos (com dados reais dos testes)
+### 📸 O Router de decisão
 
-### ✅ CREATE — pedido novo (messageFunction 009)
+Com a property `decisao` definida, o Router direciona para o caminho correto:
+
+**Router — decisão de deduplicação**
+![Router Dedup](../evidences/lab13/02-router-dedup-config.png)
+
+---
+
+## ✍️ Os dois Writes (gravação no Data Store)
+
+O Caminho A usa **dois Writes** com comportamentos diferentes:
+
+- **Write 1 (New):** grava a chave pela primeira vez, **sem** overwrite
+- **Write 2 (Update):** sobrescreve a chave existente, **com** overwrite
+
+**Write 1 — gravação (caminho New)**
+![Write 1](../evidences/lab13/03-datastore-write1-new.png)
+
+**Write 2 — gravação com Overwrite (caminho Update)**
+![Write 2](../evidences/lab13/04-datastore-write2-update.png)
+
+> 💡 O **Overwrite** no Write 2 é o que permite o **UPDATE com sobrescrita real** — substitui os dados antigos pelos novos. É o grande diferencial desta abordagem.
+
+---
+
+## ✅ Comportamento 1 — CREATE (pedido novo, messageFunction 009)
+
+Um pedido novo (`ebeln` inédito) é gravado no Data Store e retorna sucesso.
 
 **Resposta — 201 Created:**
 ```json
@@ -151,7 +174,20 @@ message.setProperty("decisao", decisao)
 }
 ```
 
-### ⛔ DUPLICATE — mesmo pedido reenviado (009)
+**Envio no Postman (201)**
+![Postman Create](../evidences/lab13/05-postman-create-201.png)
+
+**Caminho da mensagem até o End_New (Integration Flow Model)**
+![Flow New](../evidences/lab13/06-flow-path-new.png)
+
+**Message Content — resposta PROCESSED**
+![Message Processed](../evidences/lab13/07-message-content-processed.png)
+
+---
+
+## ⛔ Comportamento 2 — DUPLICATE (mesmo pedido reenviado, 009)
+
+O **mesmo** pedido é enviado novamente. O Data Store detecta que já existe e **rejeita** com o status HTTP `409 Conflict` (padrão da indústria para duplicidade).
 
 **Resposta — 409 Conflict:**
 ```json
@@ -164,9 +200,22 @@ message.setProperty("decisao", decisao)
 }
 ```
 
-### 🔄 UPDATE — atualização do pedido (messageFunction 004)
+**Reenvio no Postman (409)**
+![Postman Duplicate](../evidences/lab13/08-postman-duplicate-409.png)
 
-**Request (quantidades e preços alterados):**
+**Caminho da mensagem até o End_Duplicate**
+![Flow Duplicate](../evidences/lab13/09-flow-path-duplicate.png)
+
+**Message Content — resposta REJECTED**
+![Message Rejected](../evidences/lab13/10-message-content-rejected.png)
+
+---
+
+## 🔄 Comportamento 3 — UPDATE (atualização, messageFunction 004)
+
+O mesmo `ebeln`, mas com `messageFunction = 004` e **dados alterados** (novas quantidades e preços). O Router direciona para o Write 2 (com Overwrite), que **sobrescreve** o registro.
+
+**Request (quantidades e preços atualizados):**
 ```json
 {
   "purchaseOrder": {
@@ -191,17 +240,16 @@ message.setProperty("decisao", decisao)
 }
 ```
 
-> 💡 **Destaque do Caminho A:** ele suporta o **UPDATE com sobrescrita real** — o Write 2 (com Overwrite) substitui os dados antigos pelos novos no Data Store. Essa flexibilidade é o grande diferencial desta abordagem.
+**Envio no Postman (200)**
+![Postman Update](../evidences/lab13/11-postman-update-200.png)
 
-## 📊 Códigos HTTP profissionais
+**Caminho da mensagem até o End_Update**
+![Flow Update](../evidences/lab13/12-flow-path-update.png)
 
-Cada resposta usa o status HTTP correto para o cenário:
+**Message Content — resposta UPDATED**
+![Message Updated](../evidences/lab13/13-message-content-updated.png)
 
-| Cenário | HTTP | Significado |
-|---|---|---|
-| Create | **201** Created | Recurso criado |
-| Duplicate | **409** Conflict | Conflito (recurso já existe) — padrão da indústria para duplicidade |
-| Update | **200** OK | Recurso atualizado |
+> 💡 **Destaque do Caminho A:** o suporte ao **UPDATE com sobrescrita real** — algo que o Caminho B (a seguir) não oferece. Essa flexibilidade é o principal diferencial do Data Store manual.
 
 ---
 
@@ -229,7 +277,7 @@ flowchart LR
     E -->|true| G["Resposta 409 REJECTED"]
 ```
 
-## 🔧 A estrutura em dois níveis
+### 🔧 A estrutura em dois níveis
 
 O padrão usa um **Local Integration Process** (subprocesso) que o Idempotent Process Call chama:
 
@@ -238,14 +286,19 @@ O padrão usa um **Local Integration Process** (subprocesso) que o Idempotent Pr
 │  Start → Groovy Extract Key → Idempotent Call → End   │
 │                                    ↓ chama              │
 │  ┌─ Local Integration Process (Process_Dedup) ──────┐  │
-│  │  Start → Router - Duplicate Decision            │  │
-│  │            ├─ CamelDuplicateMessage=true →       │  │
-│  │            │     Groovy Response Duplicate → End  │  │
-│  │            └─ default →                           │  │
-│  │                  Groovy Response Processed → End  │  │
+│  │  Start → Router                                  │  │
+│  │            ├─ CamelDuplicateMessage=true →        │  │
+│  │            │     Groovy Response Duplicate → End   │  │
+│  │            └─ default →                            │  │
+│  │                  Groovy Response Processed → End   │  │
 │  └───────────────────────────────────────────────────┘  │
 └──────────────────────────────────────────────────────────┘
 ```
+
+**iFlow B + configuração do Idempotent Process Call**
+![iFlow B Idempotent](../evidences/lab13/14-iflowB-idempotent-config.png)
+
+---
 
 ## 🔑 Configuração do Idempotent Process Call
 
@@ -257,8 +310,6 @@ O padrão usa um **Local Integration Process** (subprocesso) que o Idempotent Pr
 
 > 💡 **Por que "Skip" desmarcado?** Se marcado, o componente simplesmente **pula** o subprocesso nos duplicados (não executa nada). Desmarcado, ele **executa o subprocesso mesmo em duplicados**, mas com `CamelDuplicateMessage = true` — permitindo montar uma **resposta customizada** de rejeição.
 
-## 🔀 A decisão no Router
-
 O Router dentro do subprocesso usa a flag automática:
 
 ```text
@@ -266,9 +317,12 @@ Route_Duplicate:  ${property.CamelDuplicateMessage} = 'true'
 Route_New:        Default Route
 ```
 
-## 🧩 Os 2 comportamentos (com dados reais)
+**Router — decisão por CamelDuplicateMessage**
+![Router B](../evidences/lab13/15-routerB-duplicate-decision.png)
 
-### ✅ CREATE — pedido novo
+---
+
+## ✅ Comportamento 1 — CREATE (pedido novo)
 
 **Resposta — 201 Created:**
 ```json
@@ -282,7 +336,20 @@ Route_New:        Default Route
 }
 ```
 
-### ⛔ DUPLICATE — mesmo pedido reenviado
+**Envio no Postman (201, IDEM-201)**
+![Postman B Create](../evidences/lab13/16-postmanB-create-201.png)
+
+**Trilha da mensagem até o End_New**
+![Flow B New](../evidences/lab13/17-flowB-path-new.png)
+
+**Message Content — resposta PROCESSED**
+![Message B Processed](../evidences/lab13/18-messageB-content-processed.png)
+
+---
+
+## ⛔ Comportamento 2 — DUPLICATE (mesmo pedido reenviado)
+
+O Idempotent Process Call detecta o duplicado **automaticamente** (flag `CamelDuplicateMessage = true`) e a mensagem segue pela rota de rejeição.
 
 **Resposta — 409 Conflict:**
 ```json
@@ -295,6 +362,15 @@ Route_New:        Default Route
   "rejeitadoEm": "2026-08-06T17:20:46"
 }
 ```
+
+**Reenvio no Postman (409, IDEM-409)**
+![Postman B Duplicate](../evidences/lab13/19-postmanB-duplicate-409.png)
+
+**Trilha da mensagem até o End_Duplicate**
+![Flow B Duplicate](../evidences/lab13/20-flowB-path-duplicate.png)
+
+**Message Content — resposta REJECTED**
+![Message B Rejected](../evidences/lab13/21-messageB-content-rejected.png)
 
 > 💡 **Destaque do Caminho B:** a detecção é **automática e nativa**. O componente cuida de armazenar e comparar o Message ID sozinho — código e estrutura muito mais enxutos. É o padrão **exactly-once** recomendado pela SAP.
 
@@ -326,93 +402,6 @@ Route_New:        Default Route
 Durante o desenvolvimento, identificou-se um **caso de borda**: uma mensagem de **atualização** (`messageFunction 004`) para um pedido que **não existe** no repositório. No cenário atual, ela é tratada como criação (comportamento *upsert* tolerante).
 
 Em um ambiente produtivo com ERP, o correto seria **rejeitar** essa mensagem com um erro de negócio (*"pedido não encontrado para atualização"*), pois **não se pode atualizar um registro inexistente**. Essa validação foi identificada e documentada como evolução futura — reconhecendo a regra de negócio correta mesmo sem implementá-la neste laboratório de estudo.
-
----
-
-## 📸 Evidências
-
-### 🅰️ Caminho A — Data Store Manual
-
-**Construção**
-
-**1. iFlow completo + configuração do Data Store**
-![iFlow Data Store](../evidences/lab14/01-iflow-datastore-config.png)
-
-**2. Router — decisão de deduplicação**
-![Router Dedup](../evidences/lab14/02-router-dedup-config.png)
-
-**3. Write 1 — gravação (caminho New)**
-![Write 1](../evidences/lab14/03-datastore-write1-new.png)
-
-**4. Write 2 — gravação com Overwrite (caminho Update)**
-![Write 2](../evidences/lab14/04-datastore-write2-update.png)
-
-**✅ Fluxo CREATE**
-
-**5. Postman — envio create (201)**
-![Postman Create](../evidences/lab14/05-postman-create-201.png)
-
-**6. Integration Flow — caminho até End_New**
-![Flow New](../evidences/lab14/06-flow-path-new.png)
-
-**7. Message Content — resposta PROCESSED**
-![Message Processed](../evidences/lab14/07-message-content-processed.png)
-
-**⛔ Fluxo DUPLICATE**
-
-**8. Postman — reenvio (409)**
-![Postman Duplicate](../evidences/lab14/08-postman-duplicate-409.png)
-
-**9. Integration Flow — caminho até End_Duplicate**
-![Flow Duplicate](../evidences/lab14/09-flow-path-duplicate.png)
-
-**10. Message Content — resposta REJECTED**
-![Message Rejected](../evidences/lab14/10-message-content-rejected.png)
-
-**🔄 Fluxo UPDATE**
-
-**11. Postman — envio update (200)**
-![Postman Update](../evidences/lab14/11-postman-update-200.png)
-
-**12. Integration Flow — caminho até End_Update**
-![Flow Update](../evidences/lab14/12-flow-path-update.png)
-
-**13. Message Content — resposta UPDATED**
-![Message Updated](../evidences/lab14/13-message-content-updated.png)
-
----
-
-### 🅱️ Caminho B — Idempotent Process Call
-
-**Construção**
-
-**14. iFlow B + configuração do Idempotent Process Call**
-![iFlow B Idempotent](../evidences/lab14/14-iflowB-idempotent-config.png)
-
-**15. Router — decisão por CamelDuplicateMessage**
-![Router B](../evidences/lab14/15-routerB-duplicate-decision.png)
-
-**✅ Fluxo CREATE**
-
-**16. Postman — envio create (201, IDEM-201)**
-![Postman B Create](../evidences/lab14/16-postmanB-create-201.png)
-
-**17. Integration Flow — trilha até End_New**
-![Flow B New](../evidences/lab14/17-flowB-path-new.png)
-
-**18. Message Content — resposta PROCESSED**
-![Message B Processed](../evidences/lab14/18-messageB-content-processed.png)
-
-**⛔ Fluxo DUPLICATE**
-
-**19. Postman — reenvio (409, IDEM-409)**
-![Postman B Duplicate](../evidences/lab14/19-postmanB-duplicate-409.png)
-
-**20. Integration Flow — trilha até End_Duplicate**
-![Flow B Duplicate](../evidences/lab14/20-flowB-path-duplicate.png)
-
-**21. Message Content — resposta REJECTED**
-![Message B Rejected](../evidences/lab14/21-messageB-content-rejected.png)
 
 ---
 
