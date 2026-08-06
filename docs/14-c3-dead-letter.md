@@ -9,7 +9,7 @@
 
 Vídeo do cenário completo: uma confirmação de produção do MES é enviada, o ERP fica indisponível, a mensagem entra em **retry assíncrono** na fila e, quando o ERP volta, é **reprocessada automaticamente** — sem perda de dados.
 
-<!-- ▶️ ARRASTE O VÍDEO C3_DeadLetter.mp4 AQUI (drag & drop pelo GitHub para gerar o player) -->
+<!-- ▶️ COLE AQUI O LINK DO VÍDEO (user-attachments) OU ARRASTE O MP4 PELO GITHUB -->
 
 > 💡 O tempo de execução do vídeo foi editado (trechos de espera acelerados) para melhor visualização do retry.
 
@@ -147,6 +147,24 @@ O Groovy do Producer adiciona uma camada de rastreamento antes de gravar na fila
 
 ---
 
+## 🔒 Por que a resposta do Postman vem criptografada
+
+Ao enviar a mensagem pelo Producer, a resposta que retorna ao Postman aparece com um **conteúdo aparentemente ilegível** (caracteres binários). Isso **não é um erro** — é a prova de que a segurança da fila está ativa.
+
+O adapter JMS do Producer está configurado com **Compress** e **Encrypt Stored Message**. Antes de gravar a mensagem na fila, o SAP a **comprime** e **criptografa**, garantindo que os dados fiquem protegidos enquanto aguardam processamento. O eco dessa mensagem comprimida/encriptada é o que o Postman exibe.
+
+```text
+Mensagem enriquecida (JSON legível)
+        ↓ Compress + Encrypt Stored Message
+Conteúdo comprimido e criptografado na fila (ilegível)
+        ↓ (eco ao Postman)
+Resposta "estranha" no Postman = prova da criptografia ativa ✅
+```
+
+> 💡 **Segurança em ação:** a mensagem só é descomprimida e descriptografada quando o Consumer a consome para entregar ao ERP. Na fila, ela permanece protegida — importante em cenários com dados sensíveis (pedidos, confirmações, valores).
+
+---
+
 ## 🎬 O processo executado (passo a passo do cenário)
 
 1. **Fluxo normal:** o MES envia a confirmação → o Producer enriquece e grava na fila → o Consumer consome → entrega ao ERP (200) → mensagem sai da fila. ✅
@@ -196,7 +214,7 @@ O Groovy do Producer adiciona uma camada de rastreamento antes de gravar na fila
 **2. Groovy de enriquecimento**
 ![Groovy Enriquecimento](../evidences/lab13/02-groovy-enriquecimento.png)
 
-**3. Postman — envio da confirmação (200)**
+**3. Postman — envio da confirmação (200, resposta criptografada)**
 ![Postman Envio](../evidences/lab13/03-postman-envio.png)
 
 **4. Monitor — trace da entrada**
