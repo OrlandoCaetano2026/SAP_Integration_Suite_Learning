@@ -272,7 +272,17 @@ Com o Producer validado de ponta a ponta (incluindo a confirmação externa no s
 - **SAP Integration Suite** (Cloud Integration – Trial)
 - **Postman** (collection `D3_SFTP_Producer`, variáveis `{{base_url}}`/`{{clientid}}`/`{{clientsecret}}`)
 - **SFTPCloud** — servidor SFTP gratuito de teste (7 dias, sem cartão de crédito) — [sftpcloud.io](https://sftpcloud.io/)
+---
 
+## ✅ Conclusão
+
+O cenário D3 introduziu a **integração de arquivos via SFTP**, simulando a liberação de uma Ordem de Produção no SAP e sua entrega para um sistema MES via hot folder — um padrão real e amplamente utilizado na indústria quando não há interface RFC/IDoc nativa disponível.
+
+**Recursos praticados:** SFTP Receiver Adapter · Security Material (User Credentials + SSH Known Hosts) · Conectividade com servidor SFTP externo · Groovy Script (montagem de arquivo XML, geração de nome dinâmico) · Troubleshooting de conversão de tipos em headers
+
+**Bloco anterior:** ./17-d2-soap-adapter.md
+
+**Próximo cenário:** *(em construção — D3_SFTP_Consumer, parte 2 deste mesmo cenário)*
 ---
 
 ## 👤 Autor

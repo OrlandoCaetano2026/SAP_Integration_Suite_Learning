@@ -302,6 +302,19 @@ Durante a construção deste cenário, foram identificados e corrigidos 5 proble
 - **Postman** (collection `D2_SOAP_Adapter`, variáveis `{{base_url}}`/`{{clientid}}`/`{{clientsecret}}`)
 - **Web Service público**: [NumberConversion – dataaccess.com](https://www.dataaccess.com/webservicesserver/numberconversion.wso?op=NumberToWords)
 
+
+---
+
+## ✅ Conclusão
+
+O cenário D2 aprofundou o uso do **SOAP Adapter**, indo além de uma chamada simples: o iFlow integra com um Web Service SOAP público externo, usando o padrão **Split → Process → Gather** para processar múltiplos valores em paralelo e consolidar tudo em uma única resposta síncrona.
+
+**Recursos praticados:** SOAP (SOAP 1.x) Receiver Adapter · Configuração Manual sem WSDL · General Splitter · Gather (Scatter-Gather síncrono) · Groovy Script (parsing XML, montagem de envelope SOAP, conversão de tipos)
+
+**Bloco anterior:** ./16-d1-odata-adapter.md
+
+**Próximo cenário:** [D3 – SFTP Adapter](./18
+
 ---
 
 ## 👤 Autor
