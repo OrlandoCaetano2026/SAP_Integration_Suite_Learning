@@ -1,0 +1,15 @@
+{
+  "consultaClientes": {
+    "solicitante": "Portal-Comercial",
+    "dataRequisicao": "2026-08-06",
+    "filtros": {
+      "pais": "Germany",
+      "cidade": null,
+      "nomeContem": null,
+      "tituloContato": "Sales Representative"
+    },
+    "camposRetorno": ["CustomerID","CompanyName","ContactName","ContactTitle","City","Country","Phone"],
+    "ordenacao": { "campo": "CompanyName", "direcao": "asc" },
+    "paginacao": { "limite": 10, "pular": 0 }
+  }
+}

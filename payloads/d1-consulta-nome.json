@@ -1,0 +1,15 @@
+{
+  "consultaClientes": {
+    "solicitante": "Portal-Comercial",
+    "dataRequisicao": "2026-08-06",
+    "filtros": {
+      "pais": null,
+      "cidade": null,
+      "nomeContem": "Market",
+      "tituloContato": null
+    },
+    "camposRetorno": ["CustomerID","CompanyName","City","Country"],
+    "ordenacao": { "campo": "CompanyName", "direcao": "asc" },
+    "paginacao": { "limite": 10, "pular": 0 }
+  }
+}

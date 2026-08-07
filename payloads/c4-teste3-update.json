@@ -1,0 +1,17 @@
+{
+  "purchaseOrder": {
+    "header": {
+      "ebeln": "7800000085",
+      "bsart": "ZLAB",
+      "lifnr": "FORN-0001",
+      "bukrs": "9000",
+      "waers": "BRL",
+      "bedat": "2026-08-06",
+      "messageFunction": "004"
+    },
+    "items": [
+      { "ebelp": "00010", "matnr": "MAT-GEN-001", "txz01": "Balanca Industrial XPTO", "menge": 150, "meins": "PC", "netpr": 400.00 },
+      { "ebelp": "00020", "matnr": "MAT-GEN-002", "txz01": "Suporte Generico XPTO", "menge": 33, "meins": "PC", "netpr": 550.00 }
+    ]
+  }
+}

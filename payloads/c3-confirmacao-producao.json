@@ -1,0 +1,14 @@
+{
+  "confirmacaoProducao": {
+    "ordem": "OP-9900",
+    "material": "PROD-X-3000",
+    "descricao": "Balanca Industrial BK-3000",
+    "centro": "1000",
+    "centroTrabalho": "CT-MONTAGEM",
+    "quantidadeConfirmada": 30,
+    "unidade": "PC",
+    "turno": "A",
+    "operador": "MES-AUTO",
+    "dataConfirmacao": "2026-08-05"
+  }
+}

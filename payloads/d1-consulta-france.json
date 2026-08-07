@@ -1,0 +1,15 @@
+{
+  "consultaClientes": {
+    "solicitante": "Portal-Comercial",
+    "dataRequisicao": "2026-08-06",
+    "filtros": {
+      "pais": "France",
+      "cidade": null,
+      "nomeContem": null,
+      "tituloContato": null
+    },
+    "camposRetorno": ["CustomerID","CompanyName","City","Country","Phone"],
+    "ordenacao": { "campo": "City", "direcao": "asc" },
+    "paginacao": { "limite": 10, "pular": 0 }
+  }
+}
