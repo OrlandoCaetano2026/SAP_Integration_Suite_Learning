@@ -75,14 +75,14 @@ flowchart TB
         D -->|"SFTP Receiver"| E[["Write File"]]
     end
 
-    E -.grava arquivo XML.-> S[("Servidor SFTP<br/>SFTPCloud<br/>/hotfolder/Inbound")]
-
-    subgraph Cn["D3_SFTP_Consumer  ⏳ Em construção"]
-        S -.>|"SFTP Sender<br/>Polling periódico"| F(["Start"])
-        F --> G["Groovy Script<br/>Parse Order File<br/>+ Confirma Recebimento"]
-        G --> H(["End"])
-    end
-    H -.move arquivo.-> M[("/hotfolder/Processed")]
+     E -->|"grava arquivo XML"| S[("Servidor SFTP - SFTPCloud - hotfolder Inbound")] 
+     
+     subgraph Cn["D3_SFTP_Consumer - Em construcao"] 
+        S -->|"SFTP Sender - Polling"| F(["Start"]) 
+        F --> G["Groovy Script: Parse e Enriquecer"] 
+        G --> H(["End"]) 
+    end 
+    H -->|"move arquivo"| M[("hotfolder Processed")]
 ```
 
 ---
