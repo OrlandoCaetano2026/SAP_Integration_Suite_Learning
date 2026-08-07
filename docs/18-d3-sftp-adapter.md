@@ -67,23 +67,19 @@ flowchart LR
 ## 🏗️ Arquitetura completa do cenário D3
 
 ```mermaid
-flowchart TB
-    subgraph P["D3_SFTP_Producer  ✅ Concluído"]
-        A["Postman<br/>POST Ordem de Produção"] -->|"HTTPS /d3sftp/producer"| B(["Start"])
-        B --> C["Groovy Script 1<br/>Build Order File<br/>JSON → XML"]
-        C --> D(["End 1"])
-        D -->|"SFTP Receiver"| E[["Write File"]]
-    end
-
-     E -->|"grava arquivo XML"| S[("Servidor SFTP - SFTPCloud - hotfolder Inbound")] 
-     
-     subgraph Cn["D3_SFTP_Consumer - Em construcao"] 
-        S -->|"SFTP Sender - Polling"| F(["Start"]) 
-        F --> G["Groovy Script: Parse e Enriquecer"] 
-        G --> H(["End"]) 
-    end 
-    H -->|"move arquivo"| M[("hotfolder Processed")]
+flowchart TB 
+    A["Postman - POST Ordem de Producao"] -->|"HTTPS"| B(["Start Producer"]) 
+    B --> C["Groovy Script 1 - Build Order File"] 
+    C --> D(["End 1"]) 
+    D -->|"SFTP Receiver"| E["Write File"] 
+    E -->|"grava arquivo XML"| S["Servidor SFTP - SFTPCloud - hotfolder Inbound"] 
+    S -->|"SFTP Sender - Polling"| F(["Start Consumer"]) 
+    F --> G["Groovy Script - Parse e Enriquecer"] 
+    G --> H(["End Consumer"]) 
+    H -->|"move arquivo"| M["hotfolder Processed"]
 ```
+
+
 
 ---
 
