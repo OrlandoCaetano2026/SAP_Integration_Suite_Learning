@@ -311,9 +311,9 @@ O cenário D2 aprofundou o uso do **SOAP Adapter**, indo além de uma chamada si
 
 **Recursos praticados:** SOAP (SOAP 1.x) Receiver Adapter · Configuração Manual sem WSDL · General Splitter · Gather (Scatter-Gather síncrono) · Groovy Script (parsing XML, montagem de envelope SOAP, conversão de tipos)
 
-**Bloco anterior:** ./16-d1-odata-adapter.md
+**Bloco anterior:** [D1 — Odata Adapter](./16-d1-odata-adapter.md)
 
-**Próximo cenário:** [D3 – SFTP Adapter](./18
+**Próximo cenário:** [D3 – SFTP Adapter](./18-d3-sftp-adapter.md)
 
 ---
 

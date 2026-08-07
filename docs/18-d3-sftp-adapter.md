@@ -280,7 +280,7 @@ O cenário D3 introduziu a **integração de arquivos via SFTP**, simulando a li
 
 **Recursos praticados:** SFTP Receiver Adapter · Security Material (User Credentials + SSH Known Hosts) · Conectividade com servidor SFTP externo · Groovy Script (montagem de arquivo XML, geração de nome dinâmico) · Troubleshooting de conversão de tipos em headers
 
-**Bloco anterior:** ./17-d2-soap-adapter.md
+**Bloco anterior:** [D2 - Soap Adapter].(/17-d2-soap-adapter.md)
 
 **Próximo cenário:** *(em construção — D3_SFTP_Consumer, parte 2 deste mesmo cenário)*
 ---
