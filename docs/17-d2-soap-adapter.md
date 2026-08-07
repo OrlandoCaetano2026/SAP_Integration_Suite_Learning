@@ -18,32 +18,17 @@ O objetivo técnico do laboratório é praticar o padrão **Split → Process �
 
 ## 🏗️ Arquitetura do iFlow
 
-```
-Nota_Fiscal (Sender)
-      │ HTTPS (Address: /d2soap | Auth: User Role ESBMessaging.send)
-      ▼
-   [Start]
-      │
-      ▼
-Groovy Script 1 - Build Values List   (JSON → XML + gera execId único)
-      │
-      ▼
-General Splitter - Loop Values        (XPath: //item)
-      │
-      ▼
-Groovy Script 2 - Build SOAP Envelope (monta payload SOAP, sem envelope duplicado)
-      │
-      ▼
-Request Reply - Call SOAP             (SOAP 1.x Receiver → NumberConversion.wso)
-      │
-      ▼
-Groovy Script 3 - Extract Result      (extrai porExtenso + reagrupa dados)
-      │
-      ▼
-Gather 1                              (Aggregation Algorithm: Combine)
-      │
-      ▼
-   [End] → Resposta consolidada (multimap:Messages) ao Postman
+```mermaid
+flowchart LR
+    A[Nota_Fiscal<br/>Sender] -->|HTTPS /d2soap<br/>User Role: ESBMessaging.send| B([Start])
+    B --> C[Groovy Script 1<br/>Build Values List<br/>JSON → XML + execId]
+    C --> D[General Splitter<br/>Loop Values<br/>XPath: //item]
+    D --> E[Groovy Script 2<br/>Build SOAP Envelope]
+    E --> F[Request Reply<br/>Call SOAP<br/>NumberConversion.wso]
+    F --> G[Groovy Script 3<br/>Extract Result<br/>porExtenso]
+    G --> H[Gather 1<br/>Aggregation Algorithm: Combine]
+    H --> I([End])
+    I -->|multimap:Messages| J[Resposta 200 OK<br/>ao Postman]
 ```
 
 ---
@@ -245,53 +230,41 @@ def Message processData(Message message) {
 
 > 📁 Pasta: [`evidences/lab15`](../evidences/lab15)
 
-<details>
-<summary><strong>01 — iFlow completo + configuração do General Splitter</strong> (clique para expandir)</summary>
+### 01 — iFlow completo + configuração do General Splitter
 
 Visão geral do iFlow `D2_SOAP_Adapter` (Start → Script 1 → Splitter → Script 2 → SOAP → Script 3 → Gather → End) e a configuração do XPath `//item` no General Splitter, responsável por dividir a lista de 4 valores da Nota Fiscal em mensagens individuais para processamento paralelo.
 
-![iFlow e configuração do General Splitter](../evidences/lab15/01-iflow-general-splitter-config.png)
-</details>
+![iFlow e configuração do General Splitter](../evidences/lab15/01-iflow-d2-soap-adapter-splitter-config.png)
 
-<details>
-<summary><strong>02 — Configuração do Gather (Aggregation Strategy)</strong></summary>
+### 02 — Configuração do Gather (Aggregation Strategy)
 
 Configuração do componente `Gather 1`, responsável por consolidar as 4 respostas processadas (uma por valor da Nota Fiscal) em uma única resposta síncrona, com `Incoming Format: XML (Same Format)` e `Aggregation Algorithm: Combine`.
 
 ![Configuração do Gather 1 - Aggregation Strategy](../evidences/lab15/02-gather1-aggregation-strategy.png)
-</details>
 
-<details>
-<summary><strong>03 — Configuração da conexão SOAP (Manual, sem WSDL)</strong></summary>
+### 03 — Configuração da conexão SOAP (Manual, sem WSDL)
 
 Configuração do canal Receiver `SOAP (SOAP 1.x)` apontando para o serviço público `NumberConversion.wso`, com os campos `URL to WSDL`, `Service`, `Endpoint` e `Operation Name` intencionalmente vazios (modo manual), evitando a dependência de leitura do WSDL remoto durante o startup do iFlow.
 
-![Configuração da conexão SOAP Receiver](../evidences/lab15/03-soap-connection-config.png)
-</details>
+![Configuração da conexão SOAP Receiver](../evidences/lab15/03-soap-receiver-connection-config.png)
 
-<details>
-<summary><strong>04 — Postman: envio e resposta 200 OK enriquecida</strong></summary>
+### 04 — Postman: envio e resposta 200 OK enriquecida
 
 Requisição POST enviada ao endpoint `{{D2_SOAP_Adapter}}` com o payload da Nota Fiscal (4 valores) e resposta `200 OK` contendo os 4 resultados consolidados, cada um com o campo original, o valor numérico e a conversão `porExtenso` (idioma inglês, conforme retorno nativo do web service).
 
-![Postman - Envio e resposta 200 OK enriquecida](../evidences/lab15/04-postman-envio-200-ok.png)
-</details>
+![Postman - Envio e resposta 200 OK enriquecida](../evidences/lab15/04-postman-response-200-ok-enriched.png)
 
-<details>
-<summary><strong>05 — Monitor: fluxo de mensagens no Trace</strong></summary>
+### 05 — Monitor: fluxo de mensagens no Trace
 
 Visualização do `Integration Flow Model` no Monitor de Mensagens, mostrando o caminho percorrido pela mensagem: Start → Script 1 → Splitter → Script 2 → SOAP (call externa) → Script 3 → Gather → End, com destaque para os 4 ciclos de Splitter/SOAP/Script executados em sequência antes do fechamento pelo Gather.
 
-![Monitor - Fluxo de mensagens no Trace](../evidences/lab15/05-monitor-fluxo-mensagem-iflow.png)
-</details>
+![Monitor - Fluxo de mensagens no Trace](../evidences/lab15/05-monitor-trace-message-flow.png)
 
-<details>
-<summary><strong>06 — Message Content: resultado final enriquecido (step End)</strong></summary>
+### 06 — Message Content: resultado final enriquecido (step End)
 
 Conteúdo do payload no step `End`, confirmando que a mensagem consolidada (`multimap:Messages`) contém os 4 registros `<resultado>` com os valores convertidos por extenso, exatamente como recebido pelo Postman — validando que o `Gather` entrega corretamente a resposta ao chamador HTTP síncrono original.
 
-![Message Content - Resultado final enriquecido no End](../evidences/lab15/06-message-content-end-enriquecido.png)
-</details>
+![Message Content - Resultado final enriquecido no End](../evidences/lab15/06-message-content-end-enriched-result.png)
 
 ---
 
