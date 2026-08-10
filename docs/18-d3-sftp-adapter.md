@@ -164,7 +164,10 @@ O `End 1` se conecta ao participante `Receiver` via adapter **SFTP**, gravando o
 | `SFTPCloud_Credential` | User Credentials | Usuário/senha de acesso ao servidor SFTP |
 | `known.hosts` | SSH Known Hosts | Host key do servidor, obtido via **Connectivity Test → SSH** direto no CPI |
 
-![Configuração da conexão SFTP Receiver](../evidences/lab16/03-sftp-receiver-connection-config.png)
+<a href="../evidences/lab16/03-sftp-receiver-connection-config.png" target="_blank">
+  <img src="../evidences/lab16/03-sftp-receiver-connection-config.png" alt="Configuração da conexão SFTP Receiver" width="850"/>
+</a>
+
 *Configuração do canal Receiver SFTP: diretório de destino `/hotfolder/Inbound` e autenticação via `User Name/Password` referenciando a credencial `SFTPCloud_Credential`.*
 
 ### Passo 4 — Teste no Postman
@@ -192,22 +195,34 @@ Com o iFlow implantado, disparamos a liberação da Ordem de Produção:
 }
 ```
 
-![Postman - Envio e resposta 200 OK](../evidences/lab16/01-postman-producer-200-ok-xml.png)
+<a href="../evidences/lab16/01-postman-producer-200-ok-xml.png" target="_blank">
+  <img src="../evidences/lab16/01-postman-producer-200-ok-xml.png" alt="Postman - Envio e resposta 200 OK" width="850"/>
+</a>
+
 *Resposta `200 OK` retornando o próprio arquivo XML gerado pelo Groovy Script, confirmando que a conversão JSON → XML ocorreu com sucesso.*
 
 ### Passo 5 — Validação no Monitor (Trace)
 
 No **Monitor → Message Processing**, acompanhamos o caminho completo da mensagem:
 
-![Monitor - Fluxo de mensagens no Trace](../evidences/lab16/02-monitor-trace-message-flow.png)
+<a href="../evidences/lab16/02-monitor-trace-message-flow.png" target="_blank">
+  <img src="../evidences/lab16/02-monitor-trace-message-flow.png" alt="Monitor - Fluxo de mensagens no Trace" width="850"/>
+</a>
+
 *`Integration Flow Model` mostrando o caminho percorrido: Start → Groovy Script 1 → End 1 → SFTP, sem erros nas 5 etapas do processamento.*
 
 Analisando o conteúdo da mensagem em cada etapa, confirmamos a entrada (JSON) e a saída (XML) do Groovy Script:
 
-![Message Content - Payload JSON recebido](../evidences/lab16/04-message-content-http-request-json.png)
+<a href="../evidences/lab16/04-message-content-http-request-json.png" target="_blank">
+  <img src="../evidences/lab16/04-message-content-http-request-json.png" alt="Message Content - Payload JSON recebido" width="850"/>
+</a>
+
 *Payload JSON original da Ordem de Produção, recebido pelo Sender HTTPS antes do processamento.*
 
-![Message Content - Payload XML final antes do SFTP](../evidences/lab16/05-message-content-sftp-final-xml.png)
+<a href="../evidences/lab16/05-message-content-sftp-final-xml.png" target="_blank">
+  <img src="../evidences/lab16/05-message-content-sftp-final-xml.png" alt="Message Content - Payload XML final antes do SFTP" width="850"/>
+</a>
+
 *Payload já convertido para XML pelo Groovy Script 1, imediatamente antes de ser gravado no servidor SFTP.*
 
 ---
@@ -241,7 +256,10 @@ Segundo a documentação oficial da SAP: *"If you do not enter a file name and t
 
 Após as correções, reenviamos o teste e validamos diretamente no painel do **SFTPCloud** — uma confirmação **externa** ao CPI, reforçando a credibilidade da evidência:
 
-![SFTPCloud - Directory Activity confirmando nome de arquivo correto](../evidences/lab16/06-sftpcloud-directory-activity-confirmed.png)
+<a href="../evidences/lab16/06-sftpcloud-directory-activity-confirmed.png" target="_blank">
+  <img src="../evidences/lab16/06-sftpcloud-directory-activity-confirmed.png" alt="SFTPCloud - Directory Activity confirmando nome de arquivo correto" width="850"/>
+</a>
+
 *Log de auditoria do servidor SFTP (`Directory activity`) mostrando a evolução: o primeiro arquivo gravado com o bug (`${header.CamelFileName}`), e o arquivo seguinte já corretamente nomeado como `OP_OP-00045210_20260807_212845.xml`, confirmando a correção do File Name em branco.*
 
 ---
@@ -266,7 +284,10 @@ Diferente do Producer — onde o HTTP era o gatilho —, aqui o **próprio SFTP 
 | Authentication | `User Name/Password` |
 | Credential Name | `SFTPCloud_Credential` |
 
-![Configuração do Sender SFTP - aba Source](../evidences/lab16/07-sftp-sender-source-config.png)
+<a href="../evidences/lab16/07-sftp-sender-source-config.png" target="_blank">
+  <img src="../evidences/lab16/07-sftp-sender-source-config.png" alt="Configuração do Sender SFTP - aba Source" width="850"/>
+</a>
+
 *Configuração da aba Source do canal Sender SFTP: o filtro `File Name: OP_*.xml` garante que apenas arquivos gerados pelo Producer sejam processados, ignorando qualquer outro arquivo (como o resíduo com nome incorreto `${header.CamelFileName}` que ficou órfão na pasta durante o troubleshooting do Producer). O Directory aponta para a mesma pasta `/hotfolder/Inbound` onde o Producer grava os arquivos, fechando a ponte entre os dois iFlows.*
 
 **Aba Processing** — define o comportamento após o processamento:
@@ -280,7 +301,10 @@ Diferente do Producer — onde o HTTP era o gatilho —, aqui o **próprio SFTP 
 | Post-Processing | `Move File` |
 | Archive Directory | `/hotfolder/Processed` |
 
-![Configuração do Sender SFTP - aba Processing](../evidences/lab16/08-sftp-sender-processing-config.png)
+<a href="../evidences/lab16/08-sftp-sender-processing-config.png" target="_blank">
+  <img src="../evidences/lab16/08-sftp-sender-processing-config.png" alt="Configuração do Sender SFTP - aba Processing" width="850"/>
+</a>
+
 *Configuração da aba Processing: o campo `Post-Processing: Move File` com `Archive Directory: /hotfolder/Processed` garante que, após o processamento bem-sucedido, o arquivo seja automaticamente removido da pasta de entrada e movido para a pasta de processados — evitando reprocessamento do mesmo arquivo em ciclos futuros de polling.*
 
 **Aba Scheduler** — define a frequência do polling:
@@ -292,7 +316,10 @@ Diferente do Producer — onde o HTTP era o gatilho —, aqui o **próprio SFTP 
 | Between | `00:00` e `24:00` |
 | Time Zone | `(UTC 0:00) Greenwich Mean Time (Etc/GMT)` |
 
-![Configuração do Sender SFTP - aba Scheduler](../evidences/lab16/09-sftp-sender-scheduler-config.png)
+<a href="../evidences/lab16/09-sftp-sender-scheduler-config.png" target="_blank">
+  <img src="../evidences/lab16/09-sftp-sender-scheduler-config.png" alt="Configuração do Sender SFTP - aba Scheduler" width="850"/>
+</a>
+
 *Configuração da aba Scheduler: o iFlow verifica a pasta `/hotfolder/Inbound` a cada 10 segundos, durante as 24 horas do dia — simulando o comportamento contínuo de vigilância que um conector real de MES manteria sobre o hot folder.*
 
 ### Passo 2 — Groovy Script: Parse e Enriquecer
@@ -337,24 +364,36 @@ def Message processData(Message message) {
 
 Com o iFlow implantado (`Deployment Status: Deployed`, `Runtime Status: Started`), o polling entrou em ação automaticamente e capturou o arquivo `OP_OP-00045210_...xml` que já estava aguardando na pasta desde o teste do Producer — sem qualquer disparo manual do nosso lado.
 
-![Monitor - Fluxo de mensagens do Consumer](../evidences/lab16/10-monitor-trace-consumer-flow.png)
+<a href="../evidences/lab16/10-monitor-trace-consumer-flow.png" target="_blank">
+  <img src="../evidences/lab16/10-monitor-trace-consumer-flow.png" alt="Monitor - Fluxo de mensagens do Consumer" width="850"/>
+</a>
+
 *`Integration Flow Model` do Consumer mostrando os 3 Run Steps do processamento: `SFTP` (leitura do arquivo, 88 ms) → `Groovy Script 1` (enriquecimento, 37 ms) → `End` (1 ms), todos concluídos com sucesso. A seta pontilhada entre Sender e Start confirma que o SFTP atuou como evento de início (polling), diferente da seta sólida usada nas conexões internas do processo.*
 
 Analisando o conteúdo da mensagem **antes** do Groovy Script (ou seja, exatamente como foi lido do servidor SFTP):
 
-![Message Content - XML de entrada lido do SFTP](../evidences/lab16/11-message-content-input-order-xml.png)
+<a href="../evidences/lab16/11-message-content-input-order-xml.png" target="_blank">
+  <img src="../evidences/lab16/11-message-content-input-order-xml.png" alt="Message Content - XML de entrada lido do SFTP" width="850"/>
+</a>
+
 *Payload correspondente ao arquivo `OP_OP-00045210_...xml`, no formato original gerado pelo Producer (`<ordemProducao>` com os campos `numeroOrdem`, `material`, `quantidade`, etc.) — confirmando que o Consumer conseguiu ler corretamente o arquivo do hot folder.*
 
 E o conteúdo final, já processado pelo Groovy Script e disponível no `End`:
 
-![Message Content - XML enriquecido pelo MES](../evidences/lab16/12-message-content-output-mes-enriched.png)
+<a href="../evidences/lab16/12-message-content-output-mes-enriched.png" target="_blank">
+  <img src="../evidences/lab16/12-message-content-output-mes-enriched.png" alt="Message Content - XML enriquecido pelo MES" width="850"/>
+</a>
+
 *Payload final `<ordemProducaoMES>` contendo o `idOrdemMES` gerado (`MES-OP-00045210`), o `numeroOrdemSAP` de referência cruzada, os dados replicados da ordem original, e os dois campos de rastreabilidade adicionados pelo MES: `statusIntegracao: ORDEM_RECEBIDA_MES` e `recebidoEm: 2026-08-10T10:56:41` — essa é a mensagem que, num cenário real, seria persistida no banco de dados do MES ou usada para disparar a próxima etapa do processo produtivo.*
 
 ### Passo 5 — Confirmação externa no servidor SFTP
 
 Por fim, validamos diretamente no painel do **SFTPCloud** que o arquivo processado foi efetivamente movido da pasta de entrada para a pasta de processados, confirmando que a configuração `Post-Processing: Move File` funcionou como esperado:
 
-![SFTPCloud - Pasta Processed confirmando o arquivo movido](../evidences/lab16/13-sftpcloud-processed-folder-confirmed.png)
+<a href="../evidences/lab16/13-sftpcloud-processed-folder-confirmed.png" target="_blank">
+  <img src="../evidences/lab16/13-sftpcloud-processed-folder-confirmed.png" alt="SFTPCloud - Pasta Processed confirmando o arquivo movido" width="850"/>
+</a>
+
 *File Manager do SFTPCloud navegando até `hotfolder/Processed`, exibindo o arquivo `OP_OP-00045210_2026080...` (634 bytes) já movido para essa pasta pelo Consumer. O painel `Directory activity` (log de auditoria do próprio servidor, independente do CPI) registra o evento `mkdir` de criação da pasta `hotfolder/Processed`, reforçando — com uma fonte externa ao SAP — que o ciclo completo Producer → hot folder → Consumer → arquivo processado funcionou de ponta a ponta.*
 
 ---
