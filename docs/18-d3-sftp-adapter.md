@@ -2,8 +2,8 @@
 
 > **Bloco:** D — Padrões de Integração Avançados
 > **Cenário:** D3_SFTP_Producer + D3_SFTP_Consumer (2 iFlows independentes)
-> **Status:** ✅ Producer concluído e testado | ⏳ Consumer em construção
-> **Data de execução:** 07/08/2026
+> **Status:** ✅ Concluído e testado de ponta a ponta
+> **Data de execução:** 07 e 10/08/2026
 
 ---
 
@@ -27,12 +27,13 @@ O CPI atua como cliente e **grava** um arquivo em um servidor SFTP remoto — no
 
 ```mermaid
 flowchart LR
-    A[Sistema de Origem] -->|dispara o iFlow| B[iFlow CPI]
-    B -->|Groovy/Mapping<br/>monta o arquivo| C[SFTP Receiver<br/>Write File]
-    C -->|grava| D[("Servidor SFTP<br/>pasta de destino")]
-    D -.arquivo disponível.-> E[Sistema Consumidor<br/>ex: MES, parceiro B2B]
+    A["Sistema de Origem"] -->|"dispara o iFlow"| B["iFlow CPI"]
+    B -->|"Groovy - monta o arquivo"| C["SFTP Receiver - Write File"]
+    C -->|"grava"| D["Servidor SFTP - pasta de destino"]
+    D -->|"arquivo disponivel"| E["Sistema Consumidor - ex MES parceiro B2B"]
 ```
-**Uso típico:** SAP gera um arquivo (nota fiscal, ordem de produção, catálogo) e entrega para um parceiro ou MES externo buscar. **É o padrão que implementamos no D3_SFTP_Producer.**
+
+**Uso típico:** SAP gera um arquivo (nota fiscal, ordem de produção, catálogo) e entrega para um parceiro ou MES externo buscar. **É o padrão implementado no D3_SFTP_Producer.**
 
 ### 2️⃣ Sender SFTP (o CPI **lê** arquivos via polling)
 
@@ -40,12 +41,13 @@ O CPI atua como cliente também, mas nessa direção ele **verifica periodicamen
 
 ```mermaid
 flowchart LR
-    A[("Servidor SFTP<br/>pasta monitorada")] -.polling a cada N segundos.-> B[SFTP Sender<br/>Start Event]
-    B --> C[iFlow CPI<br/>processa o arquivo]
-    C --> D[Move para /processado<br/>ou deleta]
-    C --> E[Sistema de Destino<br/>ex: ERP, banco de dados]
+    A["Servidor SFTP - pasta monitorada"] -->|"polling a cada N segundos"| B["SFTP Sender - Start Event"]
+    B --> C["iFlow CPI processa o arquivo"]
+    C --> D["Move para processado ou deleta"]
+    C --> E["Sistema de Destino - ex ERP banco de dados"]
 ```
-**Uso típico:** MES gera confirmações de produção em arquivo, e o CPI periodicamente as busca para atualizar o SAP. **É o padrão que vamos implementar no D3_SFTP_Consumer.**
+
+**Uso típico:** MES gera confirmações de produção em arquivo, e o CPI periodicamente as busca para atualizar o SAP. **É o padrão implementado no D3_SFTP_Consumer.**
 
 ### 3️⃣ Poll Enrich + SFTP (leitura sob demanda, no meio do fluxo)
 
@@ -53,12 +55,13 @@ Um padrão mais moderno: em vez do SFTP ser o gatilho do processo, ele é usado 
 
 ```mermaid
 flowchart LR
-    A[Trigger externo<br/>ex: Postman/HTTP] --> B[Content Modifier<br/>define nome do arquivo]
-    B --> C[Poll Enrich<br/>SFTP]
-    C -.busca arquivo especifico.-> D[("Servidor SFTP")]
-    C --> E[Mensagem enriquecida<br/>com conteúdo do arquivo]
+    A["Trigger externo - ex Postman HTTP"] --> B["Content Modifier - define nome do arquivo"]
+    B --> C["Poll Enrich SFTP"]
+    C -->|"busca arquivo especifico"| D["Servidor SFTP"]
+    C --> E["Mensagem enriquecida com conteudo do arquivo"]
 ```
-**Uso típico:** buscar uma tabela de referência ou configuração específica sob demanda, sem manter um polling constante.
+
+**Uso típico:** buscar uma tabela de referência ou configuração específica sob demanda, sem manter um polling constante. Não implementado neste laboratório, mas documentado aqui como referência conceitual.
 
 > 💡 **Por que 2 iFlows separados?** Cada iFlow tem apenas **um** evento de início (Start Event). Como o Producer é disparado por **HTTP** (sob demanda) e o Consumer é disparado por **SFTP Polling** (automático, contínuo), não é possível combinar os dois no mesmo iFlow — isso reflete exatamente a realidade de dois sistemas fisicamente diferentes (SAP e MES), cada um com seu próprio ciclo de processamento.
 
@@ -67,19 +70,17 @@ flowchart LR
 ## 🏗️ Arquitetura completa do cenário D3
 
 ```mermaid
-flowchart TB 
-    A["Postman - POST Ordem de Producao"] -->|"HTTPS"| B(["Start Producer"]) 
-    B --> C["Groovy Script 1 - Build Order File"] 
-    C --> D(["End 1"]) 
-    D -->|"SFTP Receiver"| E["Write File"] 
-    E -->|"grava arquivo XML"| S["Servidor SFTP - SFTPCloud - hotfolder Inbound"] 
-    S -->|"SFTP Sender - Polling"| F(["Start Consumer"]) 
-    F --> G["Groovy Script - Parse e Enriquecer"] 
-    G --> H(["End Consumer"]) 
+flowchart TB
+    A["Postman - POST Ordem de Producao"] -->|"HTTPS"| B(["Start Producer"])
+    B --> C["Groovy Script 1 - Build Order File"]
+    C --> D(["End 1"])
+    D -->|"SFTP Receiver"| E["Write File"]
+    E -->|"grava arquivo XML"| S["Servidor SFTP - SFTPCloud - hotfolder Inbound"]
+    S -->|"SFTP Sender - Polling"| F(["Start Consumer"])
+    F --> G["Groovy Script - Parse e Enriquecer"]
+    G --> H(["End Consumer"])
     H -->|"move arquivo"| M["hotfolder Processed"]
 ```
-
-
 
 ---
 
@@ -142,8 +143,6 @@ def Message processData(Message message) {
     return message
 }
 ```
-
-> ⚠️ Repare no `.toString()` na linha do `fileName` — voltaremos a esse ponto na seção de Troubleshooting, pois essa correção só foi identificada depois do primeiro teste real.
 
 ### Passo 3 — SFTP Receiver: Write File
 
@@ -213,7 +212,7 @@ Analisando o conteúdo da mensagem em cada etapa, confirmamos a entrada (JSON) e
 
 ---
 
-## 🔍 Troubleshooting & Lições Aprendidas
+## 🔍 Troubleshooting & Lições Aprendidas — Producer
 
 ### 1. `GStringImpl cannot be cast to class java.lang.String` (erro no header, não no body)
 
@@ -224,42 +223,170 @@ Analisando o conteúdo da mensagem em cada etapa, confirmamos a entrada (JSON) e
 def fileName = "OP_${op.numeroOrdem}_${timestamp}.xml".toString()
 ```
 
-> 💡 **Nota conceitual para o portfólio**: a regra "sempre finalizar com `.toString()` valores montados por interpolação de string" vale tanto para `message.setBody(...)` quanto para `message.setHeader(...)` — qualquer ponto onde o Camel/CPI espera um `java.lang.String` real pode falhar com `GStringImpl`.
-
 ### 2. Nome do arquivo gravado literalmente como `${header.CamelFileName}`
 
 **Causa:** mesmo após corrigir o `.toString()`, o primeiro teste no servidor SFTP revelou um segundo problema: o campo **File Name** do canal Receiver estava preenchido manualmente com o texto `${header.CamelFileName}`, mas o adapter **gravou esse texto literal** como nome do arquivo, em vez de resolver a expressão.
 
-Segundo a documentação oficial da SAP:
-> *"If you do not enter a file name and the parameter remains blank, the content of the CamelFileName header is used as file name."*
+Segundo a documentação oficial da SAP: *"If you do not enter a file name and the parameter remains blank, the content of the CamelFileName header is used as file name."*
 
-**Solução:** deixar o campo **File Name** completamente **vazio** no canal SFTP Receiver — o CPI usa automaticamente o header `CamelFileName` já definido no Groovy Script, sem precisar (e sem dever) escrever a expressão manualmente nesse campo.
+**Solução:** deixar o campo **File Name** completamente **vazio** no canal SFTP Receiver — o CPI usa automaticamente o header `CamelFileName` já definido no Groovy Script.
 
 ### 3. Conexão de linha direta entre Script e Receiver não é permitida
 
 **Causa:** ao tentar conectar o `Groovy Script 1` diretamente ao participante `Receiver` (sem um elemento `End` entre eles), o editor do CPI não permite finalizar a conexão.
 
-**Solução:** todo processo do Integration Process deve terminar em um elemento **`End`** antes de se conectar a um adapter externo (Receiver): `... → Groovy Script → End → (Adapter) → Receiver`, confirmado também no cenário `C3_Producer` (JMS) já documentado anteriormente no projeto.
+**Solução:** todo processo do Integration Process deve terminar em um elemento **`End`** antes de se conectar a um adapter externo (Receiver): `... → Groovy Script → End → (Adapter) → Receiver`.
 
 ### Confirmação final — arquivo corretamente nomeado no servidor
 
 Após as correções, reenviamos o teste e validamos diretamente no painel do **SFTPCloud** — uma confirmação **externa** ao CPI, reforçando a credibilidade da evidência:
 
 ![SFTPCloud - Directory Activity confirmando nome de arquivo correto](../evidences/lab16/06-sftpcloud-directory-activity-confirmed.png)
-*Log de auditoria do servidor SFTP (`Directory activity`) mostrando a evolução: o primeiro arquivo (`upload`/`first-upload`) gravado com o bug (`${header.CamelFileName}`), e o arquivo seguinte (`upload`) já corretamente nomeado como `OP_OP-00045210_20260807_212845.xml`, confirmando a correção do File Name em branco.*
+*Log de auditoria do servidor SFTP (`Directory activity`) mostrando a evolução: o primeiro arquivo gravado com o bug (`${header.CamelFileName}`), e o arquivo seguinte já corretamente nomeado como `OP_OP-00045210_20260807_212845.xml`, confirmando a correção do File Name em branco.*
 
 ---
 
-## ⏭️ Próxima etapa: D3_SFTP_Consumer
+## 🔧 D3_SFTP_Consumer — Implementação Passo a Passo
 
-Com o Producer validado de ponta a ponta (incluindo a confirmação externa no servidor SFTP), o próximo passo é implementar o segundo iFlow do cenário: **D3_SFTP_Consumer**, que irá:
+Com o Producer validado de ponta a ponta, avançamos para o segundo iFlow do cenário: o **Consumer**, que simula o sistema MES monitorando o hot folder e processando automaticamente cada Ordem de Produção recebida.
 
-1. Usar o **Sender SFTP** com polling periódico na pasta `/hotfolder/Inbound`, filtrando arquivos `OP_*.xml`
-2. Ler o arquivo XML da Ordem de Produção gravado pelo Producer
-3. Processar via Groovy, simulando a "geração da ordem no MES" (enriquecendo com `statusIntegracao: ORDEM_RECEBIDA_MES`, `recebidoEm`, `idOrdemMES`)
-4. Mover o arquivo processado para `/hotfolder/Processed`, evitando reprocessamento
+### Passo 1 — Sender SFTP (Start Event via Polling)
 
-*(Seção a ser complementada após a implementação e testes do Consumer.)*
+Diferente do Producer — onde o HTTP era o gatilho —, aqui o **próprio SFTP é quem inicia o processo**. O CPI assume o papel de cliente que fica verificando periodicamente a pasta do hot folder, sem depender de nenhum disparo externo (Postman, por exemplo).
+
+**Aba Source** — define de onde e quais arquivos ler:
+
+| Campo | Valor |
+|---|---|
+| Directory | `/hotfolder/Inbound` |
+| Regex Filtering | Desmarcado |
+| File Name | `OP_*.xml` |
+| Address | `us-east-1.sftpcloud.io:22` |
+| Proxy Type | `Internet` |
+| Authentication | `User Name/Password` |
+| Credential Name | `SFTPCloud_Credential` |
+
+![Configuração do Sender SFTP - aba Source](../evidences/lab16/07-sftp-sender-source-config.png)
+*Configuração da aba Source do canal Sender SFTP: o filtro `File Name: OP_*.xml` garante que apenas arquivos gerados pelo Producer sejam processados, ignorando qualquer outro arquivo (como o resíduo com nome incorreto `${header.CamelFileName}` que ficou órfão na pasta durante o troubleshooting do Producer). O Directory aponta para a mesma pasta `/hotfolder/Inbound` onde o Producer grava os arquivos, fechando a ponte entre os dois iFlows.*
+
+**Aba Processing** — define o comportamento após o processamento:
+
+| Campo | Valor |
+|---|---|
+| Read Lock Strategy | `None` |
+| Empty File Handling | `Process Empty File` |
+| Max. Messages per Poll | `20` |
+| Lock Timeout (in min) | `15` |
+| Post-Processing | `Move File` |
+| Archive Directory | `/hotfolder/Processed` |
+
+![Configuração do Sender SFTP - aba Processing](../evidences/lab16/08-sftp-sender-processing-config.png)
+*Configuração da aba Processing: o campo `Post-Processing: Move File` com `Archive Directory: /hotfolder/Processed` garante que, após o processamento bem-sucedido, o arquivo seja automaticamente removido da pasta de entrada e movido para a pasta de processados — evitando reprocessamento do mesmo arquivo em ciclos futuros de polling.*
+
+**Aba Scheduler** — define a frequência do polling:
+
+| Campo | Valor |
+|---|---|
+| Schedule to Recur | `Daily` |
+| Every | `10 sec` |
+| Between | `00:00` e `24:00` |
+| Time Zone | `(UTC 0:00) Greenwich Mean Time (Etc/GMT)` |
+
+![Configuração do Sender SFTP - aba Scheduler](../evidences/lab16/09-sftp-sender-scheduler-config.png)
+*Configuração da aba Scheduler: o iFlow verifica a pasta `/hotfolder/Inbound` a cada 10 segundos, durante as 24 horas do dia — simulando o comportamento contínuo de vigilância que um conector real de MES manteria sobre o hot folder.*
+
+### Passo 2 — Groovy Script: Parse e Enriquecer
+
+Este script lê o XML da Ordem de Produção (gerado pelo Producer), faz o parse do conteúdo e simula a confirmação de recebimento pelo MES, adicionando três campos de rastreabilidade: um identificador próprio do MES (`idOrdemMES`), o status da integração e o timestamp de recebimento.
+
+```groovy
+import com.sap.gateway.ip.core.customdev.util.Message
+import groovy.util.XmlSlurper
+
+def Message processData(Message message) {
+    def body = message.getBody(String)
+    def op = new XmlSlurper().parseText(body)
+
+    def recebidoEm = new Date().format("yyyy-MM-dd'T'HH:mm:ss")
+    def idOrdemMES = "MES-${op.numeroOrdem.text()}".toString()
+
+    def sb = new StringBuilder()
+    sb.append("<ordemProducaoMES>")
+    sb.append("<idOrdemMES>${idOrdemMES}</idOrdemMES>")
+    sb.append("<numeroOrdemSAP>${op.numeroOrdem.text()}</numeroOrdemSAP>")
+    sb.append("<material>${op.material.text()}</material>")
+    sb.append("<descricaoMaterial>${op.descricaoMaterial.text()}</descricaoMaterial>")
+    sb.append("<quantidade>${op.quantidade.text()}</quantidade>")
+    sb.append("<centroTrabalho>${op.centroTrabalho.text()}</centroTrabalho>")
+    sb.append("<statusIntegracao>ORDEM_RECEBIDA_MES</statusIntegracao>")
+    sb.append("<recebidoEm>${recebidoEm}</recebidoEm>")
+    sb.append("</ordemProducaoMES>")
+
+    message.setBody(sb.toString())
+    message.setHeader("Content-Type", "application/xml")
+
+    return message
+}
+```
+
+### Passo 3 — Conectar os elementos
+
+`Sender → (SFTP) → Start → Groovy Script 1 → End`, sem adapter de saída — esse iFlow apenas consome, processa e finaliza, não precisando de um `Receiver` externo.
+
+### Passo 4 — Validação no Monitor (Trace)
+
+Com o iFlow implantado (`Deployment Status: Deployed`, `Runtime Status: Started`), o polling entrou em ação automaticamente e capturou o arquivo `OP_OP-00045210_...xml` que já estava aguardando na pasta desde o teste do Producer — sem qualquer disparo manual do nosso lado.
+
+![Monitor - Fluxo de mensagens do Consumer](../evidences/lab16/10-monitor-trace-consumer-flow.png)
+*`Integration Flow Model` do Consumer mostrando os 3 Run Steps do processamento: `SFTP` (leitura do arquivo, 88 ms) → `Groovy Script 1` (enriquecimento, 37 ms) → `End` (1 ms), todos concluídos com sucesso. A seta pontilhada entre Sender e Start confirma que o SFTP atuou como evento de início (polling), diferente da seta sólida usada nas conexões internas do processo.*
+
+Analisando o conteúdo da mensagem **antes** do Groovy Script (ou seja, exatamente como foi lido do servidor SFTP):
+
+![Message Content - XML de entrada lido do SFTP](../evidences/lab16/11-message-content-input-order-xml.png)
+*Payload correspondente ao arquivo `OP_OP-00045210_...xml`, no formato original gerado pelo Producer (`<ordemProducao>` com os campos `numeroOrdem`, `material`, `quantidade`, etc.) — confirmando que o Consumer conseguiu ler corretamente o arquivo do hot folder.*
+
+E o conteúdo final, já processado pelo Groovy Script e disponível no `End`:
+
+![Message Content - XML enriquecido pelo MES](../evidences/lab16/12-message-content-output-mes-enriched.png)
+*Payload final `<ordemProducaoMES>` contendo o `idOrdemMES` gerado (`MES-OP-00045210`), o `numeroOrdemSAP` de referência cruzada, os dados replicados da ordem original, e os dois campos de rastreabilidade adicionados pelo MES: `statusIntegracao: ORDEM_RECEBIDA_MES` e `recebidoEm: 2026-08-10T10:56:41` — essa é a mensagem que, num cenário real, seria persistida no banco de dados do MES ou usada para disparar a próxima etapa do processo produtivo.*
+
+### Passo 5 — Confirmação externa no servidor SFTP
+
+Por fim, validamos diretamente no painel do **SFTPCloud** que o arquivo processado foi efetivamente movido da pasta de entrada para a pasta de processados, confirmando que a configuração `Post-Processing: Move File` funcionou como esperado:
+
+![SFTPCloud - Pasta Processed confirmando o arquivo movido](../evidences/lab16/13-sftpcloud-processed-folder-confirmed.png)
+*File Manager do SFTPCloud navegando até `hotfolder/Processed`, exibindo o arquivo `OP_OP-00045210_2026080...` (634 bytes) já movido para essa pasta pelo Consumer. O painel `Directory activity` (log de auditoria do próprio servidor, independente do CPI) registra o evento `mkdir` de criação da pasta `hotfolder/Processed`, reforçando — com uma fonte externa ao SAP — que o ciclo completo Producer → hot folder → Consumer → arquivo processado funcionou de ponta a ponta.*
+
+---
+
+## 🔍 Troubleshooting & Lições Aprendidas — Consumer
+
+### `MissingPropertyException: No such property: LocalDateTime`
+
+**Causa:** ao colar o código do Groovy Script em formato de texto puro (sem os delimitadores de bloco de código), as linhas de `import` do início do script (incluindo `java.time.LocalDateTime` e `java.time.format.DateTimeFormatter`) acabaram se perdendo na colagem, restando apenas o corpo da função. Sem o import, a classe `LocalDateTime` deixou de ser reconhecida, gerando o erro em **14 tentativas consecutivas** de polling (uma a cada ciclo de 10 segundos).
+
+**Solução:** reescrever o script eliminando a dependência de `java.time` e usando a API nativa e mais simples do Groovy/JDK para data, que não exige importação adicional:
+```groovy
+def recebidoEm = new Date().format("yyyy-MM-dd'T'HH:mm:ss")
+```
+
+> 💡 **Nota conceitual para o portfólio**: sempre que colar um script Groovy inteiro em uma ferramenta de chat ou editor de texto simples, revisar atentamente as primeiras linhas (imports) e a última linha (`return message`) — são os trechos mais suscetíveis a se perderem em copy-paste sem os marcadores de bloco de código.
+
+### Arquivo órfão com nome inválido nunca é processado (comportamento esperado, não é bug)
+
+Durante os testes, um arquivo remanescente do troubleshooting do Producer (`${header.CamelFileName}`, sem extensão `.xml` válida e fora do padrão `OP_*`) permaneceu na pasta `/hotfolder/Inbound` indefinidamente. Isso é o comportamento **correto**: o filtro `File Name: OP_*.xml` do Sender SFTP garante que apenas arquivos que sigam o padrão de nomenclatura esperado sejam capturados pelo polling, evitando que arquivos indevidos ou corrompidos sejam processados. A limpeza desse tipo de arquivo deve ser feita manualmente (ou via uma rotina de limpeza periódica, fora do escopo deste laboratório).
+
+---
+
+## ✅ Conclusão
+
+O cenário D3 cobriu de ponta a ponta a **integração de arquivos via SFTP**, simulando a liberação de uma Ordem de Produção no SAP e sua entrega e confirmação de recebimento por um sistema MES via hot folder — um padrão real e amplamente utilizado na indústria quando não há interface RFC/IDoc nativa disponível. Foram implementados dois iFlows independentes (Producer e Consumer), refletindo a arquitetura real de dois sistemas distintos operando de forma assíncrona através de um ponto de integração compartilhado (o servidor SFTP).
+
+**Recursos praticados:** SFTP Receiver Adapter · SFTP Sender Adapter com Polling · Post-Processing (Move File) · Security Material (User Credentials + SSH Known Hosts) · Conectividade com servidor SFTP externo · Groovy Script (montagem e parse de arquivo XML, geração de nome dinâmico, enriquecimento de mensagem) · Troubleshooting de conversão de tipos em headers e de imports Groovy
+
+**Bloco anterior:** ./17-d2-soap-adapter.md
+
+**Próximo cenário:** ./19-d4-processdirect.md
 
 ---
 
@@ -268,17 +395,6 @@ Com o Producer validado de ponta a ponta (incluindo a confirmação externa no s
 - **SAP Integration Suite** (Cloud Integration – Trial)
 - **Postman** (collection `D3_SFTP_Producer`, variáveis `{{base_url}}`/`{{clientid}}`/`{{clientsecret}}`)
 - **SFTPCloud** — servidor SFTP gratuito de teste (7 dias, sem cartão de crédito) — [sftpcloud.io](https://sftpcloud.io/)
----
-
-## ✅ Conclusão
-
-O cenário D3 introduziu a **integração de arquivos via SFTP**, simulando a liberação de uma Ordem de Produção no SAP e sua entrega para um sistema MES via hot folder — um padrão real e amplamente utilizado na indústria quando não há interface RFC/IDoc nativa disponível.
-
-**Recursos praticados:** SFTP Receiver Adapter · Security Material (User Credentials + SSH Known Hosts) · Conectividade com servidor SFTP externo · Groovy Script (montagem de arquivo XML, geração de nome dinâmico) · Troubleshooting de conversão de tipos em headers
-
-**Bloco anterior:** [D2 - Soap Adapter](./17-d2-soap-adapter.md)
-
-**Próximo cenário:** [D3_SFTP_Consumer](./19-d4-processdirect.md)
 
 ---
 
