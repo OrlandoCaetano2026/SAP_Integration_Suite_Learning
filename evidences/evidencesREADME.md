@@ -1,10 +1,8 @@
-# 📸 Evidências — SAP Integration Suite Learning
+## 📸 Evidências — SAP Integration Suite Learning
 
-Índice das evidências de execução (prints de monitoramento, payloads, Postman, destinos e vídeos), organizado por bloco. Cada pasta `labXX` corresponde a um cenário documentado em [`docs/`](../docs/).
+Índice das evidências de execução (prints de monitoramento, payloads, Postman, destinos e vídeos), organizado por bloco. Cada pasta labXX corresponde a um cenário documentado em [docs/](../docs/).
 
----
-
-## 🅰️ Bloco A — CPI Fundamentos
+### Ⓐ Bloco A — CPI Fundamentos
 
 | Lab | Cenário | Evidências | Doc |
 |---|---|---|---|
@@ -13,9 +11,7 @@
 | lab03 | A3 — Message Mapping | [pasta](./lab03) | [doc](../docs/05-a3-message-mapping.md) |
 | lab04 | A4 — Groovy Script | [pasta](./lab04) | [doc](../docs/06-a4-groovy-script.md) |
 
----
-
-## 🅱️ Bloco B — Padrões de Integração
+### Ⓑ Bloco B — Padrões de Integração
 
 | Lab | Cenário | Evidências | Doc |
 |---|---|---|---|
@@ -25,9 +21,7 @@
 | lab08 | B4 — Aggregator | [pasta](./lab08) | [doc](../docs/10-b4-aggregator.md) |
 | lab09 | B5 — Multicast | [pasta](./lab09) | [doc](../docs/11-b5-multicast.md) |
 
----
-
-## 🇨 Bloco C — Resiliência e Erros
+### Ⓒ Bloco C — Resiliência e Erros
 
 | Lab | Cenário | Evidências | Doc |
 |---|---|---|---|
@@ -36,16 +30,15 @@
 | lab12 | C3 — Dead Letter (JMS) | [pasta](./lab12) | [doc](../docs/14-c3-dead-letter.md) |
 | lab13 | C4 — Data Store & Idempotência | [pasta](./lab13) | [doc](../docs/15-c4-data-store.md) |
 
----
-
-## 🇩 Bloco D — Conectividade / Adapters
+### Ⓓ Bloco D — Conectividade / Adapters
 
 | Lab | Cenário | Evidências | Doc |
 |---|---|---|---|
 | lab14 | D1 — OData Adapter | [pasta](./lab14) | [doc](../docs/16-d1-odata-adapter.md) |
+| lab15 | D2 — SOAP Adapter | [pasta](./lab15) | [doc](../docs/17-d2-soap-adapter.md) |
+| lab16 | D3 — SFTP Adapter (Producer + Consumer) | [pasta](./lab16) | [doc](../docs/18-d3-sftp-adapter.md) |
+| lab17 | D4 — ProcessDirect + JDBC | [pasta](./lab17) | [doc](../docs/19-d4-processdirect.md) |
 
----
+💡 **Convenção de nomes:** os arquivos seguem a ordem narrativa do cenário (ex.: 01-iflow, 02-postman, 03-...), com dados sensíveis (URLs de tenant, credenciais, headers de rastreamento) borrados antes do commit.
 
-> 💡 **Convenção de nomes:** os arquivos seguem a ordem narrativa do cenário (ex.: `01-iflow`, `02-postman`, `03-...`), com dados sensíveis (URLs de tenant, credenciais, headers de rastreamento) borrados antes do commit.
-
-> 📌 Voltar para o [README principal do projeto](../README.md)
+📌 Voltar para o [README principal do projeto](../README.md)

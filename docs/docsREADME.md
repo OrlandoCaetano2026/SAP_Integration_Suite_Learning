@@ -1,19 +1,15 @@
-# 📚 Documentação — SAP Integration Suite Learning
+## 📚 Documentação — SAP Integration Suite Learning
 
 Índice da documentação técnica do projeto, organizado por bloco de cenários. Cada documento descreve objetivo, arquitetura, passo a passo, troubleshooting e evidências do laboratório correspondente.
 
----
-
-## 🧩 Base conceitual
+### 🧩 Base conceitual
 
 | Doc | Conteúdo |
 |---|---|
 | [01 — Ambiente SAP BTP](./01-ambiente-btp.md) | Estrutura do ambiente, capabilities e autenticação |
 | [02 — Cloud Integration (CPI) Básico](./02-cloud-integration-basics.md) | Conceitos fundamentais de iFlows, adapters e monitoramento |
 
----
-
-## 🅰️ Bloco A — CPI Fundamentos
+### Ⓐ Bloco A — CPI Fundamentos
 
 | Cenário | Doc | Descrição |
 |---|---|---|
@@ -22,9 +18,7 @@
 | A3 | [05 — Message Mapping (JSON → XML)](./05-a3-message-mapping.md) | Transformação de estrutura e formato |
 | A4 | [06 — Groovy Script](./06-a4-groovy-script.md) | Lógica de negócio e enriquecimento |
 
----
-
-## 🅱️ Bloco B — Padrões de Integração
+### Ⓑ Bloco B — Padrões de Integração
 
 | Cenário | Doc | Descrição |
 |---|---|---|
@@ -34,9 +28,7 @@
 | B4 | [10 — Aggregator](./10-b4-aggregator.md) | Consolidação de mensagens (CamelSplitComplete) |
 | B5 | [11 — Multicast](./11-b5-multicast.md) | Distribuição simultânea (MES/PLM/ERP) |
 
----
-
-## 🇨 Bloco C — Resiliência e Erros
+### Ⓒ Bloco C — Resiliência e Erros
 
 | Cenário | Doc | Descrição |
 |---|---|---|
@@ -45,28 +37,24 @@
 | C3 | [14 — Dead Letter (JMS)](./14-c3-dead-letter.md) | Guaranteed delivery, retry assíncrono, dead letter |
 | C4 | [15 — Data Store & Idempotência](./15-c4-data-store.md) | Deduplicação (Data Store + Idempotent Process Call) |
 
----
-
-## 🇩 Bloco D — Conectividade / Adapters
+### Ⓓ Bloco D — Conectividade / Adapters
 
 | Cenário | Doc | Descrição |
 |---|---|---|
 | D1 | [16 — OData Adapter](./16-d1-odata-adapter.md) | Query dinâmica ao OData V4 (Northwind) |
-| D2 | _em breve_ | SOAP Adapter |
-| D3 | _em breve_ | SFTP Adapter |
-| D4 | _em breve_ | ProcessDirect |
+| D2 | [17 — SOAP Adapter](./17-d2-soap-adapter.md) | Integração com Web Service SOAP externo (Split/Gather) |
+| D3 | [18 — SFTP Adapter](./18-d3-sftp-adapter.md) | Integração de arquivos via hot folder (Producer/Consumer) |
+| D4 | [19 — ProcessDirect + JDBC](./19-d4-processdirect.md) | Comunicação interna entre iFlows + validação de fornecedor via banco de dados |
 
----
+> 💡 O cenário **D5 — JDBC Adapter**, originalmente planejado separadamente, foi incorporado ao **D4**, que já cobre ProcessDirect + JDBC de forma integrada e realista.
 
-## 🔜 Próximos blocos
+### 🔜 Próximos blocos
 
 | Bloco | Tema |
 |---|---|
-| E | API Management (Proxy, Policies, OAuth, Developer Portal) |
-| F | Segurança (CSRF real, Client Certificate, OAuth 2.0, Keystore) |
-| G | Cenários SAP MM / PP / QM |
-| H | Event-Driven e End-to-End |
+| Ⓔ E | API Management (Proxy, Policies, OAuth, Developer Portal) |
+| Ⓕ F | Segurança (CSRF real, Client Certificate, OAuth 2.0, Keystore) |
+| Ⓖ G | Cenários SAP MM / PP / QM |
+| Ⓗ H | Event-Driven e End-to-End |
 
----
-
-> 📌 Voltar para o [README principal do projeto](../README.md)
+📌 Voltar para o [README principal do projeto](../README.md)
