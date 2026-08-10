@@ -1,74 +1,74 @@
-# 🔗 D4 — ProcessDirect Adapter (Internal iFlow-to-iFlow Communication)
+# 🔗 D4 — ProcessDirect Adapter (Comunicação Interna entre iFlows)
 
-> **Block:** D — Advanced Integration Patterns
-> **Scenario:** D4_ProcessDirect_Main + D4_ProcessDirect_VendorValidation (2 independent iFlows)
-> **Status:** ✅ Completed and tested end-to-end (3 business scenarios validated)
-> **Execution date:** 10/08/2026
+> **Bloco:** D — Padrões de Integração Avançados
+> **Cenário:** D4_ProcessDirect_Main + D4_ProcessDirect_VendorValidation (2 iFlows independentes)
+> **Status:** ✅ Concluído e testado de ponta a ponta (3 cenários de negócio validados)
+> **Data de execução:** 10/08/2026
 
 ---
 
-## 📌 Business Context
+## 📌 Contexto de Negócio
 
-This scenario simulates the **creation of a Purchase Order in SAP MM**, applying two real-world vendor validation rules before allowing the order to proceed — exactly as SAP does natively when a quotation or purchase order is created:
+Este cenário simula a **criação de um Pedido de Compras no SAP MM**, aplicando duas regras reais de validação de fornecedor antes de permitir que o pedido siga adiante — exatamente como o SAP faz nativamente ao criar uma cotação ou pedido de compras:
 
 > *"When a quotation or purchase order is created, the system checks whether a quality info record is required and available for the combination of material and vendor. The system also checks whether the vendor and material-vendor combination is blocked or released."*
 
-Two distinct blocking mechanisms were simulated, both real SAP concepts:
+Foram simulados dois mecanismos distintos de bloqueio, ambos conceitos reais do SAP:
 
-1. **Purchasing Block** — vendor blocked at the Purchasing Organization level (`LFM1-SPERM` field in the vendor master record).
-2. **Quality Block (Quality Info Record / QIR)** — vendor blocked for quality reasons for a specific material, reproducing the real SAP error message **"Vendor blocked for quality reasons, Message no. 06884"**, controlled via transactions `QI01`/`QI02`.
+1. **Bloqueio de Compras (Purchasing Block)** — fornecedor bloqueado a nível de Organização de Compras (campo `LFM1-SPERM` no cadastro do fornecedor).
+2. **Bloqueio de Qualidade (Quality Info Record / QIR)** — fornecedor bloqueado por qualidade para um material específico, reproduzindo a mensagem real do SAP **"Vendor blocked for quality reasons, Message no. 06884"**, controlada via transações `QI01`/`QI02`.
 
-Instead of hardcoding these rules inside a Groovy Script, the validation logic was isolated into a **separate, reusable iFlow** that queries a real external database (PostgreSQL, hosted on Neon) — reflecting how, in real projects, this kind of shared business rule is typically centralized and reused across multiple integration flows.
+Em vez de fixar essas regras dentro de um Groovy Script, a lógica de validação foi isolada em um **iFlow separado e reutilizável**, que consulta um banco de dados externo real (PostgreSQL, hospedado no Neon) — refletindo como, em projetos reais, esse tipo de regra de negócio compartilhada costuma ser centralizada e reutilizada por múltiplos fluxos de integração.
 
-> 💡 **Scope note:** originally, a dedicated **D5 — JDBC Adapter** scenario was planned separately. Since this scenario already combines **ProcessDirect + JDBC** in a realistic, robust way, D5 was merged into D4, and the project roadmap was updated accordingly (no standalone D5 scenario going forward).
+> 💡 **Observação de escopo:** originalmente, havia um cenário **D5 — JDBC Adapter** planejado separadamente. Como este cenário já combina **ProcessDirect + JDBC** de forma realista e robusta, o D5 foi incorporado ao D4, e o roadmap do projeto foi atualizado — não haverá mais um cenário D5 isolado.
 
 ---
 
-## 🧠 Concept: What is the ProcessDirect Adapter?
+## 🧠 Conceito: O que é o ProcessDirect Adapter?
 
-Unlike every other adapter used so far in this project (HTTP, SOAP, SFTP, JMS) — which handle **external** communication (outside the CPI tenant) — **ProcessDirect** is an **internal-only** adapter, exclusive to communication **between iFlows within the same tenant**. It allows one iFlow to call another as if it were a reusable sub-routine, **synchronously**, without the message ever leaving the CPI runtime (no real HTTP call, no external network hop).
+Diferente de todos os adapters usados até agora neste projeto (HTTP, SOAP, SFTP, JMS) — que lidam com comunicação **externa** (fora do tenant CPI) — o **ProcessDirect** é um adapter **exclusivamente interno**, usado apenas para comunicação **entre iFlows dentro do mesmo tenant**. Ele permite que um iFlow chame outro como se fosse uma sub-rotina reutilizável, de forma **síncrona**, sem que a mensagem saia do runtime do CPI (não é uma chamada HTTP real, não passa por rede externa).
 
 ```mermaid
 flowchart LR
-    A["External Sender - HTTP Postman"] --> B(["Start - Main iFlow"])
-    B --> C["Business Logic"]
-    C -->|"ProcessDirect - Request Reply"| D(["Start - Utility iFlow"])
-    D --> E["Reusable Logic - e.g. Validation"]
-    E --> F(["End - Utility iFlow"])
-    F -->|"Response returns automatically"| C
-    C --> G(["End - Main iFlow"])
+    A["Sender Externo - HTTP Postman"] --> B(["Start - iFlow Principal"])
+    B --> C["Logica de Negocio"]
+    C -->|"ProcessDirect - Request Reply"| D(["Start - iFlow Utilitario"])
+    D --> E["Logica Reutilizavel - ex Validacao"]
+    E --> F(["End - iFlow Utilitario"])
+    F -->|"Resposta retorna automaticamente"| C
+    C --> G(["End - iFlow Principal"])
 ```
 
-### Why it matters (and why it's relevant for certification)
+### Por que isso importa (e por que é relevante para a certificação)
 
-| Concept | Detail |
+| Conceito | Detalhe |
 |---|---|
-| **Addressing** | No URL/host — uses a logical `Address` (e.g. `/vendorValidation`), unique within the tenant |
-| **Communication style** | Always **synchronous** (Request-Reply) |
-| **Performance** | Much faster than HTTP, since it never leaves the JVM/internal network |
-| **Reuse** | The same "utility" iFlow can be called by N different iFlows |
-| **Limitation** | Works only **within the same tenant** — not suitable for cross-tenant or external system communication |
-| **Real-world usage** | Shared validation logic, centralized logging/audit services, breaking large iFlows into smaller, testable modules |
+| **Endereçamento** | Não usa URL/host — usa um `Address` lógico (ex: `/vendorValidation`), único dentro do tenant |
+| **Estilo de comunicação** | Sempre **síncrono** (Request-Reply) |
+| **Performance** | Muito mais rápido que HTTP, pois nunca sai da JVM/rede interna |
+| **Reuso** | O mesmo iFlow "utilitário" pode ser chamado por N iFlows diferentes |
+| **Limitação** | Funciona apenas **dentro do mesmo tenant** — não serve para comunicação entre tenants ou sistemas externos |
+| **Uso real de mercado** | Lógica de validação compartilhada, serviços centralizados de log/auditoria, quebra de iFlows grandes em módulos menores e testáveis |
 
-### Why 2 separate iFlows?
+### Por que 2 iFlows separados?
 
-Each iFlow has exactly **one Start Event**. Since `D4_ProcessDirect_Main` is triggered by **HTTP** (on demand, from Postman) and `D4_ProcessDirect_VendorValidation` is triggered by **ProcessDirect** (an internal call), they cannot be combined into a single iFlow — the same architectural principle already applied in the D3 (SFTP Producer/Consumer) scenario.
+Cada iFlow tem exatamente **um** Evento de Início (Start Event). Como o `D4_ProcessDirect_Main` é disparado por **HTTP** (sob demanda, via Postman) e o `D4_ProcessDirect_VendorValidation` é disparado por **ProcessDirect** (uma chamada interna), eles não podem ser combinados em um único iFlow — o mesmo princípio arquitetural já aplicado no cenário D3 (SFTP Producer/Consumer).
 
 ---
 
-## 🏗️ Full Scenario Architecture
+## 🏗️ Arquitetura completa do cenário
 
 ```mermaid
 flowchart TB
-    A["Postman - POST Purchase Order Request"] -->|"HTTPS"| B(["Start Main"])
+    A["Postman - POST Solicitacao de Pedido de Compras"] -->|"HTTPS"| B(["Start Main"])
     B --> C["Groovy Script - Store Original Payload"]
     C --> D["Request Reply - Call Vendor Validation"]
     D -->|"ProcessDirect /vendorValidation"| E(["Start VendorValidation"])
     E --> F["Groovy Script - Extract Vendor and Material"]
     F --> G["Content Modifier - Build SQL Query"]
     G --> H(["End VendorValidation"])
-    H -->|"JDBC Receiver"| I["Neon PostgreSQL - vendor_block_status table"]
-    I -->|"query result returns"| D
+    H -->|"JDBC Receiver"| I["Neon PostgreSQL - tabela vendor_block_status"]
+    I -->|"resultado da query retorna"| D
     D --> J["Groovy Script - Parse Validation Result"]
     J --> K["Router - Check Purchase Order Status"]
     K -->|"Released"| L["Groovy Script - Build Order Created Response"]
@@ -79,19 +79,19 @@ flowchart TB
 
 ---
 
-## 🔧 D4_ProcessDirect_Main — Configuration
+## 🔧 D4_ProcessDirect_Main — Configuração
 
-### Step 1 — HTTPS Sender
+### Passo 1 — Sender HTTPS
 
-| Field | Value |
+| Campo | Valor |
 |---|---|
 | Address | `/d4processdirect` |
 | Authorization | `User Role` |
 | User Role | `ESBMessaging.send` |
 
-### Step 2 — Groovy Script - Store Original Payload
+### Passo 2 — Groovy Script - Store Original Payload
 
-Keeps the incoming JSON payload available as a property, so it can be reused later to build the final response (both for the "Released" and "Blocked" branches):
+Guarda o payload JSON de entrada como property, para poder ser reaproveitado depois na montagem da resposta final (tanto no ramo "Released" quanto no "Blocked"):
 
 ```groovy
 import com.sap.gateway.ip.core.customdev.util.Message
@@ -103,25 +103,25 @@ def Message processData(Message message) {
 }
 ```
 
-### Step 3 — Request Reply - Call Vendor Validation (ProcessDirect)
+### Passo 3 — Request Reply - Call Vendor Validation (ProcessDirect)
 
-The `Request Reply` step calls the utility iFlow synchronously via the **ProcessDirect** adapter:
+O step `Request Reply` chama o iFlow utilitário de forma síncrona via adapter **ProcessDirect**:
 
-| Field | Value |
+| Campo | Valor |
 |---|---|
 | Address | `/vendorValidation` |
 
-> ⚠️ This address must be **identical** to the one configured on the Sender side of `D4_ProcessDirect_VendorValidation` — otherwise the call fails with `No consumers available on endpoint`.
+> ⚠️ Esse endereço precisa ser **idêntico** ao configurado no lado Sender do `D4_ProcessDirect_VendorValidation` — caso contrário, a chamada falha com `No consumers available on endpoint`.
 
 <a href="../evidences/lab17/01-iflow-main-processdirect-config.png" target="_blank">
-  <img src="../evidences/lab17/01-iflow-main-processdirect-config.png" alt="D4_ProcessDirect_Main iFlow overview and ProcessDirect connector configuration" width="850"/>
+  <img src="../evidences/lab17/01-iflow-main-processdirect-config.png" alt="Visao geral do iFlow D4_ProcessDirect_Main e configuracao do conector ProcessDirect" width="850"/>
 </a>
 
-*Full canvas of `D4_ProcessDirect_Main`, showing the complete flow (Start → Store Payload → Call Vendor Validation → Parse Result → Router → Released/Blocked branches → respective End events), together with the ProcessDirect connector configuration pointing to `/vendorValidation`.*
+*Canvas completo do `D4_ProcessDirect_Main`, mostrando o fluxo completo (Start → Store Payload → Call Vendor Validation → Parse Result → Router → ramos Released/Blocked → respectivos End events), junto com a configuração do conector ProcessDirect apontando para `/vendorValidation`.*
 
-### Step 4 — Groovy Script - Parse Validation Result
+### Passo 4 — Groovy Script - Parse Validation Result
 
-Interprets the XML response returned by the JDBC query (executed inside the utility iFlow) and decides whether the Purchase Order can be created:
+Interpreta a resposta XML retornada pela consulta JDBC (executada dentro do iFlow utilitário) e decide se o Pedido de Compras pode ser criado:
 
 ```groovy
 import com.sap.gateway.ip.core.customdev.util.Message
@@ -146,22 +146,22 @@ def Message processData(Message message) {
 }
 ```
 
-> 📌 Note the navigation path `response.Statement1_response.row` — the JDBC adapter always wraps a SELECT response inside a `<StatementName>_response>` element (in this case, `Statement1_response`), not a plain `<row>` directly under `<root>`. This is a key detail of the **XML SQL Format** message protocol used by the JDBC adapter.
+> 📌 Repare no caminho de navegação `response.Statement1_response.row` — o adapter JDBC sempre envelopa a resposta de um SELECT dentro de um elemento `<NomeDoStatement>_response>` (nesse caso, `Statement1_response`), e não em um `<row>` direto sob `<root>`. Esse é um detalhe importante do protocolo de mensagem **XML SQL Format** usado pelo adapter JDBC.
 
-### Step 5 — Router - Check Purchase Order Status
+### Passo 5 — Router - Check Purchase Order Status
 
-| Route | Condition |
+| Rota | Condição |
 |---|---|
 | **Released** | `${property.canCreateOrder} = 'true'` |
-| **Blocked** | Otherwise (default route) |
+| **Blocked** | Caso contrário (rota padrão) |
 
 <a href="../evidences/lab17/02-router-check-purchase-order-status-config.png" target="_blank">
-  <img src="../evidences/lab17/02-router-check-purchase-order-status-config.png" alt="Router - Check Purchase Order Status configuration" width="850"/>
+  <img src="../evidences/lab17/02-router-check-purchase-order-status-config.png" alt="Configuracao do Router - Check Purchase Order Status" width="850"/>
 </a>
 
-*Router configuration showing the two routes: `Released` (condition based on the `canCreateOrder` property) and `Blocked` (default/otherwise route), directing the message flow to the corresponding final Groovy Script and End event.*
+*Configuração do Router mostrando as duas rotas: `Released` (condição baseada na property `canCreateOrder`) e `Blocked` (rota padrão/otherwise), direcionando o fluxo da mensagem para o respectivo Groovy Script final e End event.*
 
-### Step 6 — Groovy Script - Build Order Created Response (Released route)
+### Passo 6 — Groovy Script - Build Order Created Response (rota Released)
 
 ```groovy
 import com.sap.gateway.ip.core.customdev.util.Message
@@ -187,7 +187,7 @@ def Message processData(Message message) {
 }
 ```
 
-### Step 7 — Groovy Script - Build Blocked Response (Blocked route)
+### Passo 7 — Groovy Script - Build Blocked Response (rota Blocked)
 
 ```groovy
 import com.sap.gateway.ip.core.customdev.util.Message
@@ -216,19 +216,19 @@ def Message processData(Message message) {
 
 ---
 
-## 🔧 D4_ProcessDirect_VendorValidation — Configuration
+## 🔧 D4_ProcessDirect_VendorValidation — Configuração
 
-This is the reusable "utility" iFlow, responsible for querying the vendor block status directly in the database.
+Este é o iFlow "utilitário" reutilizável, responsável por consultar o status de bloqueio do fornecedor diretamente no banco de dados.
 
-### Step 1 — ProcessDirect Sender
+### Passo 1 — ProcessDirect Sender
 
-| Field | Value |
+| Campo | Valor |
 |---|---|
 | Address | `/vendorValidation` |
 
-> 📌 Note: the ProcessDirect address must follow a path-style syntax, starting with `/` (e.g. `/vendorValidation`) — a `direct:name` style syntax (common in plain Apache Camel URIs) is **not accepted** by the CPI validator and triggers a design-time error.
+> 📌 Nota: o endereço do ProcessDirect deve seguir uma sintaxe estilo path, começando com `/` (ex: `/vendorValidation`) — uma sintaxe estilo `direct:nome` (comum em URIs Apache Camel puro) **não é aceita** pelo validador do CPI e gera erro em tempo de design.
 
-### Step 2 — Groovy Script - Extract Vendor and Material
+### Passo 2 — Groovy Script - Extract Vendor and Material
 
 ```groovy
 import com.sap.gateway.ip.core.customdev.util.Message
@@ -248,14 +248,14 @@ def Message processData(Message message) {
 ```
 
 <a href="../evidences/lab17/03-iflow-vendorvalidation-processdirect-config.png" target="_blank">
-  <img src="../evidences/lab17/03-iflow-vendorvalidation-processdirect-config.png" alt="D4_ProcessDirect_VendorValidation iFlow overview and ProcessDirect sender configuration" width="850"/>
+  <img src="../evidences/lab17/03-iflow-vendorvalidation-processdirect-config.png" alt="Visao geral do iFlow D4_ProcessDirect_VendorValidation e configuracao do sender ProcessDirect" width="850"/>
 </a>
 
-*Full canvas of `D4_ProcessDirect_VendorValidation` (Start → Extract Vendor/Material → Build SQL Query → End → JDBC Receiver), together with the ProcessDirect Sender configuration, confirming the `/vendorValidation` address matches the one called from the Main iFlow.*
+*Canvas completo do `D4_ProcessDirect_VendorValidation` (Start → Extract Vendor/Material → Build SQL Query → End → JDBC Receiver), junto com a configuração do Sender ProcessDirect, confirmando que o endereço `/vendorValidation` bate exatamente com o chamado a partir do iFlow Principal.*
 
-### Step 3 — Content Modifier - Build SQL Query
+### Passo 3 — Content Modifier - Build SQL Query
 
-Instead of building the XML SQL statement inside a Groovy Script (which proved highly error-prone due to string escaping issues), the query was moved to a **Content Modifier**, where the XML is typed literally in the visual editor — eliminating any risk of quote-escaping mistakes:
+Em vez de montar a instrução XML SQL dentro de um Groovy Script (o que se mostrou muito propenso a erro devido a problemas de escape de aspas), a query foi movida para um **Content Modifier**, onde o XML é digitado literalmente no editor visual — eliminando qualquer risco de erro de escape de aspas:
 
 ```xml
 <root>
@@ -279,26 +279,26 @@ Instead of building the XML SQL statement inside a Groovy Script (which proved h
 ```
 
 <a href="../evidences/lab17/04-content-modifier-build-sql-query-config.png" target="_blank">
-  <img src="../evidences/lab17/04-content-modifier-build-sql-query-config.png" alt="Content Modifier - Build SQL Query configuration" width="850"/>
+  <img src="../evidences/lab17/04-content-modifier-build-sql-query-config.png" alt="Configuracao do Content Modifier - Build SQL Query" width="850"/>
 </a>
 
-*Content Modifier body configured with the XML SQL Format statement, following the SAP-defined structure: an element named after the target table (`vendor_block_status`) carrying the mandatory `action="SELECT"` attribute, a `<table>` element (must be the first child), an `<access>` block listing the columns to be returned, and a `<key>` block defining the WHERE condition, dynamically filled with `${property.vendor}` and `${property.material}`.*
+*Body do Content Modifier configurado com a instrução no formato XML SQL Format, seguindo a estrutura definida pela SAP: um elemento nomeado com base na tabela alvo (`vendor_block_status`) carregando o atributo obrigatório `action="SELECT"`, um elemento `<table>` (deve ser o primeiro filho), um bloco `<access>` listando as colunas a serem retornadas, e um bloco `<key>` definindo a condição WHERE, preenchido dinamicamente com `${property.vendor}` e `${property.material}`.*
 
-### Step 4 — JDBC Receiver
+### Passo 4 — JDBC Receiver
 
-| Field | Value |
+| Campo | Valor |
 |---|---|
 | JDBC Data Source Alias | `NeonDB_FornecedorBloqueio` |
 
-**Security Material configured:**
+**Security Material configurado:**
 
-| Name | Type | Purpose |
+| Nome | Tipo | Finalidade |
 |---|---|---|
-| `NeonDB_FornecedorBloqueio` | JDBC Data Source | PostgreSQL (Cloud) connection to the Neon-hosted database |
+| `NeonDB_FornecedorBloqueio` | JDBC Data Source | Conexão PostgreSQL (Cloud) com o banco de dados hospedado no Neon |
 
 ---
 
-## 🗄️ Database Setup (Neon PostgreSQL)
+## 🗄️ Setup do Banco de Dados (Neon PostgreSQL)
 
 ```sql
 CREATE TABLE vendor_block_status (
@@ -320,7 +320,7 @@ INSERT INTO vendor_block_status (vendor_id, material, vendor_name, purchasing_bl
 
 ---
 
-## 🧪 Test Scenario 1 — Vendor Blocked (Purchasing Block)
+## 🧪 Cenário de Teste 1 — Fornecedor Bloqueado (Bloqueio de Compras)
 
 **Request — POST `{{D4_ProcessDirect_Main}}`**
 ```json
@@ -331,32 +331,32 @@ INSERT INTO vendor_block_status (vendor_id, material, vendor_name, purchasing_bl
 ```
 
 <a href="../evidences/lab17/05-postman-purchasing-block-200-ok.png" target="_blank">
-  <img src="../evidences/lab17/05-postman-purchasing-block-200-ok.png" alt="Postman - Purchasing Block scenario 200 OK response" width="850"/>
+  <img src="../evidences/lab17/05-postman-purchasing-block-200-ok.png" alt="Postman - Resposta 200 OK do cenario de Bloqueio de Compras" width="850"/>
 </a>
 
-*Postman response `200 OK` for vendor `1000200`, returning `"status": "BLOCKED"` with `blockReason: "Vendor blocked at Purchasing Organization level (LFM1-SPERM)"` — matching exactly the data pre-loaded in the database for this vendor/material combination.*
+*Resposta `200 OK` do Postman para o fornecedor `1000200`, retornando `"status": "BLOCKED"` com `blockReason: "Vendor blocked at Purchasing Organization level (LFM1-SPERM)"` — batendo exatamente com o dado pré-carregado no banco para essa combinação fornecedor/material.*
 
 <a href="../evidences/lab17/06-monitor-trace-main-purchasing-block.png" target="_blank">
-  <img src="../evidences/lab17/06-monitor-trace-main-purchasing-block.png" alt="Monitor Trace - Main iFlow message flow for Purchasing Block scenario" width="850"/>
+  <img src="../evidences/lab17/06-monitor-trace-main-purchasing-block.png" alt="Monitor Trace - Fluxo de mensagens do iFlow Main para o cenario de Bloqueio de Compras" width="850"/>
 </a>
 
-*`D4_ProcessDirect_Main` Integration Flow Model, showing the message path: Start → Store Original Payload → Call Vendor Validation (ProcessDirect) → Parse Validation Result → Router → **Blocked** route → Build Blocked Response → End - Order Blocked.*
+*`Integration Flow Model` do `D4_ProcessDirect_Main`, mostrando o caminho percorrido pela mensagem: Start → Store Original Payload → Call Vendor Validation (ProcessDirect) → Parse Validation Result → Router → rota **Blocked** → Build Blocked Response → End - Order Blocked.*
 
 <a href="../evidences/lab17/07-monitor-trace-vendorvalidation-purchasing-block.png" target="_blank">
-  <img src="../evidences/lab17/07-monitor-trace-vendorvalidation-purchasing-block.png" alt="Monitor Trace - VendorValidation iFlow receiving the ProcessDirect call and JDBC query result" width="850"/>
+  <img src="../evidences/lab17/07-monitor-trace-vendorvalidation-purchasing-block.png" alt="Monitor Trace - iFlow VendorValidation recebendo a chamada ProcessDirect e o resultado da consulta JDBC" width="850"/>
 </a>
 
-*`D4_ProcessDirect_VendorValidation` Integration Flow Model, confirming the ProcessDirect call was received correctly, the SQL query was built and sent via JDBC, and the raw query result returned from PostgreSQL (`purchasing_block: t`, `quality_block: f`) before being sent back to the Main iFlow.*
+*`Integration Flow Model` do `D4_ProcessDirect_VendorValidation`, confirmando que a chamada ProcessDirect foi recebida corretamente, a query SQL foi montada e enviada via JDBC, e o resultado bruto da consulta retornado pelo PostgreSQL (`purchasing_block: t`, `quality_block: f`) antes de ser enviado de volta ao iFlow Principal.*
 
 <a href="../evidences/lab17/08-message-content-end-purchasing-block.png" target="_blank">
-  <img src="../evidences/lab17/08-message-content-end-purchasing-block.png" alt="Message Content - End Order Blocked payload for Purchasing Block scenario" width="850"/>
+  <img src="../evidences/lab17/08-message-content-end-purchasing-block.png" alt="Message Content - Payload do End Order Blocked para o cenario de Bloqueio de Compras" width="850"/>
 </a>
 
-*Final payload at the `End - Order Blocked` step, confirming the JSON response delivered to Postman matches exactly the business rule applied (vendor blocked at Purchasing Organization level).*
+*Payload final no step `End - Order Blocked`, confirmando que a resposta JSON entregue ao Postman bate exatamente com a regra de negócio aplicada (fornecedor bloqueado a nível de Organização de Compras).*
 
 ---
 
-## 🧪 Test Scenario 2 — Vendor Blocked (Quality Info Record / QIR)
+## 🧪 Cenário de Teste 2 — Fornecedor Bloqueado (Quality Info Record / QIR)
 
 **Request — POST `{{D4_ProcessDirect_Main}}`**
 ```json
@@ -367,32 +367,32 @@ INSERT INTO vendor_block_status (vendor_id, material, vendor_name, purchasing_bl
 ```
 
 <a href="../evidences/lab17/09-postman-quality-block-200-ok.png" target="_blank">
-  <img src="../evidences/lab17/09-postman-quality-block-200-ok.png" alt="Postman - Quality Block scenario 200 OK response" width="850"/>
+  <img src="../evidences/lab17/09-postman-quality-block-200-ok.png" alt="Postman - Resposta 200 OK do cenario de Bloqueio de Qualidade" width="850"/>
 </a>
 
-*Postman response `200 OK` for vendor `1000350`, returning `"status": "BLOCKED"` with `blockReason: "Vendor blocked for quality reasons (QIR) for this material - SAP Message 06884"` — reproducing the real SAP error message triggered when a Quality Info Record blocks a vendor-material combination.*
+*Resposta `200 OK` do Postman para o fornecedor `1000350`, retornando `"status": "BLOCKED"` com `blockReason: "Vendor blocked for quality reasons (QIR) for this material - SAP Message 06884"` — reproduzindo a mensagem real do SAP disparada quando um Quality Info Record bloqueia uma combinação fornecedor/material.*
 
 <a href="../evidences/lab17/10-monitor-trace-main-quality-block.png" target="_blank">
-  <img src="../evidences/lab17/10-monitor-trace-main-quality-block.png" alt="Monitor Trace - Main iFlow message flow for Quality Block scenario" width="850"/>
+  <img src="../evidences/lab17/10-monitor-trace-main-quality-block.png" alt="Monitor Trace - Fluxo de mensagens do iFlow Main para o cenario de Bloqueio de Qualidade" width="850"/>
 </a>
 
-*`D4_ProcessDirect_Main` Integration Flow Model confirming the same **Blocked** route was correctly triggered for this vendor, this time due to the quality restriction rather than the purchasing restriction — demonstrating that the Router logic correctly evaluates both blocking conditions through the single `canCreateOrder` property.*
+*`Integration Flow Model` do `D4_ProcessDirect_Main` confirmando que a mesma rota **Blocked** foi corretamente acionada para esse fornecedor, dessa vez por causa da restrição de qualidade em vez da restrição de compras — demonstrando que a lógica do Router avalia corretamente as duas condições de bloqueio através da property única `canCreateOrder`.*
 
 <a href="../evidences/lab17/11-monitor-trace-vendorvalidation-quality-block.png" target="_blank">
-  <img src="../evidences/lab17/11-monitor-trace-vendorvalidation-quality-block.png" alt="Monitor Trace - VendorValidation iFlow JDBC result for Quality Block scenario" width="850"/>
+  <img src="../evidences/lab17/11-monitor-trace-vendorvalidation-quality-block.png" alt="Monitor Trace - Resultado JDBC do iFlow VendorValidation para o cenario de Bloqueio de Qualidade" width="850"/>
 </a>
 
-*`D4_ProcessDirect_VendorValidation` trace showing the JDBC query result for vendor `1000350` / material `MAT-GEN-003`: `purchasing_block: f`, `quality_block: t` — confirming the database correctly stores and returns independent flags for each type of block.*
+*Trace do `D4_ProcessDirect_VendorValidation` mostrando o resultado da consulta JDBC para o fornecedor `1000350` / material `MAT-GEN-003`: `purchasing_block: f`, `quality_block: t` — confirmando que o banco de dados armazena e retorna corretamente flags independentes para cada tipo de bloqueio.*
 
 <a href="../evidences/lab17/12-message-content-end-quality-block.png" target="_blank">
-  <img src="../evidences/lab17/12-message-content-end-quality-block.png" alt="Message Content - End Order Blocked payload for Quality Block scenario" width="850"/>
+  <img src="../evidences/lab17/12-message-content-end-quality-block.png" alt="Message Content - Payload do End Order Blocked para o cenario de Bloqueio de Qualidade" width="850"/>
 </a>
 
-*Final payload at `End - Order Blocked`, confirming the correct block reason (quality-related) was propagated all the way to the final JSON response.*
+*Payload final no `End - Order Blocked`, confirmando que o motivo correto de bloqueio (relacionado à qualidade) foi propagado até a resposta JSON final.*
 
 ---
 
-## 🧪 Test Scenario 3 — Order Released (happy path)
+## 🧪 Cenário de Teste 3 — Pedido Liberado (caminho positivo)
 
 **Request — POST `{{D4_ProcessDirect_Main}}`**
 ```json
@@ -403,92 +403,92 @@ INSERT INTO vendor_block_status (vendor_id, material, vendor_name, purchasing_bl
 ```
 
 <a href="../evidences/lab17/13-postman-order-released-200-ok.png" target="_blank">
-  <img src="../evidences/lab17/13-postman-order-released-200-ok.png" alt="Postman - Order Released scenario 200 OK response" width="850"/>
+  <img src="../evidences/lab17/13-postman-order-released-200-ok.png" alt="Postman - Resposta 200 OK do cenario Pedido Liberado" width="850"/>
 </a>
 
-*Postman response `200 OK` for vendor `1000100`, returning `"status": "CREATED"` with the success message `"Purchase Order created successfully"` — confirming this vendor/material combination has no active blocks in the database.*
+*Resposta `200 OK` do Postman para o fornecedor `1000100`, retornando `"status": "CREATED"` com a mensagem de sucesso `"Purchase Order created successfully"` — confirmando que essa combinação fornecedor/material não possui nenhum bloqueio ativo no banco de dados.*
 
 <a href="../evidences/lab17/14-monitor-trace-main-order-released.png" target="_blank">
-  <img src="../evidences/lab17/14-monitor-trace-main-order-released.png" alt="Monitor Trace - Main iFlow message flow for Order Released scenario" width="850"/>
+  <img src="../evidences/lab17/14-monitor-trace-main-order-released.png" alt="Monitor Trace - Fluxo de mensagens do iFlow Main para o cenario Pedido Liberado" width="850"/>
 </a>
 
-*`D4_ProcessDirect_Main` Integration Flow Model showing the message correctly routed through the **Released** branch this time — Router → Build Order Created Response → End - Order Released — validating that the Router properly distinguishes between blocked and released vendors.*
+*`Integration Flow Model` do `D4_ProcessDirect_Main` mostrando a mensagem corretamente roteada pelo ramo **Released** dessa vez — Router → Build Order Created Response → End - Order Released — validando que o Router distingue corretamente entre fornecedores bloqueados e liberados.*
 
 <a href="../evidences/lab17/15-monitor-trace-vendorvalidation-order-released.png" target="_blank">
-  <img src="../evidences/lab17/15-monitor-trace-vendorvalidation-order-released.png" alt="Monitor Trace - VendorValidation iFlow JDBC result for Order Released scenario" width="850"/>
+  <img src="../evidences/lab17/15-monitor-trace-vendorvalidation-order-released.png" alt="Monitor Trace - Resultado JDBC do iFlow VendorValidation para o cenario Pedido Liberado" width="850"/>
 </a>
 
-*`D4_ProcessDirect_VendorValidation` trace confirming the JDBC query result for vendor `1000100` / material `MAT-GEN-001`: both `purchasing_block` and `quality_block` returned as `f` (false), and `block_reason` empty — the exact condition required for `canCreateOrder` to evaluate to `true`.*
+*Trace do `D4_ProcessDirect_VendorValidation` confirmando o resultado da consulta JDBC para o fornecedor `1000100` / material `MAT-GEN-001`: tanto `purchasing_block` quanto `quality_block` retornados como `f` (falso), e `block_reason` vazio — exatamente a condição necessária para `canCreateOrder` avaliar como `true`.*
 
 <a href="../evidences/lab17/16-message-content-end-order-released.png" target="_blank">
-  <img src="../evidences/lab17/16-message-content-end-order-released.png" alt="Message Content - End Order Released payload" width="850"/>
+  <img src="../evidences/lab17/16-message-content-end-order-released.png" alt="Message Content - Payload do End Order Released" width="850"/>
 </a>
 
-*Final payload at `End - Order Released`, confirming the complete happy-path response delivered to Postman.*
+*Payload final no `End - Order Released`, confirmando a resposta completa do caminho feliz entregue ao Postman.*
 
 ---
 
-## 📊 Reference — Database Table Status
+## 📊 Referência — Status da Tabela do Banco de Dados
 
-As a final piece of evidence, external to the CPI tenant, the full contents of the `vendor_block_status` table were captured directly from the Neon SQL Editor, confirming the data source used throughout all three test scenarios:
+Como uma evidência final, externa ao tenant CPI, o conteúdo completo da tabela `vendor_block_status` foi capturado diretamente do SQL Editor do Neon, confirmando a fonte de dados usada em todos os três cenários de teste:
 
 <a href="../evidences/lab17/17-neon-database-vendor-block-status-table.png" target="_blank">
-  <img src="../evidences/lab17/17-neon-database-vendor-block-status-table.png" alt="Neon PostgreSQL - vendor_block_status table contents" width="850"/>
+  <img src="../evidences/lab17/17-neon-database-vendor-block-status-table.png" alt="Neon PostgreSQL - Conteudo da tabela vendor_block_status" width="850"/>
 </a>
 
-*`SELECT * FROM vendor_block_status;` executed in the Neon SQL Editor, showing all 5 pre-loaded vendor/material combinations used across the test scenarios — 2 with purchasing block, 1 with quality block (QIR), and 2 fully released — serving as the single source of truth queried live by the `D4_ProcessDirect_VendorValidation` iFlow during every test.*
+*`SELECT * FROM vendor_block_status;` executado no SQL Editor do Neon, mostrando as 5 combinações fornecedor/material pré-carregadas usadas nos cenários de teste — 2 com bloqueio de compras, 1 com bloqueio de qualidade (QIR) e 2 totalmente liberadas — servindo como fonte única de verdade consultada em tempo real pelo iFlow `D4_ProcessDirect_VendorValidation` durante cada teste.*
 
 ---
 
-## 🔍 Troubleshooting & Lessons Learned
+## 🔍 Troubleshooting & Lições Aprendidas
 
 ### 1. `Address should begin with alphanumeric or '/' character`
 
-**Cause:** the ProcessDirect address was initially configured as `direct:validaFornecedor`, following the plain Apache Camel URI convention (`scheme:name`). The CPI's ProcessDirect adapter, however, requires a path-style address.
+**Causa:** o endereço do ProcessDirect foi inicialmente configurado como `direct:validaFornecedor`, seguindo a convenção de URI pura do Apache Camel (`esquema:nome`). O adapter ProcessDirect do CPI, no entanto, exige um endereço estilo path.
 
-**Solution:** use a path-style address instead, e.g. `/vendorValidation`.
+**Solução:** usar um endereço estilo path, como `/vendorValidation`.
 
 ### 2. `JDBCException: Input XML contains missing action attribute`
 
-**Cause:** the XML SQL Format requires a specific structure: an element (any name) directly under the statement element, carrying the **`action`** attribute (e.g. `action="SELECT"`), with `<table>` as its first child, followed by `<access>` (columns to return) and `<key>` (WHERE condition columns). Several iterations failed because the `action` attribute was either written as loose text, or the opening/closing tag names didn't match.
+**Causa:** o formato XML SQL Format exige uma estrutura específica: um elemento (qualquer nome) diretamente sob o elemento de statement, carregando o atributo **`action`** (ex: `action="SELECT"`), com `<table>` como seu primeiro filho, seguido de `<access>` (colunas a retornar) e `<key>` (colunas da condição WHERE). Várias iterações falharam porque o atributo `action` foi escrito ora como texto solto, ora com nomes de tag de abertura/fechamento não coincidentes.
 
-**Solution:** move the SQL statement construction from Groovy (string concatenation, prone to quote-escaping errors) to a **Content Modifier**, where the XML can be typed literally with real `<` `>` characters, with property placeholders (`${property.vendor}`) resolved automatically by the CPI runtime — eliminating the escaping problem at its root.
+**Solução:** mover a montagem da instrução SQL do Groovy (concatenação de strings, propensa a erros de escape de aspas) para um **Content Modifier**, onde o XML pode ser digitado literalmente com caracteres `<` `>` reais, com os placeholders de property (`${property.vendor}`) resolvidos automaticamente pelo runtime do CPI — eliminando o problema de escape pela raiz.
 
 ### 3. `Content is not allowed in prolog` (SAXParseException)
 
-**Cause:** the `Groovy Script - Extract Vendor and Material` step was mistakenly using `XmlSlurper` (intended for parsing XML) to parse a **JSON** payload — the parser choked on the very first character (`{`), which is not valid XML.
+**Causa:** o step `Groovy Script - Extract Vendor and Material` estava, por engano, usando `XmlSlurper` (feito para interpretar XML) para analisar um payload **JSON** — o parser travou logo no primeiro caractere (`{`), que não é um XML válido.
 
-**Solution:** confirm the correct parser is used at each step: `JsonSlurper` for JSON payloads (incoming HTTP request), and `XmlSlurper` only for XML payloads (JDBC query responses).
+**Solução:** confirmar que o parser correto é usado em cada etapa: `JsonSlurper` para payloads JSON (requisição HTTP de entrada), e `XmlSlurper` apenas para payloads XML (respostas de consulta JDBC).
 
-### 4. Router selecting the wrong branch despite correct database data
+### 4. Router selecionando o ramo errado apesar dos dados corretos no banco
 
-**Cause:** the JDBC adapter wraps a SELECT response inside an element named `<StatementName>_response` (in this case, `<Statement1_response>`), not a bare `<row>` directly under `<root>`. The `Groovy Script - Parse Validation Result` was navigating the XML as `response.row`, missing that intermediate level — causing `purchasing_block`/`quality_block` to always resolve as empty strings, and `canCreateOrder` to incorrectly default to `true`.
+**Causa:** o adapter JDBC envelopa a resposta de um SELECT dentro de um elemento chamado `<NomeDoStatement>_response` (nesse caso, `<Statement1_response>`), e não em um `<row>` direto sob `<root>`. O `Groovy Script - Parse Validation Result` estava navegando o XML como `response.row`, sem considerar esse nível intermediário — fazendo com que `purchasing_block`/`quality_block` sempre resolvessem como strings vazias, e `canCreateOrder` incorretamente assumisse `true` por padrão.
 
-**Solution:** correct the navigation path to `response.Statement1_response.row`, matching the actual XML structure returned by the JDBC adapter.
+**Solução:** corrigir o caminho de navegação para `response.Statement1_response.row`, batendo com a estrutura real do XML retornado pelo adapter JDBC.
 
-> 💡 **Portfolio note:** this is a subtle but important detail of the XML SQL Format — always inspect the actual JDBC response payload in the Monitor trace before writing the parsing logic, rather than assuming the response mirrors the request structure.
-
----
-
-## ✅ Conclusion
-
-The D4 scenario combined two adapters in a single, realistic business case: **ProcessDirect**, demonstrating internal, synchronous iFlow-to-iFlow reuse of business logic, and **JDBC**, demonstrating live database connectivity to validate vendor blocking rules before allowing a Purchase Order to be created — mirroring the real SAP MM behavior around Purchasing Blocks and Quality Info Records (QIR). As agreed, this merged scope replaces what was originally planned as a separate D5 — JDBC Adapter scenario.
-
-**Skills practiced:** ProcessDirect Adapter (Sender & Request-Reply) · JDBC Receiver Adapter · XML SQL Format message protocol · JDBC Data Source configuration (PostgreSQL Cloud) · Content Modifier for dynamic SQL construction · Router (multi-branch decision) · Groovy Script (JSON/XML parsing, response building) · Troubleshooting of JDBC response structure and adapter addressing rules
-
-**Previous scenario:** ./18-d3-sftp-adapter.md
+> 💡 **Nota para o portfólio:** esse é um detalhe sutil, porém importante, do formato XML SQL Format — sempre inspecionar o payload real de resposta do JDBC no Trace do Monitor antes de escrever a lógica de parsing, em vez de assumir que a resposta espelha a estrutura da requisição.
 
 ---
 
-## 🛠️ Tools Used
+## ✅ Conclusão
+
+O cenário D4 combinou dois adapters em um único caso de negócio realista: o **ProcessDirect**, demonstrando reuso interno e síncrono de lógica de negócio entre iFlows, e o **JDBC**, demonstrando conectividade real com banco de dados para validar regras de bloqueio de fornecedor antes de permitir a criação de um Pedido de Compras — espelhando o comportamento real do SAP MM em torno de Bloqueios de Compras e Quality Info Records (QIR). Conforme combinado, esse escopo unificado substitui o que originalmente estava planejado como um cenário separado D5 — JDBC Adapter.
+
+**Recursos praticados:** ProcessDirect Adapter (Sender & Request-Reply) · JDBC Receiver Adapter · Protocolo de mensagem XML SQL Format · Configuração de JDBC Data Source (PostgreSQL Cloud) · Content Modifier para montagem dinâmica de SQL · Router (decisão multi-ramo) · Groovy Script (parsing JSON/XML, montagem de resposta) · Troubleshooting da estrutura de resposta do JDBC e regras de endereçamento do adapter
+
+**Cenário anterior:** ./18-d3-sftp-adapter.md
+
+---
+
+## 🛠️ Ferramentas utilizadas
 
 - **SAP Integration Suite** (Cloud Integration – Trial)
-- **Postman** (collection `D4_ProcessDirect_Main`, variables `{{base_url}}`/`{{clientid}}`/`{{clientsecret}}`)
-- **Neon** — free-tier serverless PostgreSQL database — [neon.tech](https://neon.tech/)
+- **Postman** (collection `D4_ProcessDirect_Main`, variáveis `{{base_url}}`/`{{clientid}}`/`{{clientsecret}}`)
+- **Neon** — banco de dados PostgreSQL serverless gratuito — [neon.tech](https://neon.tech/)
 
 ---
 
-## 👤 Author
+## 👤 Autor
 
 **Orlando Caetano**
 🔗 [LinkedIn](https://www.linkedin.com/in/orlando-caetano/) | 💻 [GitHub](https://github.com/OrlandoCaetano2026)
