@@ -1,0 +1,12 @@
+{
+  "notaFiscal": {
+    "numero": "NF-12099999",
+    "cliente": "Orlan_tech",
+    "valores": {
+      "valorBruto": 15000,
+      "valorICMS": 2700,
+      "valorIPI": 750,
+      "valorLiquido": 11550
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "ordemProducao": {
+    "numeroOrdem": "OP-00045210",
+    "tipoOrdem": "PP01",
+    "material": "MAT-GEN-001",
+    "descricaoMaterial": "Balanca Industrial XPTO",
+    "quantidade": 500,
+    "unidadeMedida": "UN",
+    "centroTrabalho": "CT-MONTAGEM-01",
+    "dataLiberacao": "2026-08-07",
+    "dataInicioBase": "2026-08-08T06:00:00",
+    "dataFimBase": "2026-08-10T18:00:00",
+    "statusOrdem": "LIBERADA",
+    "centro": "1000",
+    "deposito": "MES01"
+  }
+}
