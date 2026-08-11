@@ -332,6 +332,8 @@ Este cenário unificou três marcos do Bloco E: a ativação completa da capabil
 
 **Cenário anterior:** ./19-d4-processdirect.md
 
+**Próximo cenário:** ./21-e2-verify-api-key.md
+
 ---
 
 ## 🛠️ Ferramentas utilizadas
