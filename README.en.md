@@ -183,6 +183,7 @@ Goes **beyond the official journey**, covering topics highly valued in real proj
 
 | # | Scenario | Goal | Doc |
 |---|---|---|---|
+| E0 | Capability activation + API Provider | Enable API Management on the tenant and connect to the real backend | — |
 | E1 | API Proxy pointing to backend | Expose a controlled API | — |
 | E2 | Policy: Verify API Key | Basic key-based authentication | — |
 | E3 | Policy: OAuth | Secure authentication | — |
@@ -193,6 +194,8 @@ Goes **beyond the official journey**, covering topics highly valued in real proj
 | E8 | API Products and plans | Group and distribute APIs | — |
 | E9 | Developer Portal | API publishing | — |
 | E10 | API Analytics | Usage monitoring | — |
+| E11 | Policy: Access Control | IP-based access control (whitelist/blacklist) | — |
+| E12 | Policy: Basic Authentication | Proxy authentication against the real backend | — |
 
 #### Ⓕ Block F — Security (cross-cutting) 🥇
 

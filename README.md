@@ -183,6 +183,7 @@ Vai **além da trilha oficial**, cobrindo temas muito valorizados em projetos re
 
 | # | Cenário | Objetivo | Doc |
 |---|---|---|---|
+| E0 | Ativação da capability + API Provider | Habilitar API Management no tenant e conectar ao backend real | — |
 | E1 | API Proxy apontando para backend | Expor API controlada | — |
 | E2 | Policy: Verify API Key | Autenticação básica por chave | — |
 | E3 | Policy: OAuth | Autenticação segura | — |
@@ -193,6 +194,8 @@ Vai **além da trilha oficial**, cobrindo temas muito valorizados em projetos re
 | E8 | API Products e planos | Agrupar e distribuir APIs | — |
 | E9 | Developer Portal | Publicação de API | — |
 | E10 | Analytics de API | Monitoramento de uso | — |
+| E11 | Policy: Access Control | Controle de acesso por IP (whitelist/blacklist) | — |
+| E12 | Policy: Basic Authentication | Autenticação do Proxy junto ao backend real | — |
 
 #### Ⓕ Bloco F — Segurança (transversal) 🥇
 
