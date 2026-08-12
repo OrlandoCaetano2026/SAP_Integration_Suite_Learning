@@ -57,7 +57,7 @@ flowchart LR
 
 ### Por que uma operação de escrita muda o jogo
 
-Todos os cenários anteriores do projeto (D1 a D4, E0 a E2) realizaram apenas **leituras** de dados — consultas OData, chamadas SOAP, leitura de arquivos, e SELECTs no banco via JDBC. Este é o primeiro cenário em que uma chamada de API efetivamente **modifica** um dado persistente (o status de bloqueio de um fornecedor no PostgreSQL), o que exige um cuidado adicional de segurança: nem todo consumidor deveria ter esse poder, daí a necessidade dos Scopes diferenciados implementados nas fases seguintes.
+Todos os cenários anteriores do projeto (A1 a E2) realizaram apenas **leituras** de dados — consultas OData, chamadas SOAP, leitura de arquivos, e SELECTs no banco via JDBC. Este é o primeiro cenário em que uma chamada de API efetivamente **modifica** um dado persistente (o status de bloqueio de um fornecedor no PostgreSQL), o que exige um cuidado adicional de segurança: nem todo consumidor deveria ter esse poder, daí a necessidade dos Scopes diferenciados implementados nas fases seguintes.
 
 ### Arquitetura do iFlow
 
