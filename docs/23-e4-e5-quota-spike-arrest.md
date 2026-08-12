@@ -1,9 +1,11 @@
-# 📊 E4 — API Management: Quota Dinâmica por Rate Plan
+# 📊 E4 + E5 — API Management: Quota Dinâmica por Rate Plan e Spike Arrest
 
 > **Bloco:** E — API Management
-> **Cenário:** E4 (Policy: Quota) — planos comerciais diferenciados (Free vs. Premium) com limite de chamadas resolvido dinamicamente
-> **Status:** ✅ Concluído e testado, incluindo uma descoberta técnica relevante sobre o escopo de aplicação da Quota
+> **Cenários:** E4 (Policy: Quota) — planos comerciais diferenciados (Free vs. Premium) com limite de chamadas resolvido dinamicamente · E5 (Policy: Spike Arrest) — proteção contra rajadas instantâneas de tráfego
+> **Status:** ✅ Concluídos e testados, incluindo descobertas técnicas relevantes sobre o escopo de aplicação da Quota e o comportamento real do Spike Arrest
 > **Data de execução:** 12/08/2026
+
+> 💡 Os dois cenários foram documentados em um único arquivo por serem conceitualmente complementares — ambos são **Traffic Management Policies**, configurados no mesmo Proxy (`D4_VendorValidation_Proxy`), na mesma sequência de execução (`Spike Arrest` antes de `Quota`, conforme recomendação oficial da SAP), e compartilham o mesmo objetivo geral de controlar tráfego, ainda que sob dimensões diferentes: volume total acumulado (Quota) versus velocidade instantânea entre chamadas (Spike Arrest).
 
 ---
 
@@ -192,6 +194,84 @@ Isso não compromete o propósito de negócio deste cenário: a atuação real d
 
 ---
 
+---
+
+## 🏗️ E5 — Spike Arrest: Proteção Contra Rajadas Instantâneas
+
+### Contexto de negócio
+
+A Quota (E4) protege o negócio contra o **volume total** de chamadas de um consumidor ao longo de um período (5 por minuto, 100 por minuto). Mas existe um problema diferente que a Quota sozinha não resolve: e se um sistema do Fornecedor tiver um bug — um loop infinito, uma falha de retry mal configurada — e disparar, por exemplo, **10 chamadas no mesmo segundo**? Mesmo que o total ainda esteja dentro da Quota mensal contratada, esse pico instantâneo poderia sobrecarregar o backend momentaneamente.
+
+A Policy **Spike Arrest** resolve exatamente esse cenário: ela não olha para o total acumulado, apenas para o **intervalo mínimo exigido entre uma chamada e a próxima**.
+
+### Quota vs. Spike Arrest: a distinção central
+
+| Aspecto | Quota (E4) | Spike Arrest (E5) |
+|---|---|---|
+| O que controla | Volume **total** num período longo (ex: 5 por minuto, 100 por dia) | **Velocidade/intervalo** entre chamadas consecutivas, em uma janela muito curta |
+| Objetivo | Modelo comercial — limitar uso conforme plano contratado | Proteção técnica — evitar que uma rajada repentina (ou bug em loop) sobrecarregue o backend |
+| Analogia | "Você contratou 5 corridas de táxi por dia" | "Não adianta chamar 5 táxis ao mesmo tempo no mesmo segundo — um de cada vez, com intervalo mínimo" |
+
+A própria documentação oficial recomenda que, quando as duas Policies são usadas juntas, o **Spike Arrest deve ser posicionado antes da Quota** no fluxo de execução — reflexo dessa configuração no `D4_VendorValidation_Proxy`, onde a ordem final ficou: `Verify-Vendor-Access-Token → Spike-Arrest-Vendor → Quota-By-Rate-Plan`.
+
+### Configuração da Policy
+
+Adicionada ao `ProxyEndpoint → PreFlow`, posicionada entre a Policy de autenticação e a de Quota:
+
+```xml
+<SpikeArrest async="true" continueOnError="false" enabled="true" xmlns="http://www.sap.com/apimgmt">
+    <Rate>1ps</Rate>
+    <UseEffectiveCount>true</UseEffectiveCount>
+</SpikeArrest>
+```
+
+<a href="../evidences/lab21/11-policy-spike-arrest-vendor-xml-1ps.png" target="_blank">
+  <img src="../evidences/lab21/11-policy-spike-arrest-vendor-xml-1ps.png" alt="Policy Editor - XML da Policy Spike-Arrest-Vendor e ordem das 4 Policies no PreFlow" width="850"/>
+</a>
+
+*Policy Editor do `D4_VendorValidation_Proxy`, exibindo o diagrama do `ProxyEndpoint → PreFlow` com as quatro Policies em sequência (Verify API Key, desativada; Verify Access Token; Spike Arrest; Quota), e o XML final da Policy `Spike-Arrest-Vendor` com `<Rate>1ps</Rate>` — configurado para permitir apenas uma chamada por período de referência, um valor propositalmente restritivo para tornar o bloqueio evidente mesmo em testes de baixo volume.*
+
+| Elemento | Função |
+|---|---|
+| `<Rate>1ps</Rate>` | Define o limite de chamadas por segundo (`ps` = per second). O valor `1ps` foi escolhido deliberadamente baixo para o teste — em um cenário real, seria calibrado conforme a capacidade real do backend (ex: `30ps`) |
+| `<UseEffectiveCount>true</UseEffectiveCount>` | Garante que, em ambientes com múltiplas instâncias de processamento, a contagem considere o tráfego agregado de todas elas, evitando que o limite seja multiplicado indevidamente |
+
+### Ajuste de calibração durante os testes
+
+Uma primeira tentativa de teste utilizou `<Rate>10ps</Rate>`, buscando validar o bloqueio através do Postman Collection Runner (50 iterações, delay de 0 ms). O resultado, no entanto, mostrou todas as 50 chamadas retornando `200 OK`, sem nenhum bloqueio.
+
+**Causa:** o Collection Runner do Postman, mesmo configurado com delay zero, processa as requisições de forma sequencial (não literalmente simultânea), e o tempo real de rede e processamento do backend (em torno de 450-600 ms por chamada, conforme observado no Monitor) resultou em uma cadência efetiva de aproximadamente 1 chamada por segundo — bem abaixo do limite de `10ps` configurado, que nunca chegou a ser violado.
+
+**Solução:** reduzir o Rate para um valor extremamente baixo (`1ps`), compatível com a velocidade real que o ambiente de teste consegue gerar, permitindo demonstrar o bloqueio sem depender de uma ferramenta de geração de carga mais sofisticada.
+
+### Teste e resultado
+
+Com a Policy calibrada em `1ps`, o mesmo teste via Collection Runner produziu o comportamento esperado: um padrão alternado de sucessos e bloqueios, dependendo do intervalo real entre cada chamada disparada pelo Runner.
+
+<a href="../evidences/lab21/12-postman-runner-spike-arrest-mixed-200-500.png" target="_blank">
+  <img src="../evidences/lab21/12-postman-runner-spike-arrest-mixed-200-500.png" alt="Postman Runner - alternancia de respostas 200 e 500" width="850"/>
+</a>
+
+*Resultado do Collection Runner mostrando iterações consecutivas com respostas alternadas entre `200` (chamadas espaçadas por mais de um segundo da anterior) e `500` (chamadas que caíram dentro da mesma janela de tempo de uma chamada já processada) — confirmando visualmente que o Spike Arrest reage à proximidade temporal entre requisições, não ao volume total.*
+
+<a href="../evidences/lab21/13-postman-spike-arrest-violation-500-detail.png" target="_blank">
+  <img src="../evidences/lab21/13-postman-spike-arrest-violation-500-detail.png" alt="Postman - detalhe do erro Spike arrest violation" width="850"/>
+</a>
+
+*Detalhe de uma das respostas bloqueadas: `"Spike arrest violation. Allowed rate : MessageRate{messagesPerPeriod=1, periodInMicroseconds=9000000, maxBurstMessageCount=1.0}"` (`errorcode: policies.ratelimit.SpikeArrestViolation`). Nota-se que o `periodInMicroseconds` reportado (9.000.000 microssegundos, equivalente a 9 segundos) é maior que o intervalo de 1 segundo sugerido pela notação `1ps` — uma particularidade de como a SAP calcula internamente a janela de referência da Policy, sem alterar o efeito prático observado de bloquear chamadas em rajada.*
+
+<a href="../evidences/lab21/14-monitor-d4-processdirect-vendorvalidation-messages-varying-seconds.png" target="_blank">
+  <img src="../evidences/lab21/14-monitor-d4-processdirect-vendorvalidation-messages-varying-seconds.png" alt="Monitor - mensagens processadas com intervalos variados entre segundos" width="850"/>
+</a>
+
+*Monitor de Mensagens filtrado pelo iFlow `D4_ProcessDirect_VendorValidation`, exibindo 93 mensagens processadas com sucesso (`Completed`), com timestamps de "Last Updated At" apresentando intervalos variados entre si — alguns segundos consecutivos (15:10:32, 15:10:31), outros com saltos de vários segundos (15:10:17 para 15:10:16, e depois um salto maior até a próxima). Essa variação reflete exatamente as chamadas que **conseguiram** passar pela Policy Spike Arrest, enquanto as que caíram dentro da mesma janela de bloqueio nunca chegaram a ser processadas pelo backend — nem sequer aparecem no Monitor, já que foram rejeitadas ainda na camada do API Management, antes de alcançar o Cloud Integration.*
+
+### Uma alternativa de mercado para simular rajadas reais: Apache JMeter
+
+O Postman, mesmo através do Collection Runner, tem uma limitação conhecida: sua execução é fundamentalmente sequencial (baseada em um único processo Node.js/Electron), o que impede a geração de tráfego verdadeiramente concorrente. Para cenários onde seja necessário simular uma rajada de requisições genuinamente simultâneas — como testes de carga e performance mais rigorosos — a ferramenta consolidada no mercado para esse propósito é o **Apache JMeter**, gratuita e de código aberto, projetada especificamente para orquestrar múltiplas "threads" (usuários virtuais) disparando requisições ao mesmo tempo, permitindo configurar cenários como "50 usuários simultâneos, cada um enviando uma chamada instantaneamente". Embora não tenha sido utilizada neste laboratório — já que o Postman Collection Runner se mostrou suficiente para demonstrar o comportamento da Policy —, o JMeter é a ferramenta recomendada para validações de Spike Arrest e testes de carga mais próximos de um cenário de produção real.
+
+---
+
 ## 🔍 Troubleshooting & Lições Aprendidas
 
 ### 1. Um Product só pode ter um Rate Plan vinculado
@@ -220,13 +300,19 @@ Isso não compromete o propósito de negócio deste cenário: a atuação real d
 
 > 💡 **Nota conceitual para o portfólio**: a Policy Quota do SAP API Management opera na relação **Product-Proxy**, não diretamente sobre a identidade do consumidor como um todo. Um mesmo Developer App, ao acessar diferentes Proxies através de diferentes Products, pode estar sujeito a diferentes Quotas (ou nenhuma), dependendo de qual Product concede acesso àquele recurso específico — um comportamento relevante ao desenhar arquiteturas de API com múltiplos níveis de consumidor compartilhando recursos entre si.
 
+### 5. Ferramenta de teste (Postman Runner) não gera velocidade suficiente para violar um Rate configurado de forma realista
+
+**Causa:** o Postman Collection Runner processa requisições de forma sequencial, e o tempo de rede/processamento naturalmente envolvido em cada chamada (450-600 ms neste ambiente) limita a cadência máxima prática a aproximadamente 1 chamada por segundo — insuficiente para violar um `Rate` configurado de forma realista para produção (ex: `10ps` ou `30ps`).
+
+**Solução:** calibrar o `Rate` da Policy para um valor artificialmente baixo (`1ps`) durante o teste em ambiente de laboratório, compatível com a velocidade que a ferramenta de teste disponível consegue efetivamente gerar. Para testes de carga que necessitem simular Rates realistas de produção, recomenda-se uma ferramenta de geração de tráfego concorrente dedicada, como o Apache JMeter.
+
 ---
 
 ## ✅ Conclusão
 
-Este cenário introduziu o controle de volume de chamadas (Quota) como uma dimensão adicional de governança de API, complementar às dimensões de autenticação (E0-E2) e permissão por Scope (E3) já exploradas no projeto. A implementação através de uma única Policy com resolução dinâmica de valores — em vez de Policies duplicadas por plano — reflete a prática recomendada de mercado para arquiteturas de API com múltiplos níveis de consumidor comercial. A investigação do comportamento inesperado do token do Compliance revelou, adicionalmente, uma característica de design pouco documentada da plataforma: a Quota é resolvida com base na relação entre o Product e o Proxy específico sendo chamado, não sobre a totalidade dos Products que um consumidor possui — um conhecimento valioso para o planejamento de arquiteturas de API mais complexas.
+Estes dois cenários introduziram, em conjunto, o controle de tráfego (Quota e Spike Arrest) como uma dimensão adicional de governança de API, complementar às dimensões de autenticação (E0-E2) e permissão por Scope (E3) já exploradas no projeto. A Quota, implementada com resolução dinâmica de valores a partir do Product do consumidor, reflete a prática recomendada de mercado para arquiteturas de API com múltiplos níveis de plano comercial — e sua investigação revelou uma característica de design pouco documentada da plataforma: a Quota é resolvida com base na relação entre o Product e o Proxy específico sendo chamado, não sobre a totalidade dos Products que um consumidor possui. O Spike Arrest, por sua vez, demonstrou na prática a distinção fundamental entre controlar **volume acumulado** e controlar **velocidade instantânea** de chamadas — dois problemas de negócio e de engenharia diferentes, ainda que frequentemente confundidos, resolvidos por Policies complementares na mesma cadeia de proteção do Proxy.
 
-**Recursos praticados:** Policy Quota com resolução dinâmica (`apiproduct.developer.quota.*`) · Modelagem de planos comerciais via múltiplos API Products apontando para o mesmo Proxy · Rate Plans (Monetize) · Múltiplos Developer Apps representando diferentes níveis de consumidor comercial · Troubleshooting de regras de associação Product-Rate Plan, de ordem de elementos em schema XML de Policy, e de escopo de aplicação de Quota em consumidores com múltiplos Products
+**Recursos praticados:** Policy Quota com resolução dinâmica (`apiproduct.developer.quota.*`) · Policy Spike Arrest · Modelagem de planos comerciais via múltiplos API Products apontando para o mesmo Proxy · Rate Plans (Monetize) · Múltiplos Developer Apps representando diferentes níveis de consumidor comercial · Postman Collection Runner para testes de volume · Troubleshooting de regras de associação Product-Rate Plan, de ordem de elementos em schema XML de Policy, de escopo de aplicação de Quota em consumidores com múltiplos Products, e de limitações de ferramentas de teste para simulação de rajadas de tráfego
 
 **Cenário anterior:** [E3 — OAuth 2.0 e Scopes](./22-e3-oauth-scopes.md)
 
