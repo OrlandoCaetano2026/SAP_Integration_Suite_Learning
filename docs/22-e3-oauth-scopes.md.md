@@ -252,8 +252,8 @@ A Policy `Verify-Vendor-API-Key` (Verify API Key, do cenário E2) foi mantida no
 
 Durante os testes, uma pausa de aproximadamente 30 minutos entre a geração do token e sua utilização produziu, sem intenção, uma das evidências mais valiosas do cenário:
 
-<a href="../evidences/lab20/15-postman-proxy-access-token-expired-401.png" target="_blank">
-  <img src="../evidences/lab20/15-postman-proxy-access-token-expired-401.png" alt="Postman - erro Access Token expired" width="850"/>
+<a href="../evidences/lab20/15-postman-proxy-wrong-endpoint-401-html-error.png" target="_blank">
+  <img src="../evidences/lab20/15-postman-proxy-wrong-endpoint-401-html-error.png" alt="Postman - erro Access Token expired" width="850"/>
 </a>
 
 *Erro `"Access Token expired"` (`errorcode: keymanagement.service.access_token_expired`), obtido ao reutilizar um token gerado cerca de 30 minutos antes. Essa é a prova prática e não planejada da principal vantagem do OAuth sobre uma API Key estática: o token se torna inutilizável automaticamente após seu tempo de vida, sem qualquer ação manual de revogação.*
