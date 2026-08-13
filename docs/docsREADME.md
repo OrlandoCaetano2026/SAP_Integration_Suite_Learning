@@ -48,11 +48,22 @@
 
 > 💡 O cenário **D5 — JDBC Adapter**, originalmente planejado separadamente, foi incorporado ao **D4**, que já cobre ProcessDirect + JDBC de forma integrada e realista.
 
+### Ⓔ Bloco E — API Management
+
+| Cenário | Doc | Descrição |
+|---|---|---|
+| E0, E1, E12 | [20 — API Proxy + Basic Authentication](./20-e-api-management-proxy-basic-auth.md) | Ativação da capability, API Provider, primeiro API Proxy e autenticação do Proxy junto ao backend via Key Value Map criptografado |
+| E2 | [21 — Verify API Key](./21-e2-verify-api-key.md) | Proteção do Proxy contra consumidores externos via API Key, com fluxo completo de API Product e Developer Hub |
+| E3 | [22 — OAuth 2.0 e Scopes](./22-e3-oauth-scopes.md) | Servidor de tokens OAuth Client Credentials, primeira operação de escrita via API, e permissões diferenciadas por Scope (Fornecedor vs. Compliance) |
+| E4, E5 | [23 — Quota Dinâmica e Spike Arrest](./23-e4-e5-quota-spike-arrest.md) | Planos comerciais (Free/Premium) com limite de chamadas dinâmico, e proteção contra rajadas instantâneas de tráfego |
+
+> 💡 Os cenários **E8 (API Products e planos)** e **E9 (Developer Portal)** já foram amplamente explorados na prática dentro dos docs 21, 22 e 23 (criação de Products, Rate Plans e Developer Apps), embora ainda não possuam um documento dedicado e isolado.
+
 ### 🔜 Próximos blocos
 
 | Bloco | Tema |
 |---|---|
-| Ⓔ E | API Management (Proxy, Policies, OAuth, Developer Portal) |
+| Ⓔ E | Policies restantes: JSON ↔ XML, Assign Message, Access Control, API Analytics |
 | Ⓕ F | Segurança (CSRF real, Client Certificate, OAuth 2.0, Keystore) |
 | Ⓖ G | Cenários SAP MM / PP / QM |
 | Ⓗ H | Event-Driven e End-to-End |

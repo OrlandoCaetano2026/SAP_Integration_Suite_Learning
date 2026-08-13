@@ -183,19 +183,21 @@ Goes **beyond the official journey**, covering topics highly valued in real proj
 
 | # | Scenario | Goal | Doc |
 |---|---|---|---|
-| E0 | Capability activation + API Provider | Enable API Management on the tenant and connect to the real backend | — |
-| E1 | API Proxy pointing to backend | Expose a controlled API | — |
-| E2 | Policy: Verify API Key | Basic key-based authentication | — |
-| E3 | Policy: OAuth | Secure authentication | — |
-| E4 | Policy: Quota | Limit the number of calls | — |
-| E5 | Policy: Spike Arrest | Protection against traffic spikes | — |
+| E0 | Capability activation + API Provider | Enable API Management on the tenant and connect to the real backend | [view](docs/20-e-api-management-proxy-basic-auth.md) |
+| E1 | API Proxy pointing to backend | Expose a controlled API | [view](docs/20-e-api-management-proxy-basic-auth.md) |
+| E2 | Policy: Verify API Key | Basic key-based authentication | [view](docs/21-e2-verify-api-key.md) |
+| E3 | Policy: OAuth | Secure authentication, write via API and differentiated Scopes | [view](docs/22-e3-oauth-scopes.md) |
+| E4 | Policy: Quota | Limit the number of calls (dynamic commercial plans) | [view](docs/23-e4-e5-quota-spike-arrest.md) |
+| E5 | Policy: Spike Arrest | Protection against traffic spikes | [view](docs/23-e4-e5-quota-spike-arrest.md) |
 | E6 | Policy: JSON ↔ XML | Format conversion | — |
 | E7 | Policy: Assign Message | Manipulate request/response | — |
 | E8 | API Products and plans | Group and distribute APIs | — |
 | E9 | Developer Portal | API publishing | — |
 | E10 | API Analytics | Usage monitoring | — |
 | E11 | Policy: Access Control | IP-based access control (whitelist/blacklist) | — |
-| E12 | Policy: Basic Authentication | Proxy authentication against the real backend | — |
+| E12 | Policy: Basic Authentication | Proxy authentication against the real backend | [view](docs/20-e-api-management-proxy-basic-auth.md) |
+
+> 💡 Scenarios **E8 (API Products and plans)** and **E9 (Developer Portal)** have already been extensively explored in practice within docs 21, 22, and 23 (creation of Products, Rate Plans, and Developer Apps), although they don't yet have a dedicated, standalone document.
 
 #### Ⓕ Block F — Security (cross-cutting) 🥇
 
@@ -235,6 +237,7 @@ Goes **beyond the official journey**, covering topics highly valued in real proj
 - **SFTPCloud** (free test SFTP server, used for file-based integration)
 - **Neon** (free serverless PostgreSQL database, used for JDBC connectivity)
 - **Mockoon + ngrok** (local simulation of external systems, such as an ERP)
+- **SAP Developer Hub** (portal for managing Applications and Subscriptions in API Management)
 - **VS Code + Git** (versioning and documentation)
 - **GitHub** (portfolio and version control)
 

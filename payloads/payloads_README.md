@@ -10,7 +10,7 @@ Mensagens de entrada (JSON) utilizadas nos testes dos laboratórios. Podem ser i
 | a3-pedido.json | A3 — Message Mapping | [ver](./a3-pedido.json) |
 | a4-pedido.json | A4 — Groovy Script | [ver](./a4-pedido.json) |
 
-> 💡 O **A2** (Timer → API) não possui payload de entrada: é disparado por Timer, sem trigger HTTP externo.
+💡 O **A2** (Timer → API) não possui payload de entrada: é disparado por Timer, sem trigger HTTP externo.
 
 ### Ⓑ Bloco B — Padrões de Integração
 
@@ -51,8 +51,14 @@ Mensagens de entrada (JSON) utilizadas nos testes dos laboratórios. Podem ser i
 | d4-teste2-bloqueio-qualidade.json | D4 — ProcessDirect (fornecedor bloqueado — Qualidade/QIR) | [ver](./d4-teste2-bloqueio-qualidade.json) |
 | d4-teste3-pedido-liberado.json | D4 — ProcessDirect (pedido liberado) | [ver](./d4-teste3-pedido-liberado.json) |
 
-> 💡 O **D3 — Consumer** (SFTP Sender com polling) não possui payload de entrada próprio: ele lê automaticamente o arquivo gravado pelo Producer (`d3-ordem-producao.json`) diretamente do servidor SFTP, sem receber requisição HTTP.
+> 💡 O **D3 — Consumer** (SFTP Sender com polling) não possui payload de entrada próprio: ele lê automaticamente o arquivo gravado pelo Producer (d3-ordem-producao.json) diretamente do servidor SFTP, sem receber requisição HTTP.
 
----
+### Ⓔ Bloco E — API Management
+
+| Arquivo | Cenário | Abrir |
+|---|---|---|
+| e3-vendor-override.json | E3 — Override de bloqueio de fornecedor (escrita via API, requer token OAuth com scope vendor.write) | [ver](./e3-vendor-override.json) |
+
+> 💡 Os cenários E0, E1, E2, E4 e E5 reaproveitam os mesmos payloads já existentes do Bloco D (`d1-consulta-*.json` e `d4-teste*.json`), já que testam a camada de API Management (Proxy/Policies) sobre os mesmos backends, sem alterar a estrutura do payload de negócio em si.
 
 📌 Voltar para o [README principal do projeto](../README.md)

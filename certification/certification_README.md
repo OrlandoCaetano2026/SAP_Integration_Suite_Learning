@@ -48,11 +48,28 @@ Trilha oficial: [Developing with SAP Integration Suite](https://learning.sap.com
 
 > 💡 O cenário **D5 — JDBC Adapter**, originalmente planejado separadamente, foi incorporado ao **D4**.
 
+#### Ⓔ Bloco E — API Management (em andamento)
+
+| Cenário | Descrição | Data | Status |
+|---|---|---|---|
+| E0 | Ativação da capability + API Provider | 11/08/2026 | ✅ |
+| E1 | API Proxy apontando para backend | 11/08/2026 | ✅ |
+| E2 | Policy: Verify API Key | 11/08/2026 | ✅ |
+| E3 | Policy: OAuth (Scopes + escrita via API) | 11-12/08/2026 | ✅ |
+| E4 | Policy: Quota (planos comerciais dinâmicos) | 12/08/2026 | ✅ |
+| E5 | Policy: Spike Arrest | 12/08/2026 | ✅ |
+| E6 | Policy: JSON ↔ XML | — | ⬜ |
+| E7 | Policy: Assign Message | — | ⬜ |
+| E8 | API Products e planos | 11-12/08/2026 | ✅ (coberto nos docs 21-23) |
+| E9 | Developer Portal | 11-12/08/2026 | ✅ (coberto nos docs 21-23) |
+| E10 | Analytics de API | — | ⬜ |
+| E11 | Policy: Access Control | — | ⬜ |
+| E12 | Policy: Basic Authentication | 11/08/2026 | ✅ |
+
 #### 🔜 Próximos blocos
 
 | Bloco | Descrição | Status |
 |---|---|---|
-| Ⓔ E | API Management (Proxy, Policies, OAuth, Developer Portal) | ⬜ |
 | Ⓕ F | Segurança (CSRF real, Client Certificate, OAuth 2.0, Keystore) | ⬜ |
 | Ⓖ G | Cenários SAP MM / PP / QM | ⬜ |
 | Ⓗ H | Event-Driven e End-to-End | ⬜ |
@@ -72,7 +89,7 @@ Trilha oficial: [Developing with SAP Integration Suite](https://learning.sap.com
 | **Bloco B** — Padrões de Integração | 03/08/2026 | 04/08/2026 | ✅ Concluído |
 | **Bloco C** — Resiliência e Erros | 04/08/2026 | 06/08/2026 | ✅ Concluído |
 | **Bloco D** — Conectividade / Adapters | 06/08/2026 | 10/08/2026 | ✅ Concluído |
-| **Bloco E** — API Management | — | — | ⏳ Planejado |
+| **Bloco E** — API Management | 11/08/2026 | — | 🔄 Em andamento (E0-E5, E8, E9 concluídos; faltam E6, E7, E10, E11) |
 | **Bloco F** — Segurança | — | — | ⏳ Planejado |
 | **Bloco G** — Cenários SAP MM / PP / QM | — | — | ⏳ Planejado |
 | **Bloco H** — Event-Driven e End-to-End | — | — | ⏳ Planejado |
@@ -83,10 +100,10 @@ Trilha oficial: [Developing with SAP Integration Suite](https://learning.sap.com
 
 | Métrica | Valor |
 |---|---|
-| **Cenários concluídos** | 18 |
+| **Cenários concluídos** | 24 |
 | **Blocos concluídos** | 4 de 8 (A, B, C e D) |
-| **Bloco em andamento** | — (D concluído; E ainda não iniciado) |
-| **Próximo bloco** | E — API Management |
+| **Bloco em andamento** | E — API Management (E0-E5, E8, E9 concluídos; faltam E6, E7, E10, E11) |
+| **Próximo bloco** | F — Segurança (após finalizar o E) |
 | **Data de início** | 01/08/2026 |
 | **Prova de certificação** | ⏳ A agendar |
 

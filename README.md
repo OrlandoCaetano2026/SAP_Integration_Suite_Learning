@@ -183,19 +183,21 @@ Vai **além da trilha oficial**, cobrindo temas muito valorizados em projetos re
 
 | # | Cenário | Objetivo | Doc |
 |---|---|---|---|
-| E0 | Ativação da capability + API Provider | Habilitar API Management no tenant e conectar ao backend real | — |
-| E1 | API Proxy apontando para backend | Expor API controlada | — |
-| E2 | Policy: Verify API Key | Autenticação básica por chave | — |
-| E3 | Policy: OAuth | Autenticação segura | — |
-| E4 | Policy: Quota | Limitar número de chamadas | — |
-| E5 | Policy: Spike Arrest | Proteção contra picos de tráfego | — |
+| E0 | Ativação da capability + API Provider | Habilitar API Management no tenant e conectar ao backend real | [ver](docs/20-e-api-management-proxy-basic-auth.md) |
+| E1 | API Proxy apontando para backend | Expor API controlada | [ver](docs/20-e-api-management-proxy-basic-auth.md) |
+| E2 | Policy: Verify API Key | Autenticação básica por chave | [ver](docs/21-e2-verify-api-key.md) |
+| E3 | Policy: OAuth | Autenticação segura, escrita via API e Scopes diferenciados | [ver](docs/22-e3-oauth-scopes.md) |
+| E4 | Policy: Quota | Limitar número de chamadas (planos comerciais dinâmicos) | [ver](docs/23-e4-e5-quota-spike-arrest.md) |
+| E5 | Policy: Spike Arrest | Proteção contra picos de tráfego | [ver](docs/23-e4-e5-quota-spike-arrest.md) |
 | E6 | Policy: JSON ↔ XML | Conversão de formatos | — |
 | E7 | Policy: Assign Message | Manipular request/response | — |
 | E8 | API Products e planos | Agrupar e distribuir APIs | — |
 | E9 | Developer Portal | Publicação de API | — |
 | E10 | Analytics de API | Monitoramento de uso | — |
 | E11 | Policy: Access Control | Controle de acesso por IP (whitelist/blacklist) | — |
-| E12 | Policy: Basic Authentication | Autenticação do Proxy junto ao backend real | — |
+| E12 | Policy: Basic Authentication | Autenticação do Proxy junto ao backend real | [ver](docs/20-e-api-management-proxy-basic-auth.md) |
+
+> 💡 Os cenários **E8 (API Products e planos)** e **E9 (Developer Portal)** já foram amplamente explorados na prática dentro dos docs 21, 22 e 23 (criação de Products, Rate Plans e Developer Apps), embora ainda não possuam um documento dedicado e isolado.
 
 #### Ⓕ Bloco F — Segurança (transversal) 🥇
 
@@ -235,6 +237,7 @@ Vai **além da trilha oficial**, cobrindo temas muito valorizados em projetos re
 - **SFTPCloud** (servidor SFTP gratuito de teste, usado na integração de arquivos)
 - **Neon** (banco de dados PostgreSQL serverless gratuito, usado na conectividade JDBC)
 - **Mockoon + ngrok** (simulação local de sistemas externos, como ERP)
+- **SAP Developer Hub** (portal de gestão de Applications e Subscriptions do API Management)
 - **VS Code + Git** (versionamento e documentação)
 - **GitHub** (portfólio e controle de versão)
 

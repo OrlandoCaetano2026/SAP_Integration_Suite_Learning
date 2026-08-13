@@ -39,6 +39,15 @@
 | lab16 | D3 — SFTP Adapter (Producer + Consumer) | [pasta](./lab16) | [doc](../docs/18-d3-sftp-adapter.md) |
 | lab17 | D4 — ProcessDirect + JDBC | [pasta](./lab17) | [doc](../docs/19-d4-processdirect.md) |
 
+### Ⓔ Bloco E — API Management
+
+| Lab | Cenário | Evidências | Doc |
+|---|---|---|---|
+| lab18 | E0, E1, E12 — API Proxy + Basic Authentication (KVM) | [pasta](./lab18) | [doc](../docs/20-e-api-management-proxy-basic-auth.md) |
+| lab19 | E2 — Verify API Key | [pasta](./lab19) | [doc](../docs/21-e2-verify-api-key.md) |
+| lab20 | E3 — OAuth 2.0 e Scopes (Fornecedor vs. Compliance) | [pasta](./lab20) | [doc](../docs/22-e3-oauth-scopes.md) |
+| lab21 | E4, E5 — Quota Dinâmica e Spike Arrest | [pasta](./lab21) | [doc](../docs/23-e4-e5-quota-spike-arrest.md) |
+
 💡 **Convenção de nomes:** os arquivos seguem a ordem narrativa do cenário (ex.: 01-iflow, 02-postman, 03-...), com dados sensíveis (URLs de tenant, credenciais, headers de rastreamento) borrados antes do commit.
 
 📌 Voltar para o [README principal do projeto](../README.md)

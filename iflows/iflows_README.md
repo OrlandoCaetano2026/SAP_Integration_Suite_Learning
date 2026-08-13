@@ -3,11 +3,13 @@
 Esta pasta contém os **Integration Flows exportados** do SAP Integration Suite, no formato .zip. Cada arquivo é o artefato real do iFlow, podendo ser **importado e executado** em um tenant do Integration Suite.
 
 ### 📥 Como exportar um iFlow (para adicionar aqui)
+
 SAP Integration Suite → Design → Integrations and APIs
 → abrir o pacote → selecionar o Integration Flow
 → botão "Download" (Merged Configured and Default Values) → gera o arquivo .zip
 
 ### 📤 Como importar um iFlow (para reutilizar)
+
 SAP Integration Suite → Design → pacote de destino
 → Add → Integration Flow → Upload → selecionar o .zip
 
@@ -53,6 +55,14 @@ SAP Integration Suite → Design → pacote de destino
 | D3_SFTP_Consumer.zip | SFTP Consumer (polling + processamento) | [doc](../docs/18-d3-sftp-adapter.md) |
 | D4_ProcessDirect_Main.zip | ProcessDirect Main (HTTP + Router + JDBC) | [doc](../docs/19-d4-processdirect.md) |
 | D4_ProcessDirect_VendorValidation.zip | ProcessDirect Utility (consulta JDBC reutilizável) | [doc](../docs/19-d4-processdirect.md) |
+
+#### Ⓔ Bloco E — API Management
+
+| Arquivo | Cenário | Doc |
+|---|---|---|
+| E3_VendorOverride.zip | Escrita via API (UPDATE em vendor_block_status) — usado nos testes de Scope do OAuth | [doc](../docs/22-e3-oauth-scopes.md) |
+
+> 💡 Os demais cenários do Bloco E (E0, E1, E2, E4, E5, E12) não geram novos artefatos de iFlow — eles reaproveitam os iFlows já exportados do Bloco D (`D1_OData_Adapter`, `D4_ProcessDirect_Main`) expostos através de API Proxies e Policies configuradas na capability API Management, que não são exportáveis como .zip.
 
 💡 Ao adicionar novos iFlows, mantenha o nome do .zip igual ao nome do artefato no Integration Suite.
 
