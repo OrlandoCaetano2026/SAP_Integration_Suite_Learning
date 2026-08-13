@@ -1,40 +1,23 @@
 {
   "info": {
     "name": "SAP Integration Suite Learning",
-    "description": "Coleção de testes dos laboratórios do projeto SAP Integration Suite Learning (Blocos A, B, C e D).\n\nConfigure um Environment com as variáveis:\n- {{base_url}} = URL base do runtime\n- {{clientid}} = clientid da Service Key\n- {{clientsecret}} = clientsecret da Service Key\n\nAutenticação: Basic Auth (clientid/clientsecret) no nível da coleção.",
+    "description": "Coleção de testes dos laboratórios do projeto SAP Integration Suite Learning (Blocos A, B, C, D e E).\n\nConfigure um Environment com as variáveis:\n- {{base_url}} = URL base do runtime\n- {{clientid}} = clientid da Service Key\n- {{clientsecret}} = clientsecret da Service Key\n- {{apim_base_url}} = URL base do API Management\n- {{consumer_api_key}} = Consumer Key gerada no Developer Hub (E2)\n- {{access_token_manual}} = Access Token OAuth gerado manualmente (E3)\n\nAutenticação: Basic Auth (clientid/clientsecret) no nível da coleção (Blocos A-D).\n\nBloco E (API Management): E1 e E2 sao requests prontos. E3 requer preencher manualmente {{access_token_manual}} com um Access Token OAuth (gerado via E3_OAuth_Token_Server_Proxy, documentado em docs/22-e3-oauth-scopes.md). E4 (Quota) e E5 (Spike Arrest) nao possuem requests fixos - ver docs/23-e4-e5-quota-spike-arrest.md.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
     "type": "basic",
     "basic": [
-      {
-        "key": "username",
-        "value": "{{clientid}}",
-        "type": "string"
-      },
-      {
-        "key": "password",
-        "value": "{{clientsecret}}",
-        "type": "string"
-      }
+      { "key": "username", "value": "{{clientid}}", "type": "string" },
+      { "key": "password", "value": "{{clientsecret}}", "type": "string" }
     ]
   },
   "variable": [
-    {
-      "key": "base_url",
-      "value": "https://SEU-TENANT.it-cpitrial06-rt.cfapps.us10-001.hana.ondemand.com",
-      "type": "string"
-    },
-    {
-      "key": "clientid",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "clientsecret",
-      "value": "",
-      "type": "string"
-    }
+    { "key": "base_url", "value": "https://SEU-TENANT.it-cpitrial06-rt.cfapps.us10-001.hana.ondemand.com", "type": "string" },
+    { "key": "clientid", "value": "", "type": "string" },
+    { "key": "clientsecret", "value": "", "type": "string" },
+    { "key": "apim_base_url", "value": "https://SEU-TENANT-apim.SEU-DATACENTER.hana.ondemand.com/SEU-TENANT", "type": "string" },
+    { "key": "consumer_api_key", "value": "", "type": "string" },
+    { "key": "access_token_manual", "value": "", "type": "string" }
   ],
   "item": [
     {
@@ -44,78 +27,27 @@
           "name": "A1 - HTTP to Webhook",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/lab01",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "lab01"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"id\": \"1001\",\n  \"nome\": \"Orlando\",\n  \"produto\": \"Balança Industrial\",\n  \"quantidade\": 5\n}"
-            }
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/lab01", "host": ["{{base_url}}"], "path": ["http", "lab01"] },
+            "body": { "mode": "raw", "raw": "{\n  \"id\": \"1001\",\n  \"nome\": \"Orlando\",\n  \"produto\": \"Balança Industrial\",\n  \"quantidade\": 5\n}" }
           }
         },
         {
           "name": "A3 - Message Mapping (JSON to XML)",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/a3mapping",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "a3mapping"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-1001\",\n    \"cliente\": \"Orlando Caetano\",\n    \"valor\": \"2500.00\"\n  }\n}"
-            }
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/a3mapping", "host": ["{{base_url}}"], "path": ["http", "a3mapping"] },
+            "body": { "mode": "raw", "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-1001\",\n    \"cliente\": \"Orlando Caetano\",\n    \"valor\": \"2500.00\"\n  }\n}" }
           }
         },
         {
           "name": "A4 - Groovy Script",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/a4groovy",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "a4groovy"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"pedido\": \"PED-2001\",\n  \"cliente\": \"Orlando Caetano\",\n  \"material\": \"Balança Industrial BK-3000\",\n  \"quantidade\": 5,\n  \"valorUnitario\": 700.00,\n  \"centro\": \"1000\"\n}"
-            }
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/a4groovy", "host": ["{{base_url}}"], "path": ["http", "a4groovy"] },
+            "body": { "mode": "raw", "raw": "{\n  \"pedido\": \"PED-2001\",\n  \"cliente\": \"Orlando Caetano\",\n  \"material\": \"Balança Industrial BK-3000\",\n  \"quantidade\": 5,\n  \"valorUnitario\": 700.00,\n  \"centro\": \"1000\"\n}" }
           }
         }
       ],
@@ -126,185 +58,45 @@
       "item": [
         {
           "name": "B1 - Router (ALTO valor)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/b1router",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "b1router"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-3001\",\n    \"cliente\": \"Orlando\",\n    \"valor\": 5000\n  }\n}"
-            }
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/b1router", "host": ["{{base_url}}"], "path": ["http", "b1router"] },
+            "body": { "mode": "raw", "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-3001\",\n    \"cliente\": \"Orlando\",\n    \"valor\": 5000\n  }\n}" } }
         },
         {
           "name": "B1 - Router (MEDIO valor)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/b1router",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "b1router"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-3002\",\n    \"cliente\": \"Orlando\",\n    \"valor\": 2000\n  }\n}"
-            }
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/b1router", "host": ["{{base_url}}"], "path": ["http", "b1router"] },
+            "body": { "mode": "raw", "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-3002\",\n    \"cliente\": \"Orlando\",\n    \"valor\": 2000\n  }\n}" } }
         },
         {
           "name": "B1 - Router (BAIXO valor)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/b1router",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "b1router"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-3003\",\n    \"cliente\": \"Orlando\",\n    \"valor\": 500\n  }\n}"
-            }
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/b1router", "host": ["{{base_url}}"], "path": ["http", "b1router"] },
+            "body": { "mode": "raw", "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-3003\",\n    \"cliente\": \"Orlando\",\n    \"valor\": 500\n  }\n}" } }
         },
         {
           "name": "B2 - Content Enricher",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/b2enricher",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "b2enricher"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-4001\",\n    \"produto\": \"Balança Industrial\",\n    \"quantidade\": 3\n  }\n}"
-            }
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/b2enricher", "host": ["{{base_url}}"], "path": ["http", "b2enricher"] },
+            "body": { "mode": "raw", "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-4001\",\n    \"produto\": \"Balança Industrial\",\n    \"quantidade\": 3\n  }\n}" } }
         },
         {
           "name": "B3 - Splitter",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/b3splitter",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "b3splitter"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-5001\",\n    \"itens\": {\n      \"item\": [\n        { \"produto\": \"Balança Industrial\", \"quantidade\": 2 },\n        { \"produto\": \"Etiqueta Térmica\", \"quantidade\": 100 },\n        { \"produto\": \"Impressora Zebra\", \"quantidade\": 5 }\n      ]\n    }\n  }\n}"
-            }
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/b3splitter", "host": ["{{base_url}}"], "path": ["http", "b3splitter"] },
+            "body": { "mode": "raw", "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-5001\",\n    \"itens\": {\n      \"item\": [\n        { \"produto\": \"Balança Industrial\", \"quantidade\": 2 },\n        { \"produto\": \"Etiqueta Térmica\", \"quantidade\": 100 },\n        { \"produto\": \"Impressora Zebra\", \"quantidade\": 5 }\n      ]\n    }\n  }\n}" } }
         },
         {
           "name": "B4 - Aggregator",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/b4aggregator",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "b4aggregator"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-6002\",\n    \"cliente\": \"Orlan_tech\",\n    \"centro\": \"1000\",\n    \"itens\": {\n      \"item\": [\n        { \"codigo\": \"MAT-001\", \"produto\": \"Balança Industrial BK-3000\", \"quantidade\": 2, \"valorUnitario\": 3500.00 },\n        { \"codigo\": \"MAT-002\", \"produto\": \"Etiqueta Térmica 100x150\", \"quantidade\": 5000, \"valorUnitario\": 0.15 },\n        { \"codigo\": \"MAT-003\", \"produto\": \"Impressora Zebra ZT411\", \"quantidade\": 3, \"valorUnitario\": 4200.00 },\n        { \"codigo\": \"MAT-004\", \"produto\": \"Ribbon Cera 110x300\", \"quantidade\": 50, \"valorUnitario\": 28.90 },\n        { \"codigo\": \"MAT-005\", \"produto\": \"Célula de Carga 500kg\", \"quantidade\": 8, \"valorUnitario\": 890.00 },\n        { \"codigo\": \"MAT-006\", \"produto\": \"Cabo Blindado 4 vias\", \"quantidade\": 200, \"valorUnitario\": 12.50 },\n        { \"codigo\": \"MAT-007\", \"produto\": \"Terminal Indicador T500\", \"quantidade\": 4, \"valorUnitario\": 1750.00 },\n        { \"codigo\": \"MAT-008\", \"produto\": \"Plataforma Inox 1x1m\", \"quantidade\": 6, \"valorUnitario\": 2300.00 }\n      ]\n    }\n  }\n}"
-            }
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/b4aggregator", "host": ["{{base_url}}"], "path": ["http", "b4aggregator"] },
+            "body": { "mode": "raw", "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-6002\",\n    \"cliente\": \"Orlan_tech\",\n    \"centro\": \"1000\",\n    \"itens\": {\n      \"item\": [\n        { \"codigo\": \"MAT-001\", \"produto\": \"Balança Industrial BK-3000\", \"quantidade\": 2, \"valorUnitario\": 3500.00 },\n        { \"codigo\": \"MAT-002\", \"produto\": \"Etiqueta Térmica 100x150\", \"quantidade\": 5000, \"valorUnitario\": 0.15 },\n        { \"codigo\": \"MAT-003\", \"produto\": \"Impressora Zebra ZT411\", \"quantidade\": 3, \"valorUnitario\": 4200.00 },\n        { \"codigo\": \"MAT-004\", \"produto\": \"Ribbon Cera 110x300\", \"quantidade\": 50, \"valorUnitario\": 28.90 },\n        { \"codigo\": \"MAT-005\", \"produto\": \"Célula de Carga 500kg\", \"quantidade\": 8, \"valorUnitario\": 890.00 },\n        { \"codigo\": \"MAT-006\", \"produto\": \"Cabo Blindado 4 vias\", \"quantidade\": 200, \"valorUnitario\": 12.50 },\n        { \"codigo\": \"MAT-007\", \"produto\": \"Terminal Indicador T500\", \"quantidade\": 4, \"valorUnitario\": 1750.00 },\n        { \"codigo\": \"MAT-008\", \"produto\": \"Plataforma Inox 1x1m\", \"quantidade\": 6, \"valorUnitario\": 2300.00 }\n      ]\n    }\n  }\n}" } }
         },
         {
           "name": "B5 - Multicast (Ordem de Producao)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/b5multicast",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "b5multicast"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ordemProducao\": {\n    \"numero\": \"OP-9001\",\n    \"produto\": \"Balança Industrial BK-3000\",\n    \"codigoProduto\": \"PROD-X-3000\",\n    \"centro\": \"1000\",\n    \"quantidadeProduzir\": 50,\n    \"dataInicio\": \"2026-08-10\",\n    \"componentes\": {\n      \"item\": [\n        { \"codigo\": \"MAT-001\", \"descricao\": \"Célula de Carga 500kg\", \"quantidade\": 50 },\n        { \"codigo\": \"MAT-002\", \"descricao\": \"Plataforma Inox 1x1m\", \"quantidade\": 50 },\n        { \"codigo\": \"MAT-003\", \"descricao\": \"Terminal Indicador T500\", \"quantidade\": 50 },\n        { \"codigo\": \"MAT-004\", \"descricao\": \"Cabo Blindado 4 vias\", \"quantidade\": 200 },\n        { \"codigo\": \"MAT-005\", \"descricao\": \"Fonte 24V\", \"quantidade\": 50 }\n      ]\n    }\n  }\n}"
-            }
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/b5multicast", "host": ["{{base_url}}"], "path": ["http", "b5multicast"] },
+            "body": { "mode": "raw", "raw": "{\n  \"ordemProducao\": {\n    \"numero\": \"OP-9001\",\n    \"produto\": \"Balança Industrial BK-3000\",\n    \"codigoProduto\": \"PROD-X-3000\",\n    \"centro\": \"1000\",\n    \"quantidadeProduzir\": 50,\n    \"dataInicio\": \"2026-08-10\",\n    \"componentes\": {\n      \"item\": [\n        { \"codigo\": \"MAT-001\", \"descricao\": \"Célula de Carga 500kg\", \"quantidade\": 50 },\n        { \"codigo\": \"MAT-002\", \"descricao\": \"Plataforma Inox 1x1m\", \"quantidade\": 50 },\n        { \"codigo\": \"MAT-003\", \"descricao\": \"Terminal Indicador T500\", \"quantidade\": 50 },\n        { \"codigo\": \"MAT-004\", \"descricao\": \"Cabo Blindado 4 vias\", \"quantidade\": 200 },\n        { \"codigo\": \"MAT-005\", \"descricao\": \"Fonte 24V\", \"quantidade\": 50 }\n      ]\n    }\n  }\n}" } }
         }
       ]
     },
@@ -313,190 +105,50 @@
       "item": [
         {
           "name": "C1 - Exception Subprocess (ordem VALIDA)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/c1exception",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "c1exception"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ordemProducao\": {\n    \"numero\": \"OP-8001\",\n    \"cliente\": \"Orlan_tech\",\n    \"centro\": \"1000\",\n    \"produto\": \"Balança Industrial BK-3000\",\n    \"quantidadeProduzir\": 50,\n    \"dataInicio\": \"2026-08-10\",\n    \"dataFim\": \"2026-08-20\",\n    \"componentes\": {\n      \"item\": [\n        { \"codigo\": \"MAT-001\", \"descricao\": \"Célula de Carga 500kg\", \"quantidade\": 50 },\n        { \"codigo\": \"MAT-002\", \"descricao\": \"Plataforma Inox 1x1m\", \"quantidade\": 50 },\n        { \"codigo\": \"MAT-003\", \"descricao\": \"Terminal Indicador T500\", \"quantidade\": 50 }\n      ]\n    }\n  }\n}"
-            }
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/c1exception", "host": ["{{base_url}}"], "path": ["http", "c1exception"] },
+            "body": { "mode": "raw", "raw": "{\n  \"ordemProducao\": {\n    \"numero\": \"OP-8001\",\n    \"cliente\": \"Orlan_tech\",\n    \"centro\": \"1000\",\n    \"produto\": \"Balança Industrial BK-3000\",\n    \"quantidadeProduzir\":[\n        { \"codigo\": \"MAT-001\-10\",\n    \"dataFim\": \"2026-08-20\",\n    \"componentes\": {\n      \"item\": [\n        { \"codigo\": \"MAT-001\", \"descricao\": \"Célula de Carga 500kg\", \"quantidade\": 50 },\n        { \"codigo\": \"MAT-002\", \"descricao\": \"Plataforma Inox 1x1m\", \"quantidade\": 50 },\n        { \"codigo\": \"MAT-003\", \"descricao\": \"Terminal Indicador T500\", \"quantidade\": 50 }\n      ]\n    }\n  }\n}" } }
         },
         {
           "name": "C1 - Exception Subprocess (ordem INVALIDA)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/c1exception",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "c1exception"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ordemProducao\": {\n    \"numero\": \"OP-8002\",\n    \"cliente\": \"Orlan_tech\",\n    \"centro\": \"9999\",\n    \"produto\": \"Balança Industrial BK-3000\",\n    \"quantidadeProduzir\": 0,\n    \"dataInicio\": \"2026-08-20\",\n    \"dataFim\": \"2026-08-10\",\n    \"componentes\": { \"item\": [] }\n  }\n}"
-            }
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/c1exception", "host": ["{{base_url}}"], "path": ["http", "c1exception"] },
+            "body": { "mode": "raw", "raw": "{\n  \"ordemProducao\": {\n    \"numero\": \"OP-8002\",\n    \"cliente\": \"Orlan_tech\",\n    \"centro\": \"9999\",\n    \"produto\": \"Balança Industrial BK-3000\",\n    \"quantidadeProduzir\": 0,\n    \"dataInicio\": \"2026-08-20\",\n    \"dataFim\": \"2026-08-10\",\n    \"componentes\": { \"item\": [] }\n  }\n}" } }
         },
         {
           "name": "C2 - Retry (Confirmacao de Producao)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/c2retry",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "c2retry"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ordemProducao\": {\n    \"numero\": \"OP-9500\",\n    \"cliente\": \"Orlan_tech\",\n    \"centro\": \"1000\",\n    \"produto\": \"Balança Industrial BK-3000\",\n    \"quantidadeProduzir\": 50,\n    \"operacoes\": {\n      \"operacao\": [\n        { \"numeroOperacao\": \"100\", \"descricao\": \"Montagem da estrutura\", \"centroTrabalho\": \"CT-MONTAGEM\", \"componentes\": { \"item\": [ { \"codigo\": \"MAT-001\", \"descricao\": \"Célula de Carga 500kg\", \"quantidade\": 50 }, { \"codigo\": \"MAT-002\", \"descricao\": \"Plataforma Inox 1x1m\", \"quantidade\": 50 } ] } },\n        { \"numeroOperacao\": \"200\", \"descricao\": \"Teste e calibração\", \"centroTrabalho\": \"CT-QUALIDADE\", \"componentes\": { \"item\": [ { \"codigo\": \"MAT-003\", \"descricao\": \"Kit Calibração Certificado\", \"quantidade\": 1 } ] } }\n      ]\n    }\n  }\n}"
-            },
-            "description": "No iFlow, o adapter HTTP direciona para /falha (dispara retry) ou /ok (sucesso) conforme o teste."
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/c2retry", "host": ["{{base_url}}"], "path": ["http", "c2retry"] },
+            "body": { "mode": "raw", "raw": "{\n  \"ordemProducao\": {\n    \"numero\": \"OP-9500\",\n    \"cliente\": \"Orlan_tech\",\n    \"centro\": \"1000\",\n    \"produto\": \"Balança Industrial BK-3000\",\n    \"quantidadeProduzir\": 50,\n    \"operacoes\": {\n      \"operacao\": [\n        { \"numeroOperacao\": \"100\", \"descricao\": \"Montagem da estrutura\", \"centroTrabalho\": \"CT-MONTAGEM\", \"componentes\": { \"item\": [ { \"codigo\": \"MAT-001\", \"descricao\": \"Célula de Carga 500kg\", \"quantidade\": 50 }, { \"codigo\": \"MAT-002\", \"descricao\": \"Plataforma Inox 1x1m\", \"quantidade\": 50 } ] } },\n        { \"numeroOperacao\": \"200\", \"descricao\": \"Teste e calibração\", \"centroTrabalho\": \"CT-QUALIDADE\", \"componentes\": { \"item\": [ { \"codigo\": \"MAT-003\", \"descricao\": \"Kit Calibração Certificado\", \"quantidade\": 1 } ] } }\n      ]\n    }\n  }\n}" },
+            "description": "No iFlow, o adapter HTTP direciona para /falha (dispara retry) ou /ok (sucesso) conforme o teste." }
         },
         {
           "name": "C3 - Dead Letter (Confirmacao MES -> ERP)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/c3producer",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "c3producer"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"confirmacaoProducao\": {\n    \"ordem\": \"OP-9900\",\n    \"material\": \"PROD-X-3000\",\n    \"descricao\": \"Balanca Industrial BK-3000\",\n    \"centro\": \"1000\",\n    \"centroTrabalho\": \"CT-MONTAGEM\",\n    \"quantidadeConfirmada\": 30,\n    \"unidade\": \"PC\",\n    \"turno\": \"A\",\n    \"operador\": \"MES-AUTO\",\n    \"dataConfirmacao\": \"2026-08-05\"\n  }\n}"
-            },
-            "description": "Envia para o Producer, que grava na fila JMS. O Consumer entrega ao ERP (Mockoon via ngrok). Desligar o Mockoon dispara o retry assincrono e o dead letter."
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/c3producer", "host": ["{{base_url}}"], "path": ["http", "c3producer"] },
+            "body": { "mode": "raw", "raw": "{\n  \"confirmacaoProducao\": {\n    \"ordem\": \"OP-9900\",\n    \"material\": \"PROD-X-3000\",\n    \"descricao\": \"Balanca Industrial BK-3000\",\n    \"centro\": \"1000\",\n    \"centroTrabalho\": \"CT-MONTAGEM\",\n    \"quantidadeConfirmada\": 30,\n    \"unidade\": \"PC\",\n    \"turno\": \"A\",\n    \"operador\": \"MES-AUTO\",\n    \"dataConfirmacao\": \"2026-08-05\"\n  }\n}" },
+            "description": "Envia para o Producer, que grava na fila JMS. O Consumer entrega ao ERP (Mockoon via ngrok). Desligar o Mockoon dispara o retry assincrono e o dead letter." }
         },
         {
           "name": "C4 - Data Store (CREATE)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/c4datastore",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "c4datastore"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"purchaseOrder\": {\n    \"header\": { \"ebeln\": \"7800000085\", \"bsart\": \"ZLAB\", \"lifnr\": \"FORN-0001\", \"bukrs\": \"9000\", \"waers\": \"BRL\", \"bedat\": \"2026-08-06\", \"messageFunction\": \"009\" },\n    \"items\": [\n      { \"ebelp\": \"00010\", \"matnr\": \"MAT-GEN-001\", \"txz01\": \"Balanca Industrial XPTO\", \"menge\": 100, \"meins\": \"PC\", \"netpr\": 250.00 },\n      { \"ebelp\": \"00020\", \"matnr\": \"MAT-GEN-002\", \"txz01\": \"Suporte Generico XPTO\", \"menge\": 50, \"meins\": \"PC\", \"netpr\": 480.00 }\n    ]\n  }\n}"
-            },
-            "description": "1o envio = 201 PROCESSED. Reenviar o mesmo = 409 REJECTED (duplicado)."
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/c4datastore", "host": ["{{base_url}}"], "path": ["http", "c4datastore"] },
+            "body": { "mode": "raw", "raw": "{\n  \"purchaseOrder\": {\n    \"header\": { \"ebeln\": \"7800000085\", \"bsart\": \"ZLAB\", \"lifnr\": \"FORN-0001\", \"bukrs\": \"9000\", \"waers\": \"BRL\", \"bedat\": \"2026-08-06\", \"messageFunction\": \"009\" },\n    \"items\": [\n      { \"ebelp\": \"00010\", \"matnr\": \"MAT-GEN-001\", \"txz01\": \"Balanca Industrial XPTO\", \"menge\": 100, \"meins\": \"PC\", \"netpr\": 250.00 },\n      { \"ebelp\": \"00020\", \"matnr\": \"MAT-GEN-002\", \"txz01\": \"Suporte Generico XPTO\", \"menge\": 50, \"meins\": \"PC\", \"netpr\": 480.00 }\n    ]\n  }\n}" },
+            "description": "1o envio = 201 PROCESSED. Reenviar o mesmo = 409 REJECTED (duplicado)." }
         },
         {
           "name": "C4 - Data Store (UPDATE)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/c4datastore",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "c4datastore"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"purchaseOrder\": {\n    \"header\": { \"ebeln\": \"7800000085\", \"bsart\": \"ZLAB\", \"lifnr\": \"FORN-0001\", \"bukrs\": \"9000\", \"waers\": \"BRL\", \"bedat\": \"2026-08-06\", \"messageFunction\": \"004\" },\n    \"items\": [\n      { \"ebelp\": \"00010\", \"matnr\": \"MAT-GEN-001\", \"txz01\": \"Balanca Industrial XPTO\", \"menge\": 150, \"meins\": \"PC\", \"netpr\": 400.00 },\n      { \"ebelp\": \"00020\", \"matnr\": \"MAT-GEN-002\", \"txz01\": \"Suporte Generico XPTO\", \"menge\": 33, \"meins\": \"PC\", \"netpr\": 550.00 }\n    ]\n  }\n}"
-            },
-            "description": "messageFunction 004 = 200 UPDATED (sobrescreve o registro existente)."
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/c4datastore", "host": ["{{base_url}}"], "path": ["http", "c4datastore"] },
+            "body": { "mode": "raw", "raw": "{\n  \"purchaseOrder\": {\n    \"header\": { \"ebeln\": \"7800000085\", \"bsart\": \"ZLAB\", \"lifnr\": \"FORN-0001\", \"bukrs\": \"9000\", \"waers\": \"B[\n      { \"ebelp\": \"00010\", \"messageFunction\": \"004\" },\n    \"items\": [\n      { \"ebelp\": \"00010\", \"matnr\": \"MAT-GEN-001\", \"txz01\": \"Balanca Industrial XPTO\", \"menge\": 150, \"meins\": \"PC\", \"netpr\": 400.00 },\n      { \"ebelp\": \"00020\", \"matnr\": \"MAT-GEN-002\", \"txz01\": \"Suporte Generico XPTO\", \"menge\": 33, \"meins\": \"PC\", \"netpr\": 550.00 }\n    ]\n  }\n}" },
+            "description": "messageFunction 004 = 200 UPDATED (sobrescreve o registro existente)." }
         },
         {
           "name": "C4B - Idempotent Process Call (CREATE/DUPLICATE)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/c4bidempotent",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "c4bidempotent"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"purchaseOrder\": {\n    \"header\": { \"ebeln\": \"7800000090\", \"messageFunction\": \"009\" },\n    \"items\": [\n      { \"ebelp\": \"00010\", \"matnr\": \"MAT-GEN-001\", \"txz01\": \"Balanca Industrial XPTO\", \"menge\": 100 }\n    ]\n  }\n}"
-            },
-            "description": "Caminho B (best practice SAP). 1o envio = 201. Reenviar = 409 (detectado pelo Idempotent Process Call)."
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/c4bidempotent", "host": ["{{base_url}}"], "path": ["http", "c4bidempotent"] },
+            "body": { "mode": "raw", "raw": "{\n  \"purchaseOrder\": {\n    \"header\": { \"ebeln\": \"7800000090\", \"messageFunction\": \"009\" },\n    \"items\": [\n      { \"ebelp\": \"00010\", \"matnr\": \"MAT-GEN-001\", \"txz01\": \"Balanca Industrial XPTO\", \"menge\": 100 }\n    ]\n  }\n}" },
+            "description": "Caminho B (best practice SAP). 1o envio = 201. Reenviar = 409 (detectado pelo Idempotent Process Call)." }
         }
       ]
     },
@@ -505,222 +157,108 @@
       "item": [
         {
           "name": "D1 - OData (Germany + Sales Rep)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/d1odata",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "d1odata"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"consultaClientes\": {\n    \"solicitante\": \"Portal-Comercial\",\n    \"dataRequisicao\": \"2026-08-06\",\n    \"filtros\": { \"pais\": \"Germany\", \"cidade\": null, \"nomeContem\": null, \"tituloContato\": \"Sales Representative\" },\n    \"camposRetorno\": [\"CustomerID\",\"CompanyName\",\"ContactName\",\"ContactTitle\",\"City\",\"Country\",\"Phone\"],\n    \"ordenacao\": { \"campo\": \"CompanyName\", \"direcao\": \"asc\" },\n    \"paginacao\": { \"limite\": 10, \"pular\": 0 }\n  }\n}"
-            },
-            "description": "Query OData dinamica: filtra clientes alemaes que sao Sales Representative."
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/d1odata", "host": ["{{base_url}}"], "path": ["http", "d1odata"] },
+            "body": { "mode": "raw", "raw": "{\n  \"consultaClientes\": {\n    \"solicitante\": \"Portal-Comercial\",\n    \"dataRequisicao\": \"2026-08-06\",\n    \"filtros\": { \"pais\": \"Germany\", \"cidade\": null, \"nomeContem\": null, \"t[\n      { \"ebelp\": \"00010\", \"matnr\": \"MAT-GEN-001\", \"txz01\": \"Balanca Industrial XPTO\", \"menge\": 150, \"meins\": \"PC\", \"netpr\": 400.00 },\n      { \"ebelp\": \"00020\", \"matnr\": \"MAT-GEN-002\", \"txz01\": \"SuporteituloContato\": \"Sales Representative\" },\n  ar\": 0 }\n  }\n}" },
+            "description": "Query OData dinamica: filtra clientes alemaes que sao Sales Representative." }
         },
         {
           "name": "D1 - OData (France)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/d1odata",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "d1odata"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"consultaClientes\": {\n    \"solicitante\": \"Portal-Comercial\",\n    \"dataRequisicao\": \"2026-08-06\",\n    \"filtros\": { \"pais\": \"France\", \"cidade\": null, \"nomeContem\": null, \"tituloContato\": null },\n    \"camposRetorno\": [\"CustomerID\",\"CompanyName\",\"City\",\"Country\",\"Phone\"],\n    \"ordenacao\": { \"campo\": \"City\", \"direcao\": \"asc\" },\n    \"paginacao\": { \"limite\": 10, \"pular\": 0 }\n  }\n}"
-            },
-            "description": "Somente filtro de pais (France), ordenado por cidade."
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/d1odata", "host": ["{{base_url}}"], "path": ["http", "d1odata"] },
+            "body": { "mode": "raw", "raw": "{\n  \"consultaClientes\": {\n    \"solicitante\": \"Portal-Comercial\",\n    \"dataRequisicao\": \"2026-08-06\",\n    \"filtros\": { \"pais\": \"France\", \"cidade\": null, \"nomeContem\": null, \"tituloContato\": null },\n    \"camposRetorno\": [\"CustomerID\",\"CompanyName\",\"City\",\"Country\",\"Phone\"],\n    \"ordenacao\": { \"campo\": \"City\", \"direcao\": \"asc\" },\n    \"paginacao\": { \"limite\": 10, \"pular\": 0 }\n  }\n}" },
+            "description": "Somente filtro de pais (France), ordenado por cidade." }
         },
         {
           "name": "D1 - OData (nome contem Market)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/d1odata",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "d1odata"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"consultaClientes\": {\n    \"solicitante\": \"Portal-Comercial\",\n    \"dataRequisicao\": \"2026-08-06\",\n    \"filtros\": { \"pais\": null, \"cidade\": null, \"nomeContem\": \"Market\", \"tituloContato\": null },\n    \"camposRetorno\": [\"CustomerID\",\"CompanyName\",\"City\",\"Country\"],\n    \"ordenacao\": { \"campo\": \"CompanyName\", \"direcao\": \"asc\" },\n    \"paginacao\": { \"limite\": 10, \"pular\": 0 }\n  }\n}"
-            },
-            "description": "Busca por nome parcial usando contains()."
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/d1odata", "host": ["{{base_url}}"], "path": ["http", "d1odata"] },
+            "body": { "mode": "raw", "raw": "{\n  \"consultaClientes\": {\n    \"solicitante\": \"Portal-Comercial\",\n    \"dataRequisicao\": \"2026-08-06\",\n    \"filtros\": { \"pais\": null, \"cidade\": null, \"nomeContem\": \"Market\", \"tituloContato\": null },\n    \"camposRetorno\": [\"CustomerID\",\"CompanyName\",\"City\",\"Country\"],\n    \"ordenacao\": { \"campo\": \"CompanyName\", \"direcao\": \"asc\" },\n    \"paginacao\": { \"limite\": 10, \"pular\": 0 }\n  }\n}" },
+            "description": "Busca por nome parcial usando contains()." }
         },
         {
           "name": "D2 - SOAP Adapter (Nota Fiscal)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/d2soap",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "d2soap"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"notaFiscal\": {\n    \"numero\": \"NF-12099999\",\n    \"cliente\": \"Orlan_tech\",\n    \"valores\": {\n      \"valorBruto\": 15000,\n      \"valorICMS\": 2700,\n      \"valorIPI\": 750,\n      \"valorLiquido\": 11550\n    }\n  }\n}"
-            },
-            "description": "Split/Gather: converte os 4 valores da Nota Fiscal por extenso via Web Service SOAP externo (dataaccess.com NumberConversion)."
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/d2soap", "host": ["{{base_url}}"], "path": ["http", "d2soap"] },
+            "body": { "mode": "raw", "raw": "{\n  \"notaFiscal\": {\n    \"numero\": \"NF-12099999\",\n    \"cliente\": \"Orlan_tech\",\n    \"valores\": {\n      \"valorBruto\": 15000,\n      \"valorICMS\": 2700,\n      \"valorIPI\": 750,\n      \"valorLiquido\": 11550\n    }\n  }\n}" },
+            "description": "Split/Gather: converte os 4 valores da Nota Fiscal por extenso via Web Service SOAP externo (dataaccess.com NumberConversion)." }
         },
         {
           "name": "D3 - SFTP Producer (Ordem de Producao)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/d3sftp/producer",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "d3sftp",
-                "producer"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ordemProducao\": {\n    \"numeroOrdem\": \"OP-00045210\",\n    \"tipoOrdem\": \"PP01\",\n    \"material\": \"MAT-GEN-001\",\n    \"descricaoMaterial\": \"Balanca Industrial XPTO\",\n    \"quantidade\": 500,\n    \"unidadeMedida\": \"UN\",\n    \"centroTrabalho\": \"CT-MONTAGEM-01\",\n    \"dataLiberacao\": \"2026-08-07\",\n    \"dataInicioBase\": \"2026-08-08T06:00:00\",\n    \"dataFimBase\": \"2026-08-10T18:00:00\",\n    \"statusOrdem\": \"LIBERADA\",\n    \"centro\": \"1000\",\n    \"deposito\": \"MES01\"\n  }\n}"
-            },
-            "description": "Grava o arquivo XML da Ordem de Producao no hot folder (SFTPCloud). O D3 Consumer le automaticamente via polling, sem request HTTP proprio."
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/d3sftp/producer", "host": ["{{base_url}}"], "path": ["http", "d3sftp", "producer"] },
+            "body": { "mode": "raw", "raw": "{\n  \"ordemProducao\": {\n    \"numeroOrdem\": \"OP-00045210\",\n    \"tipoOrdem\": \"PP01\",\n    \"material\": \"MAT-GEN-001\",\n    \"descricaoMaterial\": \"Balanca Industrial XPTO\",\n    \"quantidade\": 500,\n    \"unidadeMedida\": \"UN\",\n    \"centroTrabalho\": \"CT-MONTAGEM-01\",\n    \"dataLiberacao\": \"2026-08-07\",\n    \"dataInicioBase\": \"2026-08-08T06:00:00\",\n    \"dataFimBase\": \"2026-08-10T18:00:00\",\n    \"statusOrdem\": \"LIBERADA\",\n    \"centro\": \"1000\",\n    \"deposito\": \"MES01\"\n  }\n}" },
+            "description": "Grava o arquivo XML da Ordem de Producao no hot folder (SFTPCloud). O D3 Consumer le automaticamente via polling, sem request HTTP proprio." }
         },
         {
           "name": "D4 - ProcessDirect (Bloqueio Compras)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/d4processdirect",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "d4processdirect"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"fornecedor\": \"1000200\",\n  \"material\": \"MAT-GEN-001\"\n}"
-            },
-            "description": "Fornecedor bloqueado a nivel de Organizacao de Compras (LFM1-SPERM). Consulta via JDBC ao banco Neon (tabela vendor_block_status)."
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/d4processdirect", "host": ["{{base_url}}"], "path": ["http", "d4processdirect"] },
+            "body": { "mode": "raw", "raw": "{\n  \"fornecedor\": \"1000200\",\n  \"material\": \"MAT-GEN-001\"\n}" },
+            "description": "Fornecedor bloqueado a nivel de Organizacao de Compras (LFM1-SPERM). Consulta via JDBC ao banco Neon (tabela vendor_block_status)." }
         },
         {
           "name": "D4 - ProcessDirect (Bloqueio Qualidade)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/http/d4processdirect",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "d4processdirect"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"fornecedor\": \"1000350\",\n  \"material\": \"MAT-GEN-003\"\n}"
-            },
-            "description": "Fornecedor bloqueado por Quality Info Record (QIR) - reproduz a mensagem SAP 06884."
-          }
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/d4processdirect", "host": ["{{base_url}}"], "path": ["http", "d4processdirect"] },
+            "body": { "mode": "raw", "raw": "{\n  \"fornecedor\": \"1000350\",\n  \"material\": \"MAT-GEN-003\"\n}" },
+            "description": "Fornecedor bloqueado por Quality Info Record (QIR) - reproduz a mensagem SAP 06884." }
         },
         {
           "name": "D4 - ProcessDirect (Pedido Liberado)",
+          "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/http/d4processdirect", "host": ["{{base_url}}"], "path": ["http", "d4processdirect"] },
+            "body": { "mode": "raw", "raw": "{\n  \"fornecedor\": \"1000100\",\n  \"material\": \"MAT-GEN-001\"\n}" },
+            "description": "Caminho feliz: fornecedor sem nenhum bloqueio, pedido criado com sucesso (status CREATED)." }
+        }
+      ]
+    },
+    {
+      "name": "Bloco E - API Management",
+      "item": [
+        {
+          "name": "E1 - API Proxy (D1 OData via API Management)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{apim_base_url}}/v1/d1odata", "host": ["{{apim_base_url}}"], "path": ["v1", "d1odata"] },
+            "body": { "mode": "raw", "raw": "{\n  \"consultaClientes\": {\n    \"solicitante\": \"Portal-Comercial\",\n    \"dataRequisicao\": \"2026-08-06\",\n    \"filtros\": { \"pais\": \"Germany\", \"cidade\": null, \"nomeContem\": null, \"tituloContato\": \"Sales Representative\" },\n    \"camposRetorno\": [\"CustomerID\",\"CompanyName\",\"ContactName\",\"ContactTitle\",\"City\",\"Country\",\"Phone\"],\n    \"ordenacao\": { \"campo\": \"CompanyName\", \"direcao\": \"asc\" },\n    \"paginacao\": { \"limite\": 10, \"pular\": 0 }\n  }\n}" },
+            "description": "Mesmo teste do D1, agora passando pelo API Proxy D1_OData_Proxy em vez do iFlow direto. Sem autenticacao do lado do consumidor (No Auth) - o Proxy se autentica sozinho no backend via Key Value Map + Basic Authentication."
+          }
+        },
+        {
+          "name": "E2 - Verify API Key (D4 Vendor Validation via API Management)",
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{consumer_api_key}}" }
             ],
-            "url": {
-              "raw": "{{base_url}}/http/d4processdirect",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "http",
-                "d4processdirect"
+            "url": { "raw": "{{apim_base_url}}/v1/vendorvalidation", "host": ["{{apim_base_url}}"], "path": ["v1", "vendorvalidation"] },
+            "body": { "mode": "raw", "raw": "{\n  \"fornecedor\": \"1000350\",\n  \"material\": \"MAT-GEN-003\"\n}" },
+            "description": "Mesmo teste do D4 (fornecedor bloqueado por qualidade/QIR), agora passando pelo API Proxy D4_VendorValidation_Proxy, protegido pela Policy Verify API Key. Preencha {{consumer_api_key}} com a Consumer Key gerada para um Developer App no Developer Hub (ver docs/21-e2-verify-api-key.md). Sem essa chave no header 'apikey', a chamada retorna 401 Unauthorized."
+          }
+        },
+        {
+          "name": "E3 - Vendor Override (requer Bearer Token manual)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{access_token_manual}}", "type": "string" }
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"fornecedor\": \"1000100\",\n  \"material\": \"MAT-GEN-001\"\n}"
-            },
-            "description": "Caminho feliz: fornecedor sem nenhum bloqueio, pedido criado com sucesso (status CREATED)."
+            "url": { "raw": "{{apim_base_url}}/v1/vendoroverride", "host": ["{{apim_base_url}}"], "path": ["v1", "vendoroverride"] },
+            "body": { "mode": "raw", "raw": "{\n  \"fornecedor\": \"1000200\",\n  \"material\": \"MAT-GEN-001\"\n}" },
+            "description": "Chama o E3_VendorOverride_Proxy para remover o bloqueio do fornecedor 1000200. Requer preencher manualmente a variavel {{access_token_manual}} com um Access Token OAuth valido (scope vendor.write), gerado previamente via E3_OAuth_Token_Server_Proxy - Basic Auth com Consumer Key/Secret do Compliance_Team_App + query param grant_type=client_credentials na URL de geracao do token. O token expira em ~30 minutos; gere um novo se receber erro 401 Access Token expired. Ver passo a passo completo em docs/22-e3-oauth-scopes.md."
           }
         }
-      ]
+      ],
+      "description": "E1 e E2 sao requests prontos, sem dependencia de token. E3 requer preencher manualmente {{access_token_manual}} com um Access Token OAuth (via E3_OAuth_Token_Server_Proxy). E4 (Quota) e E5 (Spike Arrest) exigem o mesmo tipo de token, mas nao foram incluidos como requests fixos - consulte docs/22-e3-oauth-scopes.md e docs/23-e4-e5-quota-spike-arrest.md para o passo a passo completo de como gerar e usar o token nesses cenarios."
     }
   ]
 }
