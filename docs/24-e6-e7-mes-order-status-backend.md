@@ -43,25 +43,31 @@ A utilização da mesma chave nos dois caminhos permite atualizar o estado da or
 
 ```mermaid
 flowchart LR
-    A["🏭 MES / Postman"] -->|"POST /write<br/>JSON"| B["HTTPS Sender"]
-    A -->|"GET /status/TRK-xxxxx"| B
+    A["MES / Postman"] --> B["HTTPS Sender"]
     B --> C["Prepare_Request"]
     C --> D{"Route_Operation"}
 
-    D -->|"WRITE"| E["Validate_And_Prepare_Status"]
-    E --> F["Data Store Write"]
-    F --> G[("MES_OrderStatus_Store")]
-    F --> H["Write_Response<br/>HTTP 201"]
+    D -->|"POST /write"| E["Validate_And_Prepare_Status"]
+    E --> F["Write_Order_Status"]
+    F --> G["Write_Response HTTP 201"]
+    G --> H["End WRITE"]
 
-    D -->|"GET"| I["Extract_Tracking_Id"]
-    I --> J["Data Store Get"]
-    G --> J
+    D -->|"GET /status/TRK-xxxxx"| I["Extract_Tracking_Id"]
+    I --> J["MES_OrderStatus_Get"]
     J --> K{"Route_Entry_Found"}
-    K -->|"FOUND"| L["Enrich_Order_Status_Response"]
-    L --> M["Get_Success_Response<br/>HTTP 200"]
-    K -->|"NOT_FOUND"| N["Not_Found_Response<br/>HTTP 404"]
 
-    D -->|"INVALID_OPERATION"| O["Invalid_Operation_Response<br/>HTTP 400"]
+    K -->|"FOUND"| L["Enrich_Order_Status_Response"]
+    L --> M["Get_Success_Response HTTP 200"]
+    M --> N["End GET 200"]
+
+    K -->|"NOT_FOUND"| O["Not_Found_Response HTTP 404"]
+    O --> P["End GET 404"]
+
+    D -->|"INVALID_OPERATION"| Q["Invalid_Operation_Response HTTP 400"]
+    Q --> R["End HTTP 400"]
+
+    F --> DS["MES_OrderStatus_Store"]
+    DS --> J
 ```
 
 A implementação final utiliza um único HTTPS Sender com wildcard. O nome técnico `E6_E7_MES_OrderStatus_ProcessDirect` foi preservado no artefato, embora o canal de entrada efetivamente utilizado seja HTTPS.
