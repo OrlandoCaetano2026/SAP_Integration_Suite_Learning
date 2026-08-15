@@ -1,14 +1,23 @@
-# E6+E7 - MES Order Status Backend com HTTPS e Data Store
+## 🏭 E6+E7 — MES Order Status: Backend HTTPS com Data Store
 
-## 1. Visão geral
+**Bloco:** E — API Management  
+**Cenário:** Backend dedicado para E6 (JSON to XML) + E7 (Assign Message)  
+**Status:** ✅ Concluído e testado de ponta a ponta  
+**Data de execução:** 15/08/2026  
+**iFlow:** `E6_E7_MES_OrderStatus_ProcessDirect`  
+**Data Store:** `MES_OrderStatus_Store`
+
+### 📌 Contexto de Negócio
 
 Este laboratório implementa o backend síncrono que sustentará os cenários **E6 (JSON to XML)** e **E7 (Assign Message)** no SAP API Management.
 
-Para evitar a reutilização recorrente do cenário D4, foi criado um processo dedicado à consulta de status de ordens enviadas pelo sistema MES ao SAP. O fluxo persiste o estado da integração no Data Store interno do SAP Cloud Integration e permite consultar o registro posteriormente pelo identificador de rastreamento.
+O processo simula a comunicação entre o sistema **MES** e o **SAP ERP** para registrar e consultar o status de integração de uma ordem. O conteúdo é persistido no Data Store interno do SAP Cloud Integration, utilizando `idRastreamento` como chave técnica para acompanhar o ciclo da mensagem.
 
-> **Escopo deste documento:** implementação e validação do backend no SAP Cloud Integration. As policies JSON to XML, Assign Message, OAuth scopes e Developer Apps serão documentadas em um laboratório posterior, com uma nova pasta de evidências iniciando novamente em `01`.
+O backend disponibiliza uma operação interna de escrita, responsável por criar ou atualizar o status da ordem, e uma operação de consulta que será posteriormente exposta pelo API Management ao consumidor legado. A transformação JSON para XML, a inclusão de headers e o controle condicional do campo técnico `filaDestino` pertencem à etapa seguinte do cenário.
 
-## 2. Objetivos
+> **Escopo deste documento:** implementação e validação do backend no SAP Cloud Integration. As policies JSON to XML, Assign Message, OAuth scopes e Developer Apps serão documentadas separadamente, com uma nova pasta de evidências iniciando em `01`.
+
+### 🎯 Objetivos
 
 - Criar um endpoint HTTPS único para escrita e consulta de status.
 - Persistir mensagens no Data Store `MES_OrderStatus_Store`.
@@ -18,7 +27,7 @@ Para evitar a reutilização recorrente do cenário D4, foi criado um processo d
 - Preparar um backend JSON reutilizável pelo API Management.
 - Preservar `filaDestino` no backend para posterior tratamento condicional pela policy E7.
 
-## 3. Nomenclatura
+### 🏷️ Nomenclatura e Recursos Técnicos
 
 ### 3.1 Nome funcional
 
@@ -38,7 +47,7 @@ O caractere `+` não é aceito no identificador técnico do Integration Flow. Po
 - **Entry ID:** `${property.idRastreamento}`
 - **Autorização:** role `ESBMessaging.send`
 
-## 4. Contexto de negócio
+### 🔄 Fluxo de Negócio
 
 O sistema MES envia informações de acompanhamento de uma ordem para a camada de integração. Cada registro recebe um `idRastreamento`, usado como chave técnica durante todo o ciclo.
 
@@ -49,7 +58,7 @@ O backend possibilita dois usos internos:
 
 Em uma etapa posterior, somente a consulta GET será exposta pelo API Management ao parceiro legado. O endpoint WRITE permanecerá interno.
 
-## 5. Arquitetura
+### 🏗️ Arquitetura da Solução
 
 ```text
 Postman ou sistema interno
@@ -78,7 +87,7 @@ Data Store  Data Store
 MES_OrderStatus_Store
 ```
 
-## 6. Contratos HTTP
+### 📡 Contratos HTTP
 
 ### 6.1 WRITE
 
@@ -190,7 +199,7 @@ Content-Type: application/json
 }
 ```
 
-## 7. Construção do iFlow
+### 🛠️ Construção do iFlow
 
 ### 7.1 HTTPS Sender
 
@@ -232,7 +241,7 @@ ${header.CamelHttpMethod} = 'GET' and ${header.CamelHttpPath} contains 'status'
 
 A terceira saída é a Default Route `INVALID_OPERATION`.
 
-## 8. Groovy Scripts
+### 💻 Groovy Scripts
 
 ### 8.1 Validate_And_Prepare_Status
 
@@ -504,7 +513,7 @@ def Message processData(Message message) {
 }
 ```
 
-## 9. Data Store
+### 🗄️ Persistência no Data Store
 
 ### 9.1 Write_Order_Status
 
@@ -531,7 +540,7 @@ Throw Exception on Missing Entry: desmarcado
 
 A opção `Throw Exception on Missing Entry` permanece desmarcada para permitir que a ausência do registro seja transformada em resposta funcional `404`, em vez de erro técnico `500`.
 
-## 10. Roteamento FOUND e NOT_FOUND
+### 🔀 Roteamento FOUND e NOT_FOUND
 
 Condição FOUND:
 
@@ -558,7 +567,7 @@ Data Store Get
 → HTTP 404
 ```
 
-## 11. Testes executados
+### 🧪 Testes Executados
 
 ### 11.1 WRITE inicial
 
@@ -597,7 +606,7 @@ Data Store Get
 - Resultado: `400 Bad Request`
 - Resposta funcional `MES-400`
 
-## 12. Evidências
+### 📸 Evidências
 
 > Todas as evidências deste documento pertencem à pasta específica deste laboratório e iniciam em `01`. A numeração não deve ser continuada em documentos ou laboratórios posteriores.
 
@@ -627,7 +636,7 @@ evidences/lab22/
 18. [Trace da operação inválida](../evidences/lab22/18-trace-invalid-operation-path.png)
 19. [Payload interno da operação inválida](../evidences/lab22/19-message-content-invalid-operation.png)
 
-## 13. Troubleshooting aplicado
+### 🔍 Troubleshooting e Lições Aprendidas
 
 ### 13.1 Router direcionando POST para INVALID_OPERATION
 
@@ -663,7 +672,7 @@ evidences/lab22/
 
 **Correção:** validação baseada em `containsKey`, `null` e conteúdo vazio, sem avaliação booleana direta do valor.
 
-## 14. Decisões técnicas
+### 🧠 Decisões Técnicas
 
 ### 14.1 Data Store interno
 
@@ -684,7 +693,7 @@ A visibilidade foi mantida como `Integration Flow` porque WRITE e GET estão no 
 
 O endpoint WRITE não será exposto ao parceiro legado. O API Proxy será direcionado ao contrato de consulta GET.
 
-## 15. Resultado
+### ✅ Conclusão
 
 O backend foi validado com sucesso nos cinco comportamentos definidos:
 
@@ -703,11 +712,35 @@ O resultado fornece uma base consistente para a etapa seguinte, que adicionará 
 - ocultação condicional de `filaDestino`;
 - conversão JSON para XML.
 
-## 16. Próximo cenário
+**Recursos praticados:** HTTPS Sender · Router por método e caminho · Groovy Script · Data Store Write · Data Store Get · Sobrescrita controlada · Tratamento funcional de HTTP 200, 201, 400 e 404 · Trace e Message Content
 
-[API Management - JSON to XML e Assign Message](./25-e6-e7-api-management-xml-assign-message.md)
+**Cenário anterior:** [E4+E5 — Traffic Management com Quota e Spike Arrest](./23-e4-e5-quota-spike-arrest.md)  
+**Próximo cenário:** [E6+E7 — API Management com JSON to XML e Assign Message](./25-e6-e7-api-management-xml-assign-message.md)
 
-## 17. Navegação
+### 🛠️ Ferramentas utilizadas
 
-- [Índice da documentação](./README.md)
-- [Próximo cenário: API Management - JSON to XML e Assign Message](./25-e6-e7-api-management-xml-assign-message.md)
+- **SAP Integration Suite — Cloud Integration**
+- **SAP Data Store** para persistência interna
+- **Groovy** para validação, extração de identificador e enriquecimento
+- **Postman** para testes funcionais dos endpoints
+- **Visual Studio Code** para documentação e versionamento
+- **Git e GitHub** para controle de versão
+
+### 🧭 Navegação
+
+- [📚 Índice da documentação](./README.md)
+- [⬅️ Bloco anterior: E4+E5 — Traffic Management com Quota e Spike Arrest](./23-e4-e5-quota-spike-arrest.md)
+- [➡️ Próximo cenário: E6+E7 — API Management com JSON to XML e Assign Message](./25-e6-e7-api-management-xml-assign-message.md)
+
+### 👤 Autor / 📬 Contato
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Orlando%20Caetano-0A66C2?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/orlando-caetano/)
+[![GitHub](https://img.shields.io/badge/GitHub-OrlandoCaetano2026-181717?logo=github&logoColor=white)](https://github.com/OrlandoCaetano2026)
+
+**Orlando Caetano**  
+Especialista SAP • Integração • Inteligência Artificial  
+Consultor SAP MM com know-how em PP, QM e WM
+
+![SAP MM](https://img.shields.io/badge/SAP-MM-0FAAFF?logo=sap&logoColor=white) ![SAP PP](https://img.shields.io/badge/SAP-PP-0FAAFF?logo=sap&logoColor=white) ![SAP QM](https://img.shields.io/badge/SAP-QM-0FAAFF?logo=sap&logoColor=white) ![SAP WM](https://img.shields.io/badge/SAP-WM-0FAAFF?logo=sap&logoColor=white)
+
+> 📌 Projeto de estudo e portfólio. Os cenários SAP MM, PP e QM são simulações educativas para prática de integração.
