@@ -1,4 +1,4 @@
-## 🏭 E6+E7 — MES Order Status: Backend HTTPS com Data Store
+## 🏭 E6+E7 — MES Order Status Backend com HTTPS e Data Store
 
 **Bloco:** E — API Management  
 **Cenário:** Backend dedicado para E6 (JSON to XML) + E7 (Assign Message)  
@@ -7,97 +7,142 @@
 **iFlow:** `E6_E7_MES_OrderStatus_ProcessDirect`  
 **Data Store:** `MES_OrderStatus_Store`
 
+---
+
 ### 📌 Contexto de Negócio
 
-Este laboratório implementa o backend síncrono que sustentará os cenários **E6 (JSON to XML)** e **E7 (Assign Message)** no SAP API Management.
+Este cenário implementa um backend síncrono para registrar e consultar o status de ordens enviadas pelo sistema **MES** ao **SAP ERP**.
 
-O processo simula a comunicação entre o sistema **MES** e o **SAP ERP** para registrar e consultar o status de integração de uma ordem. O conteúdo é persistido no Data Store interno do SAP Cloud Integration, utilizando `idRastreamento` como chave técnica para acompanhar o ciclo da mensagem.
+O processo utiliza o campo `idRastreamento` como chave técnica para acompanhar a mensagem durante seu ciclo de integração. O status é persistido no Data Store interno do SAP Cloud Integration e pode ser atualizado quando o processamento evolui, por exemplo, de `AGUARDANDO_ENTREGA_ERP` para `REPROCESSAMENTO_AGENDADO`.
 
-O backend disponibiliza uma operação interna de escrita, responsável por criar ou atualizar o status da ordem, e uma operação de consulta que será posteriormente exposta pelo API Management ao consumidor legado. A transformação JSON para XML, a inclusão de headers e o controle condicional do campo técnico `filaDestino` pertencem à etapa seguinte do cenário.
+O mesmo iFlow disponibiliza dois caminhos funcionais:
 
-> **Escopo deste documento:** implementação e validação do backend no SAP Cloud Integration. As policies JSON to XML, Assign Message, OAuth scopes e Developer Apps serão documentadas separadamente, com uma nova pasta de evidências iniciando em `01`.
+- **WRITE:** recebe um JSON, valida os dados e cria ou atualiza a entrada no Data Store.
+- **GET:** extrai o identificador da URL, recupera o registro e adiciona o timestamp `consultadoEm` à resposta.
 
-### 🎯 Objetivos
+Também foram implementados tratamentos funcionais para consulta inexistente e operação HTTP inválida.
 
-- Criar um endpoint HTTPS único para escrita e consulta de status.
-- Persistir mensagens no Data Store `MES_OrderStatus_Store`.
-- Permitir sobrescrita controlada pelo mesmo `idRastreamento`.
-- Consultar registros existentes e enriquecer a resposta com `consultadoEm`.
-- Retornar respostas funcionais para registro inexistente e operação inválida.
-- Preparar um backend JSON reutilizável pelo API Management.
-- Preservar `filaDestino` no backend para posterior tratamento condicional pela policy E7.
+> 📌 Este documento cobre somente o backend no SAP Cloud Integration. A exposição no API Management, a transformação JSON para XML e o uso de Assign Message serão documentados no próximo cenário, com uma pasta de evidências própria iniciando novamente em `01`.
 
-### 🏷️ Nomenclatura e Recursos Técnicos
+---
 
-### 3.1 Nome funcional
+### 🧠 Conceito: acompanhamento de uma ordem por identificador de rastreamento
 
-`E6+E7 - MES Order Status API`
+O `idRastreamento` funciona como um protocolo técnico da integração. Assim como uma ordem de produção ou um pedido possui um número que permite acompanhar seu processamento, a mensagem recebe um identificador próprio, como `TRK-58291`.
 
-### 3.2 Identificador técnico do iFlow
+Esse identificador é utilizado nos dois sentidos:
 
-`E6_E7_MES_OrderStatus_ProcessDirect`
+1. No **WRITE**, o identificador se torna a chave da entrada no Data Store.
+2. No **GET**, o identificador é extraído da URL e utilizado para recuperar exatamente a mesma entrada.
 
-O caractere `+` não é aceito no identificador técnico do Integration Flow. Por isso, o artefato utiliza underscores. O sufixo `ProcessDirect` foi preservado no artefato já criado, embora a implementação final utilize um único HTTPS Sender com roteamento interno por método e caminho HTTP.
+A utilização da mesma chave nos dois caminhos permite atualizar o estado da ordem sem criar registros duplicados.
 
-### 3.3 Recursos utilizados
+---
 
-- **HTTPS Sender:** `/e6e7/mes-order-status/*`
-- **Data Store:** `MES_OrderStatus_Store`
-- **Visibilidade:** `Integration Flow`
-- **Entry ID:** `${property.idRastreamento}`
-- **Autorização:** role `ESBMessaging.send`
+### 🏗️ Arquitetura
 
-### 🔄 Fluxo de Negócio
+```mermaid
+flowchart LR
+    A["🏭 MES / Postman"] -->|"POST /write<br/>JSON"| B["HTTPS Sender"]
+    A -->|"GET /status/TRK-xxxxx"| B
+    B --> C["Prepare_Request"]
+    C --> D{"Route_Operation"}
 
-O sistema MES envia informações de acompanhamento de uma ordem para a camada de integração. Cada registro recebe um `idRastreamento`, usado como chave técnica durante todo o ciclo.
+    D -->|"WRITE"| E["Validate_And_Prepare_Status"]
+    E --> F["Data Store Write"]
+    F --> G[("MES_OrderStatus_Store")]
+    F --> H["Write_Response<br/>HTTP 201"]
 
-O backend possibilita dois usos internos:
+    D -->|"GET"| I["Extract_Tracking_Id"]
+    I --> J["Data Store Get"]
+    G --> J
+    J --> K{"Route_Entry_Found"}
+    K -->|"FOUND"| L["Enrich_Order_Status_Response"]
+    L --> M["Get_Success_Response<br/>HTTP 200"]
+    K -->|"NOT_FOUND"| N["Not_Found_Response<br/>HTTP 404"]
 
-1. **WRITE:** grava ou atualiza o status da ordem.
-2. **GET:** recupera o status pelo `idRastreamento`.
+    D -->|"INVALID_OPERATION"| O["Invalid_Operation_Response<br/>HTTP 400"]
+```
 
-Em uma etapa posterior, somente a consulta GET será exposta pelo API Management ao parceiro legado. O endpoint WRITE permanecerá interno.
+A implementação final utiliza um único HTTPS Sender com wildcard. O nome técnico `E6_E7_MES_OrderStatus_ProcessDirect` foi preservado no artefato, embora o canal de entrada efetivamente utilizado seja HTTPS.
 
-### 🏗️ Arquitetura da Solução
+---
+
+## 🏗️ Fase 1 — Construção do iFlow e definição das rotas
+
+### 1.1 Estrutura geral
+
+O iFlow foi estruturado com três caminhos após o Router principal:
+
+- `WRITE`, para persistência;
+- `GET`, para consulta;
+- `INVALID_OPERATION`, como rota default.
+
+O desenho final ficou sem erros de validação na aba **Problems**.
+
+![Visão geral do iFlow E6+E7 sem erros](../evidences/lab22/01-iflow-e6-e7-overview-no-errors.png)
+
+Após salvar e implantar o artefato, o runtime apresentou o iFlow com status `Started`, confirmando que o endpoint HTTPS estava disponível para os testes.
+
+![Deployment do iFlow iniciado](../evidences/lab22/02-iflow-deployment-started.png)
+
+### 1.2 HTTPS Sender
+
+O canal HTTPS foi configurado com o endereço:
 
 ```text
-Postman ou sistema interno
-        |
-        | HTTPS
-        v
-E6_E7_MES_OrderStatus_ProcessDirect
-        |
-        v
-Prepare_Request
-        |
-        v
-Route_Operation
-   |          |                 |
-   |          |                 |
- WRITE       GET        INVALID_OPERATION
-   |          |                 |
-   v          v                 v
-Groovy      Groovy        Resposta MES-400
-   |          |
-   v          v
-Data Store  Data Store
- Write        Get
-   |          |
-   v          v
-MES_OrderStatus_Store
+/e6e7/mes-order-status/*
 ```
 
-### 📡 Contratos HTTP
+Configurações principais:
 
-### 6.1 WRITE
+```text
+Authorization: User Role
+User Role: ESBMessaging.send
+CSRF Protected: desmarcado
+```
 
-```http
+O wildcard permite processar diferentes recursos no mesmo iFlow:
+
+```text
 POST /http/e6e7/mes-order-status/write
-Content-Type: application/json
-Accept: application/json
+GET  /http/e6e7/mes-order-status/status/{idRastreamento}
 ```
 
-Payload:
+### 1.3 Prepare_Request
+
+O Content Modifier `Prepare_Request` registra o método e o caminho recebidos:
+
+```text
+requestMethod = ${header.CamelHttpMethod}
+requestPath   = ${header.CamelHttpPath}
+```
+
+Essas properties apoiam o diagnóstico e a rastreabilidade. Para o roteamento efetivo, foram utilizados diretamente os headers HTTP disponibilizados pelo adapter.
+
+### 1.4 Route_Operation
+
+Condição da rota WRITE:
+
+```text
+${header.CamelHttpMethod} = 'POST' and ${header.CamelHttpPath} contains 'write'
+```
+
+Condição da rota GET:
+
+```text
+${header.CamelHttpMethod} = 'GET' and ${header.CamelHttpPath} contains 'status'
+```
+
+A terceira saída foi definida como **Default Route**, com o nome `INVALID_OPERATION`.
+
+---
+
+## 🏗️ Fase 2 — Implementação e teste do caminho WRITE
+
+### 2.1 Payload de entrada
+
+O primeiro teste utilizou o seguinte payload:
 
 ```json
 {
@@ -112,150 +157,18 @@ Payload:
 }
 ```
 
-Resposta de sucesso:
+### 2.2 Groovy `Validate_And_Prepare_Status`
 
-```http
-HTTP/1.1 201 Created
-Content-Type: application/json
-```
+O primeiro Groovy valida o JSON antes da persistência. O script:
 
-```json
-{
-  "status": "CREATED",
-  "codigo": "MES-201",
-  "mensagem": "Status do pedido gravado com sucesso",
-  "idRastreamento": "TRK-58291"
-}
-```
-
-### 6.2 GET existente
-
-```http
-GET /http/e6e7/mes-order-status/status/TRK-58291
-Accept: application/json
-```
-
-Resposta:
-
-```http
-HTTP/1.1 200 OK
-Content-Type: application/json
-```
-
-```json
-{
-  "idRastreamento": "TRK-58291",
-  "numeroPedido": "4500001234",
-  "origem": "MES",
-  "destino": "ERP",
-  "statusIntegracao": "REPROCESSAMENTO_AGENDADO",
-  "recebidoEm": "2026-08-15T17:20:00-03:00",
-  "tentativasReprocessamento": 1,
-  "filaDestino": "producao_pedidos",
-  "consultadoEm": "2026-08-15T21:57:26.597352389Z"
-}
-```
-
-### 6.3 GET inexistente
-
-```http
-GET /http/e6e7/mes-order-status/status/TRK-99999
-```
-
-Resposta:
-
-```http
-HTTP/1.1 404 Not Found
-Content-Type: application/json
-```
-
-```json
-{
-  "status": "NOT_FOUND",
-  "codigo": "MES-404",
-  "mensagem": "Id de rastreamento nao encontrado",
-  "idRastreamento": "TRK-99999"
-}
-```
-
-### 6.4 Operação inválida
-
-```http
-PUT /http/e6e7/mes-order-status/invalid
-```
-
-Resposta:
-
-```http
-HTTP/1.1 400 Bad Request
-Content-Type: application/json
-```
-
-```json
-{
-  "status": "BAD_REQUEST",
-  "codigo": "MES-400",
-  "mensagem": "Operacao invalida. Utilize POST /write ou GET /status/{idRastreamento}"
-}
-```
-
-### 🛠️ Construção do iFlow
-
-### 7.1 HTTPS Sender
-
-Configuração:
-
-```text
-Address: /e6e7/mes-order-status/*
-Authorization: User Role
-User Role: ESBMessaging.send
-CSRF Protected: desmarcado
-```
-
-O wildcard permite concentrar as operações WRITE e GET no mesmo endpoint técnico.
-
-### 7.2 Prepare_Request
-
-O Content Modifier cria as propriedades:
-
-```text
-requestMethod = ${header.CamelHttpMethod}
-requestPath   = ${header.CamelHttpPath}
-```
-
-As propriedades são úteis para rastreabilidade. O Router foi configurado diretamente com os headers do adapter, evitando diferenças de interpretação de path no runtime.
-
-### 7.3 Route_Operation
-
-Condição WRITE:
-
-```text
-${header.CamelHttpMethod} = 'POST' and ${header.CamelHttpPath} contains 'write'
-```
-
-Condição GET:
-
-```text
-${header.CamelHttpMethod} = 'GET' and ${header.CamelHttpPath} contains 'status'
-```
-
-A terceira saída é a Default Route `INVALID_OPERATION`.
-
-### 💻 Groovy Scripts
-
-### 8.1 Validate_And_Prepare_Status
-
-Responsabilidades:
-
-- validar JSON de entrada;
-- confirmar que o payload é um objeto;
-- validar campos obrigatórios;
-- aceitar corretamente `tentativasReprocessamento = 0`;
-- normalizar o identificador para maiúsculas;
-- converter tentativas para inteiro;
-- rejeitar valores negativos;
-- criar a property `idRastreamento`;
-- preservar JSON válido para persistência.
+- confirma que o body está preenchido;
+- valida se o body contém um objeto JSON;
+- verifica os campos obrigatórios;
+- aceita corretamente `tentativasReprocessamento = 0`;
+- normaliza `idRastreamento` para maiúsculas;
+- converte a quantidade de tentativas para inteiro;
+- rejeita valores negativos;
+- cria a property `idRastreamento` utilizada pelo Data Store Write.
 
 ```groovy
 import com.sap.gateway.ip.core.customdev.util.Message
@@ -358,11 +271,113 @@ def Message processData(Message message) {
 }
 ```
 
-### 8.2 Extract_Tracking_Id
+> 💡 A validação não utiliza `if (!json[field])`, pois o valor numérico `0` poderia ser interpretado incorretamente como ausência do campo.
 
-A primeira versão dependia da existência literal de `/status/` em `CamelHttpPath`. No runtime, o HTTPS Adapter apresentou o caminho relativo de forma diferente, causando erro técnico.
+### 2.3 Data Store Write
 
-A versão final considera `CamelHttpPath` e `CamelHttpUri`, localizando diretamente o padrão `TRK-...`.
+O step `Write_Order_Status` foi configurado assim:
+
+```text
+Data Store Name: MES_OrderStatus_Store
+Visibility: Integration Flow
+Entry ID: ${property.idRastreamento}
+Encrypt Stored Message: marcado
+Overwrite Existing Message: marcado
+Expiration Period: 30 dias
+```
+
+A opção `Overwrite Existing Message` permite atualizar uma ordem existente usando o mesmo identificador, sem criar uma nova entrada.
+
+### 2.4 Teste 1 — Criação do registro
+
+A chamada foi executada no Postman com método `POST` e retornou `201 Created`.
+
+![Postman WRITE inicial com HTTP 201](../evidences/lab22/03-postman-write-new-201.png)
+
+Resposta:
+
+```json
+{
+  "status": "CREATED",
+  "codigo": "MES-201",
+  "mensagem": "Status do pedido gravado com sucesso",
+  "idRastreamento": "TRK-58291"
+}
+```
+
+Em **Manage Data Stores**, o Data Store `MES_OrderStatus_Store` passou a apresentar uma entrada com ID `TRK-58291`.
+
+![Entrada criada no Data Store](../evidences/lab22/04-datastore-entry-created.png)
+
+O Trace confirmou a execução exclusiva do caminho WRITE:
+
+```text
+HTTPS
+→ Prepare_Request
+→ Route_Operation
+→ Validate_And_Prepare_Status
+→ Write_Order_Status
+→ Write_Response
+→ End
+```
+
+![Trace do caminho WRITE](../evidences/lab22/05-trace-write-flow-path.png)
+
+No **Message Content**, imediatamente antes do `Write_Order_Status`, foi possível verificar o JSON completo enviado para persistência.
+
+![Payload antes do Data Store Write](../evidences/lab22/06-message-content-before-datastore-write.png)
+
+O conteúdo final criado pelo `Write_Response` também foi validado internamente no Trace.
+
+![Resposta interna do WRITE](../evidences/lab22/07-message-content-write-response.png)
+
+### 2.5 Teste 2 — Sobrescrita da mesma entrada
+
+Para comprovar a atualização, o mesmo `idRastreamento` foi enviado novamente, alterando o status e a quantidade de tentativas:
+
+```json
+{
+  "idRastreamento": "TRK-58291",
+  "numeroPedido": "4500001234",
+  "origem": "MES",
+  "destino": "ERP",
+  "statusIntegracao": "REPROCESSAMENTO_AGENDADO",
+  "recebidoEm": "2026-08-15T17:20:00-03:00",
+  "tentativasReprocessamento": 1,
+  "filaDestino": "producao_pedidos"
+}
+```
+
+O Postman retornou novamente `201 Created`.
+
+![Postman WRITE com sobrescrita](../evidences/lab22/08-postman-write-overwrite-201.png)
+
+O Data Store permaneceu com apenas uma entrada, comprovando que `TRK-58291` foi sobrescrito e não duplicado.
+
+![Data Store após sobrescrita](../evidences/lab22/09-datastore-entry-after-overwrite.png)
+
+O Trace confirmou que o payload atualizado foi entregue ao Data Store Write com:
+
+```json
+"statusIntegracao": "REPROCESSAMENTO_AGENDADO",
+"tentativasReprocessamento": 1
+```
+
+![Payload atualizado antes da sobrescrita](../evidences/lab22/10-message-content-overwrite-before-write.png)
+
+---
+
+## 🏗️ Fase 3 — Implementação e teste do caminho GET
+
+### 3.1 Extração do identificador da URL
+
+A consulta utiliza o formato:
+
+```http
+GET /http/e6e7/mes-order-status/status/TRK-58291
+```
+
+O Groovy `Extract_Tracking_Id` considera `CamelHttpPath` e `CamelHttpUri`. Depois, procura diretamente um valor no padrão `TRK-...`.
 
 ```groovy
 import com.sap.gateway.ip.core.customdev.util.Message
@@ -372,15 +387,8 @@ import java.util.regex.Pattern
 
 def Message processData(Message message) {
 
-    def camelHttpPath = message.getHeader(
-        "CamelHttpPath",
-        String
-    )
-
-    def camelHttpUri = message.getHeader(
-        "CamelHttpUri",
-        String
-    )
+    def camelHttpPath = message.getHeader("CamelHttpPath", String)
+    def camelHttpUri = message.getHeader("CamelHttpUri", String)
 
     def requestLocation = [
         camelHttpPath,
@@ -424,30 +432,40 @@ def Message processData(Message message) {
         .trim()
         .toUpperCase()
 
-    message.setProperty(
-        "idRastreamento",
-        trackingId
-    )
-
-    message.setHeader(
-        "X-Tracking-ID",
-        trackingId
-    )
+    message.setProperty("idRastreamento", trackingId)
+    message.setHeader("X-Tracking-ID", trackingId)
 
     return message
 }
 ```
 
-### 8.3 Enrich_Order_Status_Response
+### 3.2 Data Store Get
 
-Responsabilidades:
+O step `MES_OrderStatus_Get` foi configurado assim:
 
-- validar o conteúdo recuperado;
-- confirmar JSON em formato de objeto;
-- validar a presença de `idRastreamento`;
-- adicionar `consultadoEm` em UTC;
-- manter `filaDestino` no backend;
-- retornar `application/json`.
+```text
+Data Store Name: MES_OrderStatus_Store
+Visibility: Integration Flow
+Entry ID: ${property.idRastreamento}
+Delete On Completion: desmarcado
+Throw Exception on Missing Entry: desmarcado
+```
+
+`Throw Exception on Missing Entry` permanece desmarcado para que a ausência do registro seja tratada como resposta funcional `404`, e não como erro técnico `500`.
+
+### 3.3 Router FOUND e NOT_FOUND
+
+Condição da rota FOUND:
+
+```text
+${header.SAP_DataStoreEntryFound} = 'true'
+```
+
+A rota `NOT_FOUND` foi definida como Default Route.
+
+### 3.4 Enriquecimento da resposta
+
+Quando o registro é encontrado, o Groovy `Enrich_Order_Status_Response` adiciona `consultadoEm` com o timestamp da consulta em UTC.
 
 ```groovy
 import com.sap.gateway.ip.core.customdev.util.Message
@@ -499,11 +517,7 @@ def Message processData(Message message) {
         )
     )
 
-    message.setHeader(
-        "Content-Type",
-        "application/json"
-    )
-
+    message.setHeader("Content-Type", "application/json")
     message.setHeader(
         "X-Tracking-ID",
         json.idRastreamento.toString()
@@ -513,224 +527,243 @@ def Message processData(Message message) {
 }
 ```
 
-### 🗄️ Persistência no Data Store
+### 3.5 Teste 3 — Consulta de registro existente
 
-### 9.1 Write_Order_Status
+A consulta ao identificador `TRK-58291` retornou `200 OK` com os valores atualizados no teste de sobrescrita.
 
-```text
-Data Store Name: MES_OrderStatus_Store
-Visibility: Integration Flow
-Entry ID: ${property.idRastreamento}
-Encrypt Stored Message: marcado
-Overwrite Existing Message: marcado
-Expiration Period: 30 dias
+![Postman GET existente com HTTP 200](../evidences/lab22/11-postman-get-existing-200.png)
+
+Resposta validada:
+
+```json
+{
+  "idRastreamento": "TRK-58291",
+  "numeroPedido": "4500001234",
+  "origem": "MES",
+  "destino": "ERP",
+  "statusIntegracao": "REPROCESSAMENTO_AGENDADO",
+  "recebidoEm": "2026-08-15T17:20:00-03:00",
+  "tentativasReprocessamento": 1,
+  "filaDestino": "producao_pedidos",
+  "consultadoEm": "2026-08-15T21:57:26.597352389Z"
+}
 ```
 
-A opção de sobrescrita permite atualizar o ciclo da mesma ordem sem criar uma entrada duplicada.
+O resultado comprova em uma única chamada:
 
-### 9.2 MES_OrderStatus_Get
+- extração correta de `TRK-58291` da URL;
+- leitura da entrada no Data Store;
+- recuperação dos valores sobrescritos;
+- roteamento pelo caminho FOUND;
+- geração dinâmica de `consultadoEm`;
+- preservação de `filaDestino` para tratamento posterior no API Management.
 
-```text
-Data Store Name: MES_OrderStatus_Store
-Visibility: Integration Flow
-Entry ID: ${property.idRastreamento}
-Delete On Completion: desmarcado
-Throw Exception on Missing Entry: desmarcado
+O Trace apresentou o caminho GET e FOUND:
+
+![Trace do caminho GET FOUND](../evidences/lab22/12-trace-get-found-path.png)
+
+O Message Content confirmou o payload enriquecido antes da resposta final.
+
+![Payload GET enriquecido](../evidences/lab22/13-message-content-get-enriched.png)
+
+### 3.6 Teste 4 — Consulta de registro inexistente
+
+Para testar a resposta negativa, foi consultado um identificador não persistido:
+
+```http
+GET /http/e6e7/mes-order-status/status/TRK-99999
 ```
 
-A opção `Throw Exception on Missing Entry` permanece desmarcada para permitir que a ausência do registro seja transformada em resposta funcional `404`, em vez de erro técnico `500`.
+O Postman recebeu `404 Not Found`, em vez de um erro técnico.
 
-### 🔀 Roteamento FOUND e NOT_FOUND
+![Postman GET inexistente com HTTP 404](../evidences/lab22/14-postman-get-not-found-404.png)
 
-Condição FOUND:
+Resposta:
 
-```text
-${header.SAP_DataStoreEntryFound} = 'true'
+```json
+{
+  "status": "NOT_FOUND",
+  "codigo": "MES-404",
+  "mensagem": "Id de rastreamento nao encontrado",
+  "idRastreamento": "TRK-99999"
+}
 ```
 
-A rota NOT_FOUND é a Default Route.
+O Trace confirmou o desvio para a rota `NOT_FOUND`:
 
-### FOUND
+![Trace do caminho GET NOT_FOUND](../evidences/lab22/15-trace-get-not-found-path.png)
 
-```text
-Data Store Get
-→ Enrich_Order_Status_Response
-→ Get_Success_Response
-→ HTTP 200
+O conteúdo interno produzido pelo `Not_Found_Response` também foi validado:
+
+![Resposta interna NOT_FOUND](../evidences/lab22/16-message-content-not-found-response.png)
+
+---
+
+## 🏗️ Fase 4 — Tratamento de operação inválida
+
+O Router principal possui uma rota default para métodos e caminhos que não correspondam aos contratos WRITE e GET.
+
+O teste foi executado com:
+
+```http
+PUT /http/e6e7/mes-order-status/invalid
 ```
 
-### NOT_FOUND
+O retorno foi `400 Bad Request` com código funcional `MES-400`.
 
-```text
-Data Store Get
-→ Not_Found_Response
-→ HTTP 404
+![Postman com operação inválida e HTTP 400](../evidences/lab22/17-postman-invalid-operation-400.png)
+
+Resposta:
+
+```json
+{
+  "status": "BAD_REQUEST",
+  "codigo": "MES-400",
+  "mensagem": "Operacao invalida. Utilize POST /write ou GET /status/{idRastreamento}"
+}
 ```
 
-### 🧪 Testes Executados
-
-### 11.1 WRITE inicial
-
-- ID: `TRK-58291`
-- Status: `AGUARDANDO_ENTREGA_ERP`
-- Tentativas: `0`
-- Resultado: `201 Created`
-- Data Store: uma entrada criada
-
-### 11.2 WRITE com sobrescrita
-
-- Mesmo ID: `TRK-58291`
-- Novo status: `REPROCESSAMENTO_AGENDADO`
-- Tentativas: `1`
-- Resultado: `201 Created`
-- Data Store: permaneceu com uma única entrada
-
-### 11.3 GET existente
-
-- ID: `TRK-58291`
-- Resultado: `200 OK`
-- Valores sobrescritos recuperados
-- Campo `consultadoEm` adicionado dinamicamente
-- Campo `filaDestino` preservado
-
-### 11.4 GET inexistente
-
-- ID: `TRK-99999`
-- Resultado: `404 Not Found`
-- Resposta funcional `MES-404`
-
-### 11.5 Operação inválida
-
-- Método: `PUT`
-- Recurso: `/invalid`
-- Resultado: `400 Bad Request`
-- Resposta funcional `MES-400`
-
-### 📸 Evidências
-
-> Todas as evidências deste documento pertencem à pasta específica deste laboratório e iniciam em `01`. A numeração não deve ser continuada em documentos ou laboratórios posteriores.
-
-Pasta:
+O Trace comprovou que a chamada percorreu somente o caminho de operação inválida:
 
 ```text
-evidences/lab22/
+HTTPS
+→ Prepare_Request
+→ Route_Operation
+→ INVALID_OPERATION
+→ Invalid_Operation_Response
+→ End
 ```
 
-1. [Visão geral do iFlow sem erros](../evidences/lab22/01-iflow-e6-e7-overview-no-errors.png)
-2. [Deployment do iFlow iniciado](../evidences/lab22/02-iflow-deployment-started.png)
-3. [WRITE inicial com HTTP 201](../evidences/lab22/03-postman-write-new-201.png)
-4. [Entrada criada no Data Store](../evidences/lab22/04-datastore-entry-created.png)
-5. [Trace do caminho WRITE](../evidences/lab22/05-trace-write-flow-path.png)
-6. [Payload antes do Data Store Write](../evidences/lab22/06-message-content-before-datastore-write.png)
-7. [Resposta interna do WRITE](../evidences/lab22/07-message-content-write-response.png)
-8. [WRITE com sobrescrita e HTTP 201](../evidences/lab22/08-postman-write-overwrite-201.png)
-9. [Data Store após sobrescrita](../evidences/lab22/09-datastore-entry-after-overwrite.png)
-10. [Payload atualizado antes da sobrescrita](../evidences/lab22/10-message-content-overwrite-before-write.png)
-11. [GET existente com HTTP 200](../evidences/lab22/11-postman-get-existing-200.png)
-12. [Trace do caminho GET FOUND](../evidences/lab22/12-trace-get-found-path.png)
-13. [Payload GET enriquecido](../evidences/lab22/13-message-content-get-enriched.png)
-14. [GET inexistente com HTTP 404](../evidences/lab22/14-postman-get-not-found-404.png)
-15. [Trace do caminho GET NOT_FOUND](../evidences/lab22/15-trace-get-not-found-path.png)
-16. [Resposta interna NOT_FOUND](../evidences/lab22/16-message-content-not-found-response.png)
-17. [Operação inválida com HTTP 400](../evidences/lab22/17-postman-invalid-operation-400.png)
-18. [Trace da operação inválida](../evidences/lab22/18-trace-invalid-operation-path.png)
-19. [Payload interno da operação inválida](../evidences/lab22/19-message-content-invalid-operation.png)
+![Trace da operação inválida](../evidences/lab22/18-trace-invalid-operation-path.png)
+
+O Message Content confirmou o payload interno antes do retorno ao consumidor.
+
+![Payload interno da operação inválida](../evidences/lab22/19-message-content-invalid-operation.png)
+
+---
+
+### 🧪 Resumo Consolidado dos Testes
+
+| # | Cenário | Método e recurso | Resultado | Validação principal |
+|---:|---|---|---|---|
+| 1 | WRITE inicial | `POST /write` | ✅ `201 Created` | Entrada `TRK-58291` criada |
+| 2 | WRITE com sobrescrita | `POST /write` | ✅ `201 Created` | Mesma entrada atualizada, sem duplicação |
+| 3 | GET existente | `GET /status/TRK-58291` | ✅ `200 OK` | Dados atualizados e `consultadoEm` |
+| 4 | GET inexistente | `GET /status/TRK-99999` | ✅ `404 Not Found` | Resposta funcional `MES-404` |
+| 5 | Operação inválida | `PUT /invalid` | ✅ `400 Bad Request` | Resposta funcional `MES-400` |
+
+---
 
 ### 🔍 Troubleshooting e Lições Aprendidas
 
-### 13.1 Router direcionando POST para INVALID_OPERATION
+#### 1. POST direcionado para INVALID_OPERATION
 
-**Sintoma:** resposta `MES-400` mesmo com método POST.
+**Sintoma:** a chamada WRITE chegava ao iFlow, mas retornava `MES-400`.
 
-**Causa:** o Router dependia de properties cujo conteúdo não refletia corretamente os headers do runtime.
+**Causa:** a primeira condição do Router dependia de properties que não refletiam corretamente os headers usados pelo runtime.
 
-**Correção:** uso direto de `CamelHttpMethod` e `CamelHttpPath` nas condições.
-
-### 13.2 GET direcionando para INVALID_OPERATION
-
-**Sintoma:** resposta `MES-400` na consulta.
-
-**Causa:** URL do Postman sem o segmento `/status/`.
-
-**Correção:**
+**Solução:** utilizar diretamente:
 
 ```text
-/http/e6e7/mes-order-status/status/TRK-58291
+${header.CamelHttpMethod}
+${header.CamelHttpPath}
 ```
 
-### 13.3 Erro 500 no Extract_Tracking_Id
+#### 2. URL GET sem o segmento `/status/`
 
-**Sintoma:** `IllegalArgumentException` solicitando o formato `/status/{idRastreamento}`.
+**Sintoma:** a consulta retornava `MES-400`.
 
-**Causa:** script dependente da ocorrência literal `/status/` em `CamelHttpPath`.
+**Causa:** a variável do Postman apontava para:
 
-**Correção:** leitura combinada de `CamelHttpPath` e `CamelHttpUri`, seguida de busca pelo padrão `TRK-...`.
+```text
+.../mes-order-status/TRK-58291
+```
 
-### 13.4 Validação incorreta do valor zero
+**Solução:** ajustar para:
 
-**Risco:** `tentativasReprocessamento = 0` ser interpretado como ausência do campo.
+```text
+.../mes-order-status/status/TRK-58291
+```
 
-**Correção:** validação baseada em `containsKey`, `null` e conteúdo vazio, sem avaliação booleana direta do valor.
+#### 3. Erro 500 no `Extract_Tracking_Id`
+
+**Sintoma:** `IllegalArgumentException` informando que o formato `/status/{idRastreamento}` era inválido.
+
+**Causa:** a versão inicial do Groovy procurava literalmente `/status/` em `CamelHttpPath`, mas o HTTPS Adapter podia disponibilizar um path relativo diferente no runtime.
+
+**Solução:** considerar `CamelHttpPath` e `CamelHttpUri` e localizar diretamente o padrão `TRK-...` por expressão regular.
+
+#### 4. Valor zero em `tentativasReprocessamento`
+
+**Risco:** uma verificação booleana simples poderia interpretar `0` como campo ausente.
+
+**Solução:** validar com `containsKey`, `null` e string vazia, preservando `0` como valor inteiro válido.
+
+#### 5. Data Store Get e resposta 404
+
+**Risco:** com `Throw Exception on Missing Entry` habilitado, uma consulta inexistente produziria erro técnico e impediria o Router de gerar o `MES-404`.
+
+**Solução:** manter a opção desmarcada e avaliar `SAP_DataStoreEntryFound` no Router.
+
+---
 
 ### 🧠 Decisões Técnicas
 
-### 14.1 Data Store interno
+#### Data Store interno
 
-O cenário usa o Data Store interno do SAP Cloud Integration. Não há banco Neon ou persistência externa.
+O cenário utiliza o Data Store interno do SAP Cloud Integration. Não há persistência em banco externo.
 
-### 14.2 Visibilidade Integration Flow
+#### Visibilidade `Integration Flow`
 
-A visibilidade foi mantida como `Integration Flow` porque WRITE e GET estão no mesmo iFlow. Caso outro iFlow precise atualizar diretamente o mesmo Data Store no futuro, a visibilidade deverá ser reavaliada.
+WRITE e GET estão no mesmo iFlow. Por isso, a visibilidade foi mantida como `Integration Flow`.
 
-### 14.3 Campo filaDestino
+#### Endpoint WRITE permanece interno
 
-`filaDestino` é preservado no backend porque representa informação técnica útil ao time de Operações/Integração. Na etapa de API Management:
+A futura API para o parceiro legado será voltada à consulta. O WRITE representa atualização interna do status e não será exposto ao parceiro.
 
-- consumidor legado sem scope interno: não receberá `filaDestino`;
-- consumidor interno: receberá o conteúdo completo.
+#### `filaDestino` permanece no backend
 
-### 14.4 Endpoint WRITE interno
+O campo identifica a fila JMS utilizada no processamento e é útil ao time de Operações/Integração. No API Management, esse campo será removido ou ocultado para o consumidor legado sem permissão interna.
 
-O endpoint WRITE não será exposto ao parceiro legado. O API Proxy será direcionado ao contrato de consulta GET.
+#### Separação entre backend e API Management
+
+O laboratório atual comprova primeiro a persistência, consulta e os tratamentos funcionais. As policies E6 e E7 serão implementadas sobre um backend já validado, isolando problemas de integração dos problemas de transformação e governança da API.
+
+---
 
 ### ✅ Conclusão
 
-O backend foi validado com sucesso nos cinco comportamentos definidos:
+O backend `E6_E7_MES_OrderStatus_ProcessDirect` foi concluído e validado nos caminhos de criação, sobrescrita, leitura existente, leitura inexistente e operação inválida.
 
-- criação;
-- sobrescrita;
-- leitura existente;
-- leitura inexistente;
-- operação inválida.
+O cenário demonstrou na prática:
 
-O resultado fornece uma base consistente para a etapa seguinte, que adicionará governança e transformação no API Management:
+- roteamento por método e caminho HTTP;
+- validação robusta de payload JSON;
+- persistência e sobrescrita com Data Store;
+- utilização de `idRastreamento` como chave técnica;
+- consulta síncrona com enriquecimento de timestamp;
+- respostas funcionais `201`, `200`, `404` e `400`;
+- uso de Trace e Message Content para comprovar cada etapa executada.
 
-- OAuth e scopes;
-- Developer Apps separados;
-- Assign Message;
-- correlação de chamadas;
-- ocultação condicional de `filaDestino`;
-- conversão JSON para XML.
+O backend está preparado para a próxima etapa, na qual o API Management adicionará OAuth, Scopes diferenciados, Assign Message, correlação, mascaramento condicional de `filaDestino` e transformação JSON para XML.
 
-**Recursos praticados:** HTTPS Sender · Router por método e caminho · Groovy Script · Data Store Write · Data Store Get · Sobrescrita controlada · Tratamento funcional de HTTP 200, 201, 400 e 404 · Trace e Message Content
+**Recursos praticados:** HTTPS Sender · Router · Content Modifier · Groovy Script · Data Store Write · Data Store Get · Sobrescrita controlada · Tratamento HTTP · Trace · Message Content
 
 **Cenário anterior:** [E4+E5 — Traffic Management com Quota e Spike Arrest](./23-e4-e5-quota-spike-arrest.md)  
 **Próximo cenário:** [E6+E7 — API Management com JSON to XML e Assign Message](./25-e6-e7-api-management-xml-assign-message.md)
 
+---
+
 ### 🛠️ Ferramentas utilizadas
 
 - **SAP Integration Suite — Cloud Integration**
-- **SAP Data Store** para persistência interna
-- **Groovy** para validação, extração de identificador e enriquecimento
-- **Postman** para testes funcionais dos endpoints
-- **Visual Studio Code** para documentação e versionamento
-- **Git e GitHub** para controle de versão
+- **SAP Data Store**
+- **Groovy**
+- **Postman**
+- **Visual Studio Code**
+- **Git e GitHub**
 
-### 🧭 Navegação
-
-- [📚 Índice da documentação](./README.md)
-- [⬅️ Bloco anterior: E4+E5 — Traffic Management com Quota e Spike Arrest](./23-e4-e5-quota-spike-arrest.md)
-- [➡️ Próximo cenário: E6+E7 — API Management com JSON to XML e Assign Message](./25-e6-e7-api-management-xml-assign-message.md)
+---
 
 ### 👤 Autor / 📬 Contato
 
