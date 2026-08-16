@@ -1,7 +1,7 @@
-## 🏭 E6+E7 — MES Order Status Backend com HTTPS e Data Store
+## 🏭 E6+E7 — MES Order Status: Backend, Assign Message e JSON to XML
 
 **Bloco:** E — API Management  
-**Cenário:** Backend dedicado para E6 (JSON to XML) + E7 (Assign Message)  
+**Cenário:** Solução ponta a ponta para E6 (JSON to XML) + E7 (Assign Message)  
 **Status:** ✅ Concluído e testado de ponta a ponta  
 **Data de execução:** 15/08/2026  
 **iFlow:** `E6_E7_MES_OrderStatus_ProcessDirect`  
@@ -43,31 +43,25 @@ A utilização da mesma chave nos dois caminhos permite atualizar o estado da or
 
 ```mermaid
 flowchart LR
-    A["MES / Postman"] --> B["HTTPS Sender"]
+    A["🏭 MES / Postman"] -->|"POST /write<br/>JSON"| B["HTTPS Sender"]
+    A -->|"GET /status/TRK-xxxxx"| B
     B --> C["Prepare_Request"]
     C --> D{"Route_Operation"}
 
-    D -->|"POST /write"| E["Validate_And_Prepare_Status"]
-    E --> F["Write_Order_Status"]
-    F --> G["Write_Response HTTP 201"]
-    G --> H["End WRITE"]
+    D -->|"WRITE"| E["Validate_And_Prepare_Status"]
+    E --> F["Data Store Write"]
+    F --> G[("MES_OrderStatus_Store")]
+    F --> H["Write_Response<br/>HTTP 201"]
 
-    D -->|"GET /status/TRK-xxxxx"| I["Extract_Tracking_Id"]
-    I --> J["MES_OrderStatus_Get"]
+    D -->|"GET"| I["Extract_Tracking_Id"]
+    I --> J["Data Store Get"]
+    G --> J
     J --> K{"Route_Entry_Found"}
-
     K -->|"FOUND"| L["Enrich_Order_Status_Response"]
-    L --> M["Get_Success_Response HTTP 200"]
-    M --> N["End GET 200"]
+    L --> M["Get_Success_Response<br/>HTTP 200"]
+    K -->|"NOT_FOUND"| N["Not_Found_Response<br/>HTTP 404"]
 
-    K -->|"NOT_FOUND"| O["Not_Found_Response HTTP 404"]
-    O --> P["End GET 404"]
-
-    D -->|"INVALID_OPERATION"| Q["Invalid_Operation_Response HTTP 400"]
-    Q --> R["End HTTP 400"]
-
-    F --> DS["MES_OrderStatus_Store"]
-    DS --> J
+    D -->|"INVALID_OPERATION"| O["Invalid_Operation_Response<br/>HTTP 400"]
 ```
 
 A implementação final utiliza um único HTTPS Sender com wildcard. O nome técnico `E6_E7_MES_OrderStatus_ProcessDirect` foi preservado no artefato, embora o canal de entrada efetivamente utilizado seja HTTPS.
@@ -648,15 +642,569 @@ O Message Content confirmou o payload interno antes do retorno ao consumidor.
 
 ---
 
+## 🏗️ Fase 5 — Criação do API Proxy
+
+Com o backend validado, a camada de exposição foi criada no **SAP API Management**. O objetivo dessa fase foi manter o endpoint WRITE interno e publicar somente a consulta de status para consumidores autorizados.
+
+### 5.1 API Proxy
+
+O Proxy foi criado a partir da URL do backend HTTPS do Cloud Integration.
+
+**Name**
+
+```text
+E6_E7_MES_OrderStatus_Legacy_Proxy
+```
+
+**Title**
+
+```text
+E6+E7 MES Order Status Legacy API
+```
+
+**Short Text**
+
+```text
+MES order status inquiry with XML response for legacy consumers.
+```
+
+**API Base Path**
+
+```text
+/v1/mesorderstatus
+```
+
+**Target Endpoint**
+
+```text
+https://<cpi-runtime-host>/http/e6e7/mes-order-status
+```
+
+O Target Endpoint foi mantido sem o identificador de rastreamento. O sufixo recebido pelo Proxy é preservado dinamicamente:
+
+```text
+Proxy:  /v1/mesorderstatus/status/TRK-58291
+Target: /http/e6e7/mes-order-status/status/TRK-58291
+```
+
+A visão geral do artefato registrou o nome técnico, o título, o Base Path e o estado ativo da API.
+
+![Visão geral do API Proxy](../evidences/lab22/20-api-proxy-overview.png)
+
+A aba Target Endpoint confirmou o destino HTTPS do backend E6+E7.
+
+![Target Endpoint do API Proxy](../evidences/lab22/21-api-proxy-target-endpoint.png)
+
+### 5.2 Recurso GET
+
+No contrato público foi criado apenas o recurso de consulta:
+
+**Tag**
+
+```text
+GetMESOrderStatus
+```
+
+**Path Prefix**
+
+```text
+/status/{idRastreamento}
+```
+
+**Operation**
+
+```text
+GET
+```
+
+**Description**
+
+```text
+MES order status inquiry with XML response for legacy consumers.
+```
+
+O método POST do backend não foi adicionado ao Product nem ao recurso público. Dessa forma, o caminho WRITE continua restrito à atualização interna do status.
+
+![Recurso GET do API Proxy](../evidences/lab22/22-api-resource-get-order-status.png)
+
+---
+
+## 🏗️ Fase 6 — Autenticação técnica entre API Management e Cloud Integration
+
+O endpoint HTTPS do Cloud Integration exige credenciais com autorização equivalente a `ESBMessaging.send`. Para evitar credenciais em texto aberto nas policies, foi reutilizada a KVM:
+
+```text
+KVM_D1_Backend_Credentials
+```
+
+A KVM existente possui as chaves:
+
+```text
+UserID
+Password
+```
+
+Como o parser do tenant aceitou apenas uma operação `Get` por policy, a leitura foi separada em duas policies.
+
+### 6.1 Recuperação do UserID
+
+A primeira policy lê a chave `UserID` e atribui o valor a uma variável privada.
+
+```xml
+<KeyValueMapOperations xmlns="http://www.sap.com/apimgmt" async="false" continueOnError="false" enabled="true" mapIdentifier="KVM_D1_Backend_Credentials">
+    <Get assignTo="private.e6e7.backend.clientid">
+        <Key>
+            <Parameter>UserID</Parameter>
+        </Key>
+    </Get>
+</KeyValueMapOperations>
+```
+
+![Policy KVM para UserID](../evidences/lab22/23-policy-get-e6e7-backend-userid.png)
+
+### 6.2 Recuperação do Password
+
+A segunda policy lê a chave `Password`.
+
+```xml
+<KeyValueMapOperations xmlns="http://www.sap.com/apimgmt" async="false" continueOnError="false" enabled="true" mapIdentifier="KVM_D1_Backend_Credentials">
+    <Get assignTo="private.e6e7.backend.clientsecret">
+        <Key>
+            <Parameter>Password</Parameter>
+        </Key>
+    </Get>
+</KeyValueMapOperations>
+```
+
+![Policy KVM para Password](../evidences/lab22/24-policy-get-e6e7-backend-password.png)
+
+### 6.3 Geração do header Basic Authentication
+
+A terceira policy utiliza as variáveis privadas para gerar o header de autenticação técnica do backend.
+
+```xml
+<BasicAuthentication xmlns="http://www.sap.com/apimgmt" async="false" continueOnError="false" enabled="true">
+    <Operation>Encode</Operation>
+    <IgnoreUnresolvedVariables>false</IgnoreUnresolvedVariables>
+    <User ref="private.e6e7.backend.clientid"/>
+    <Password ref="private.e6e7.backend.clientsecret"/>
+    <AssignTo createNew="false">request.header.Authorization</AssignTo>
+</BasicAuthentication>
+```
+
+![Policy Basic Authentication do backend](../evidences/lab22/25-policy-add-e6e7-backend-basic-auth.png)
+
+A ordem final no `TargetEndpoint → PreFlow → Incoming Request` ficou:
+
+```text
+Get-E6E7-Backend-ClientId
+→ Get-E6E7-Backend-ClientSecret
+→ Add-E6E7-Backend-Basic-Auth
+```
+
+### 6.4 Baseline do Proxy
+
+Antes de aplicar OAuth, mascaramento ou transformação, o Proxy foi testado retornando o JSON original do backend.
+
+O resultado `200 OK` comprovou:
+
+- composição correta do path;
+- leitura das credenciais da KVM;
+- criação do Basic Authentication;
+- acesso ao iFlow;
+- recuperação da entrada no Data Store;
+- preservação do campo `filaDestino` antes do controle de visibilidade.
+
+![Baseline JSON do API Proxy](../evidences/lab22/26-postman-proxy-json-baseline-200.png)
+
+---
+
+## 🏗️ Fase 7 — Products, Rate Plans e Developer Apps
+
+Para diferenciar consumidores legados de consumidores internos, foram criados dois API Products e dois Developer Apps. Cada Product recebeu scopes próprios e foi associado a um Rate Plan.
+
+### 7.1 Product legado
+
+**Name**
+
+```text
+E6_E7_MES_OrderStatus_Legacy_Product
+```
+
+**Title**
+
+```text
+E6+E7 MES Order Status Legacy Product
+```
+
+**Short Text**
+
+```text
+XML-based MES order status query for legacy consumers.
+```
+
+**Scope**
+
+```text
+mesorderstatus.read
+```
+
+O Product foi publicado com uma API associada e um Rate Plan ativo.
+
+![Product legado publicado com Rate Plan](../evidences/lab22/27-api-product-legacy-with-rate-plan.png)
+
+### 7.2 Product interno
+
+**Name**
+
+```text
+E6_E7_MES_OrderStatus_Internal_Product
+```
+
+**Title**
+
+```text
+E6+E7 MES Order Status Internal Product
+```
+
+**Short Text**
+
+```text
+Complete MES order status query for Operations and Integration teams.
+```
+
+**Scopes**
+
+```text
+mesorderstatus.read
+mesorderstatus.internal
+```
+
+**Description**
+
+```text
+Internal product for complete MES order status queries, including technical information intended for Operations and Integration teams.
+```
+
+O Product interno foi publicado com a mesma API e o mesmo Rate Plan, mas recebeu o scope adicional para informação técnica.
+
+![Product interno publicado](../evidences/lab22/28-apim-product-internal-published.png)
+
+### 7.3 Developer App legado
+
+O App legado foi associado exclusivamente ao Legacy Product.
+
+**Title**
+
+```text
+MES Legacy Partner Application
+```
+
+**Description**
+
+```text
+OAuth client application for legacy MES consumers accessing XML-based order status responses.
+```
+
+As credenciais foram geradas pelo Developer Hub e mantidas mascaradas nas evidências.
+
+![Developer App legado criado](../evidences/lab22/29-apim-developer-app-legacy-created.png)
+
+### 7.4 Developer App interno
+
+O App interno foi associado exclusivamente ao Internal Product.
+
+**Title**
+
+```text
+MES_Ops_Integration_App
+```
+
+**Description**
+
+```text
+OAuth client application for Operations and Integration teams accessing complete MES order status responses, including internal technical information.
+```
+
+![Developer App interno criado](../evidences/lab22/30-apim-developer-app-internal-created.png)
+
+---
+
+## 🏗️ Fase 8 — OAuth 2.0 Client Credentials
+
+O Proxy foi protegido com uma policy `OAuthV2` no `ProxyEndpoint → PreFlow → Incoming Request`.
+
+```xml
+<OAuthV2 xmlns="http://www.sap.com/apimgmt" async="false" continueOnError="false" enabled="true">
+    <Operation>VerifyAccessToken</Operation>
+</OAuthV2>
+```
+
+A geração dos tokens utilizou o grant:
+
+```text
+client_credentials
+```
+
+### 8.1 Token do consumidor legado
+
+O App legado solicitou somente:
+
+```text
+mesorderstatus.read
+```
+
+O Postman recebeu `200 OK` e armazenou o token em variável de ambiente para evitar exposição direta nas chamadas protegidas.
+
+![Token OAuth do consumidor legado](../evidences/lab22/31-postman-oauth-token-legacy-read-scope.png)
+
+### 8.2 Token do consumidor interno
+
+O App interno solicitou:
+
+```text
+mesorderstatus.read mesorderstatus.internal
+```
+
+O retorno confirmou o Internal Product, os dois scopes e o status aprovado.
+
+![Token OAuth do consumidor interno](../evidences/lab22/32-postman-oauth-token-internal-scopes.png)
+
+### 8.3 Separação entre Bearer Token e Basic Authentication
+
+Após a validação OAuth, o header `Authorization` ainda carregava o Bearer Token do consumidor. O backend CPI, porém, exige Basic Authentication. Para impedir que o token externo fosse encaminhado ao backend, foi adicionada uma policy Assign Message no `TargetEndpoint → PreFlow → Incoming Request`.
+
+```xml
+<AssignMessage xmlns="http://www.sap.com/apimgmt" async="false" continueOnError="false" enabled="true">
+    <Remove>
+        <Headers>
+            <Header name="Authorization"/>
+        </Headers>
+    </Remove>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+    <AssignTo createNew="false" type="request"/>
+</AssignMessage>
+```
+
+A sequência técnica passou a ser:
+
+```text
+ProxyEndpoint valida Bearer Token
+→ TargetEndpoint remove Authorization Bearer
+→ Basic Authentication cria Authorization Basic
+→ CPI recebe a credencial técnica correta
+```
+
+![Assign Message removendo Authorization do consumidor](../evidences/lab22/33-apim-target-remove-consumer-authorization.png)
+
+O novo teste legado retornou `200 OK` em JSON, agora com OAuth ativo e autenticação técnica funcionando simultaneamente.
+
+![Chamada OAuth legado com JSON 200](../evidences/lab22/34-postman-proxy-legacy-oauth-json-200.png)
+
+---
+
+## 🏗️ Fase 9 — E7 Assign Message e rastreabilidade
+
+No `ProxyEndpoint → PreFlow → Incoming Request`, foi adicionada uma policy Assign Message após a validação OAuth.
+
+```xml
+<AssignMessage xmlns="http://www.sap.com/apimgmt" async="false" continueOnError="false" enabled="true">
+    <Set>
+        <Headers>
+            <Header name="X-Correlation-ID">{messageid}</Header>
+        </Headers>
+    </Set>
+    <IgnoreUnresolvedVariables>false</IgnoreUnresolvedVariables>
+    <AssignTo createNew="false" type="request"/>
+</AssignMessage>
+```
+
+A policy cria um identificador de correlação com base no `messageid`, permitindo relacionar a chamada do consumidor, a execução do Proxy e o processamento do backend.
+
+A ordem do PreFlow ficou:
+
+```text
+Verify-E6E7-Access-Token
+→ Add-E6E7-Correlation-ID
+```
+
+![Assign Message para Correlation ID](../evidences/lab22/35-apim-assign-message-correlation-id.png)
+
+---
+
+## 🏗️ Fase 10 — Controle condicional de `filaDestino`
+
+O campo `filaDestino` representa informação técnica de infraestrutura e deve ser exibido apenas ao consumidor com scope interno.
+
+Como a remoção precisava ocorrer dentro do payload JSON, foi usado um JavaScript no `ProxyEndpoint → PostFlow → Outgoing Response`.
+
+### 10.1 Script Resource
+
+O recurso foi importado em `Scripts` com o nome:
+
+```text
+remove-internal-queue-field.js
+```
+
+Versão final do script:
+
+```javascript
+var scope = context.getVariable("scope") || "";
+var responseContent = context.getVariable("response.content");
+
+if (responseContent) {
+    var payload = JSON.parse(responseContent);
+    var hasInternalScope =
+        scope.split(/\s+/).indexOf("mesorderstatus.internal") !== -1;
+
+    if (!hasInternalScope) {
+        delete payload.filaDestino;
+    }
+
+    context.setVariable(
+        "response.content",
+        JSON.stringify(payload)
+    );
+
+    context.setVariable(
+        "response.header.X-Data-Visibility",
+        hasInternalScope ? "INTERNAL" : "LEGACY"
+    );
+}
+```
+
+### 10.2 Policy JavaScript
+
+O nome técnico foi reduzido para evitar conflito com policies antigas:
+
+```text
+Remove-E6E7-Internal
+```
+
+A policy referencia o Script Resource:
+
+```xml
+<Javascript xmlns="http://www.sap.com/apimgmt" async="false" continueOnError="false" enabled="true" timeLimit="200">
+    <ResourceURL>jsc://remove-internal-queue-field.js</ResourceURL>
+</Javascript>
+```
+
+![JavaScript para controle de visibilidade](../evidences/lab22/36-apim-javascript-remove-internal-field.png)
+
+A lógica final é:
+
+```text
+scope contém mesorderstatus.internal
+→ mantém filaDestino
+→ X-Data-Visibility = INTERNAL
+```
+
+```text
+scope não contém mesorderstatus.internal
+→ remove filaDestino
+→ X-Data-Visibility = LEGACY
+```
+
+---
+
+## 🏗️ Fase 11 — E6 JSON to XML
+
+Após o controle de visibilidade, o payload é convertido de JSON para XML.
+
+A policy foi criada no `ProxyEndpoint → PostFlow → Outgoing Response`, depois do JavaScript.
+
+**Policy Name**
+
+```text
+Convert-E6E7-OrderStatus-JSON-XML
+```
+
+```xml
+<JSONToXML xmlns="http://www.sap.com/apimgmt" async="false" continueOnError="false" enabled="true">
+    <Options>
+        <ObjectRootElementName>mesOrderStatusResponse</ObjectRootElementName>
+        <ArrayRootElementName>items</ArrayRootElementName>
+        <ArrayItemElementName>item</ArrayItemElementName>
+    </Options>
+    <OutputVariable>response</OutputVariable>
+    <Source>response</Source>
+</JSONToXML>
+```
+
+![Policy JSON to XML](../evidences/lab22/37-apim-json-to-xml-response-policy.png)
+
+A ordem final no fluxo de resposta ficou:
+
+```text
+Backend retorna JSON
+→ Remove-E6E7-Internal avalia o scope
+→ Convert-E6E7-OrderStatus-JSON-XML converte o conteúdo resultante
+→ consumidor recebe XML
+```
+
+A posição no **Outgoing Response** é essencial, pois a variável `response` só existe depois que o backend devolve o payload.
+
+---
+
+## 🧪 Fase 12 — Testes finais por perfil de consumidor
+
+### 12.1 Legacy Partner
+
+A chamada foi executada com:
+
+```text
+Bearer Token: {{mes_legacy_access_token}}
+Accept: application/xml
+```
+
+O retorno foi `200 OK` em XML e não apresentou o elemento `filaDestino`.
+
+![XML legado sem filaDestino](../evidences/lab22/38-postman-legacy-xml-without-internal-queue.png)
+
+A resposta validou:
+
+- token associado ao Legacy Product;
+- scope `mesorderstatus.read`;
+- autenticação técnica no backend;
+- recuperação do status no Data Store;
+- remoção do campo interno;
+- conversão JSON para XML;
+- preservação dos demais campos.
+
+### 12.2 Internal Operations
+
+A chamada interna utilizou:
+
+```text
+Bearer Token: {{mes_ops_access_token}}
+Accept: application/xml
+```
+
+O retorno foi `200 OK` e preservou:
+
+```xml
+<filaDestino>producao_pedidos</filaDestino>
+```
+
+![XML interno com filaDestino](../evidences/lab22/39-postman-internal-xml-with-internal-queue.png)
+
+O resultado confirmou que o scope `mesorderstatus.internal` foi reconhecido pela variável de fluxo `scope` e que a resposta interna permaneceu completa.
+
+---
+
 ### 🧪 Resumo Consolidado dos Testes
 
-| # | Cenário | Método e recurso | Resultado | Validação principal |
+| # | Camada | Cenário | Resultado | Validação principal |
 |---:|---|---|---|---|
-| 1 | WRITE inicial | `POST /write` | ✅ `201 Created` | Entrada `TRK-58291` criada |
-| 2 | WRITE com sobrescrita | `POST /write` | ✅ `201 Created` | Mesma entrada atualizada, sem duplicação |
-| 3 | GET existente | `GET /status/TRK-58291` | ✅ `200 OK` | Dados atualizados e `consultadoEm` |
-| 4 | GET inexistente | `GET /status/TRK-99999` | ✅ `404 Not Found` | Resposta funcional `MES-404` |
-| 5 | Operação inválida | `PUT /invalid` | ✅ `400 Bad Request` | Resposta funcional `MES-400` |
+| 1 | Cloud Integration | WRITE inicial | ✅ `201 Created` | Entrada `TRK-58291` criada |
+| 2 | Cloud Integration | WRITE com sobrescrita | ✅ `201 Created` | Mesma entrada atualizada sem duplicação |
+| 3 | Cloud Integration | GET existente | ✅ `200 OK` | Recuperação e `consultadoEm` |
+| 4 | Cloud Integration | GET inexistente | ✅ `404 Not Found` | Resposta funcional `MES-404` |
+| 5 | Cloud Integration | Operação inválida | ✅ `400 Bad Request` | Resposta funcional `MES-400` |
+| 6 | API Management | Proxy baseline | ✅ `200 OK` JSON | KVM, Basic Auth e backend |
+| 7 | API Management | OAuth legado | ✅ `200 OK` JSON | Bearer validado e Basic recriado |
+| 8 | API Management | XML legado | ✅ `200 OK` XML | `filaDestino` removido |
+| 9 | API Management | XML interno | ✅ `200 OK` XML | `filaDestino` preservado |
 
 ---
 
@@ -668,103 +1216,147 @@ O Message Content confirmou o payload interno antes do retorno ao consumidor.
 
 **Causa:** a primeira condição do Router dependia de properties que não refletiam corretamente os headers usados pelo runtime.
 
-**Solução:** utilizar diretamente:
-
-```text
-${header.CamelHttpMethod}
-${header.CamelHttpPath}
-```
+**Solução:** utilizar diretamente `CamelHttpMethod` e `CamelHttpPath`.
 
 #### 2. URL GET sem o segmento `/status/`
 
 **Sintoma:** a consulta retornava `MES-400`.
 
-**Causa:** a variável do Postman apontava para:
-
-```text
-.../mes-order-status/TRK-58291
-```
-
-**Solução:** ajustar para:
-
-```text
-.../mes-order-status/status/TRK-58291
-```
+**Solução:** ajustar a URL para incluir `/status/TRK-58291`.
 
 #### 3. Erro 500 no `Extract_Tracking_Id`
 
-**Sintoma:** `IllegalArgumentException` informando que o formato `/status/{idRastreamento}` era inválido.
+**Causa:** o Groovy inicial procurava literalmente `/status/` em `CamelHttpPath`.
 
-**Causa:** a versão inicial do Groovy procurava literalmente `/status/` em `CamelHttpPath`, mas o HTTPS Adapter podia disponibilizar um path relativo diferente no runtime.
-
-**Solução:** considerar `CamelHttpPath` e `CamelHttpUri` e localizar diretamente o padrão `TRK-...` por expressão regular.
+**Solução:** considerar `CamelHttpPath` e `CamelHttpUri` e localizar o padrão `TRK-...` por expressão regular.
 
 #### 4. Valor zero em `tentativasReprocessamento`
 
 **Risco:** uma verificação booleana simples poderia interpretar `0` como campo ausente.
 
-**Solução:** validar com `containsKey`, `null` e string vazia, preservando `0` como valor inteiro válido.
+**Solução:** validar por `containsKey`, `null` e string vazia.
 
-#### 5. Data Store Get e resposta 404
+#### 5. Parser das KVM policies
 
-**Risco:** com `Throw Exception on Missing Entry` habilitado, uma consulta inexistente produziria erro técnico e impediria o Router de gerar o `MES-404`.
+**Sintomas:** erro de parse com `DisplayName`, múltiplos `Get` e posicionamento de `Scope`.
 
-**Solução:** manter a opção desmarcada e avaliar `SAP_DataStoreEntryFound` no Router.
+**Solução final:**
+
+- remover `DisplayName`;
+- criar uma KVM policy por chave;
+- omitir `Scope`, utilizando o padrão do ambiente;
+- usar os nomes reais `UserID` e `Password`.
+
+#### 6. `UnresolvedVariable` no Basic Authentication
+
+**Causa:** as policies buscavam `clientid` e `clientsecret`, mas a KVM possuía `UserID` e `Password`.
+
+**Solução:** corrigir somente os parâmetros de busca e manter as variáveis privadas usadas pelo Basic Authentication.
+
+#### 7. OAuth retornando `401` no backend
+
+**Causa:** o Bearer Token do consumidor era encaminhado ao CPI no header `Authorization`.
+
+**Solução:** remover o Bearer no Target PreFlow e gerar um novo Authorization Basic.
+
+#### 8. `Source response is not available`
+
+**Causa:** JavaScript e JSON to XML foram inicialmente adicionados no Incoming Request do PostFlow.
+
+**Solução:** recriar as duas policies no `ProxyEndpoint → PostFlow → Outgoing Response`.
+
+#### 9. Erro de deploy com `jsc://maincode.js`
+
+**Causa:** uma policy JavaScript antiga permaneceu em Created Policies, mesmo após ser removida do fluxo.
+
+**Solução:** excluir a policy órfã e manter somente a policy atual apontando para `jsc://remove-internal-queue-field.js`.
+
+#### 10. App interno recebendo resposta mascarada
+
+**Causa:** o JavaScript consultava uma variável de scope incorreta.
+
+**Solução:** utilizar diretamente:
+
+```javascript
+context.getVariable("scope")
+```
 
 ---
 
 ### 🧠 Decisões Técnicas
 
+#### Um único documento e laboratório
+
+A construção do backend e a implementação do API Management representam uma única jornada E6+E7. Por isso, o documento e o `lab22` foram mantidos, com evidências sequenciais de `01` a `39`.
+
 #### Data Store interno
 
-O cenário utiliza o Data Store interno do SAP Cloud Integration. Não há persistência em banco externo.
+O cenário utiliza o Data Store do SAP Cloud Integration, sem persistência externa.
 
-#### Visibilidade `Integration Flow`
+#### Endpoint WRITE interno
 
-WRITE e GET estão no mesmo iFlow. Por isso, a visibilidade foi mantida como `Integration Flow`.
+O Product expõe somente `GET /status/{idRastreamento}`. O WRITE permanece interno.
 
-#### Endpoint WRITE permanece interno
+#### Products separados
 
-A futura API para o parceiro legado será voltada à consulta. O WRITE representa atualização interna do status e não será exposto ao parceiro.
+A separação entre Legacy Product e Internal Product impede que o parceiro legado obtenha o scope interno.
 
-#### `filaDestino` permanece no backend
+#### Dupla autenticação
 
-O campo identifica a fila JMS utilizada no processamento e é útil ao time de Operações/Integração. No API Management, esse campo será removido ou ocultado para o consumidor legado sem permissão interna.
+O consumidor usa OAuth Bearer até o Proxy. O Proxy usa Basic Authentication técnico até o Cloud Integration.
 
-#### Separação entre backend e API Management
+#### Controle de visibilidade antes da transformação
 
-O laboratório atual comprova primeiro a persistência, consulta e os tratamentos funcionais. As policies E6 e E7 serão implementadas sobre um backend já validado, isolando problemas de integração dos problemas de transformação e governança da API.
+O campo `filaDestino` é removido enquanto o payload ainda está em JSON. Somente depois o payload resultante é convertido para XML.
 
 ---
 
 ### ✅ Conclusão
 
-O backend `E6_E7_MES_OrderStatus_ProcessDirect` foi concluído e validado nos caminhos de criação, sobrescrita, leitura existente, leitura inexistente e operação inválida.
+O cenário E6+E7 foi concluído de ponta a ponta, integrando Cloud Integration e API Management em uma solução única de consulta de status de ordens MES.
 
-O cenário demonstrou na prática:
+A implementação demonstrou:
 
-- roteamento por método e caminho HTTP;
-- validação robusta de payload JSON;
-- persistência e sobrescrita com Data Store;
-- utilização de `idRastreamento` como chave técnica;
-- consulta síncrona com enriquecimento de timestamp;
-- respostas funcionais `201`, `200`, `404` e `400`;
-- uso de Trace e Message Content para comprovar cada etapa executada.
+- HTTPS Sender com roteamento por método e caminho;
+- gravação, sobrescrita e leitura por Data Store;
+- validação e enriquecimento com Groovy;
+- API Proxy com recurso GET controlado;
+- KVM e Basic Authentication para o backend;
+- OAuth 2.0 Client Credentials;
+- Products, Rate Plans e Developer Apps separados;
+- Assign Message para correlação e substituição controlada do Authorization;
+- JavaScript para remoção condicional de informação interna;
+- JSON to XML no fluxo de resposta;
+- contrato XML distinto para parceiro legado e time interno.
 
-O backend está preparado para a próxima etapa, na qual o API Management adicionará OAuth, Scopes diferenciados, Assign Message, correlação, mascaramento condicional de `filaDestino` e transformação JSON para XML.
+O resultado final atende aos dois perfis:
 
-**Recursos praticados:** HTTPS Sender · Router · Content Modifier · Groovy Script · Data Store Write · Data Store Get · Sobrescrita controlada · Tratamento HTTP · Trace · Message Content
+```text
+Legacy Partner
+→ mesorderstatus.read
+→ XML sem filaDestino
+```
+
+```text
+Internal Operations
+→ mesorderstatus.read + mesorderstatus.internal
+→ XML com filaDestino
+```
+
+**Recursos praticados:** HTTPS Sender · Router · Content Modifier · Groovy · Data Store · API Proxy · KVM · Basic Authentication · OAuth 2.0 · API Product · Rate Plan · Developer App · Assign Message · JavaScript · JSON to XML
 
 **Cenário anterior:** [E4+E5 — Traffic Management com Quota e Spike Arrest](./23-e4-e5-quota-spike-arrest.md)  
-**Próximo cenário:** [E6+E7 — API Management com JSON to XML e Assign Message](./25-e6-e7-api-management-xml-assign-message.md)
+**Próximo cenário:** [E10 — API Analytics](./25-e10-api-analytics.md)
 
 ---
 
 ### 🛠️ Ferramentas utilizadas
 
 - **SAP Integration Suite — Cloud Integration**
+- **SAP Integration Suite — API Management**
 - **SAP Data Store**
 - **Groovy**
+- **JavaScript**
 - **Postman**
 - **Visual Studio Code**
 - **Git e GitHub**
