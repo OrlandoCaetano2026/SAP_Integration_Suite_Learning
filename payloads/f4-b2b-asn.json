@@ -1,0 +1,9 @@
+{
+  "partnerId": "SUPPLIER-B2B-001",
+  "deliveryNumber": "ASN-2026-000145",
+  "purchaseOrder": "4500001234",
+  "material": "MAT-GEN-001",
+  "quantity": 150,
+  "plant": "1000",
+  "expectedDeliveryDate": "2026-08-20"
+}

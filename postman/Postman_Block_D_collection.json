@@ -1,0 +1,149 @@
+{
+  "info": {
+    "name": "SAP Integration Suite Learning - Bloco D",
+    "description": "Conectividade e Adapters",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "D1 - OData Adapter",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/d1odata",
+          "host": [
+            "{{base_url}}/http/d1odata"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"consultaClientes\": {\n    \"filtros\": {\n      \"pais\": \"Germany\"\n    }\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "D2 - SOAP Adapter",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/d2soap",
+          "host": [
+            "{{base_url}}/http/d2soap"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"notaFiscal\": {\n    \"numero\": \"NF-12099999\",\n    \"valores\": {\n      \"valorBruto\": 15000\n    }\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "D3 - SFTP Producer",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/d3sftp/producer",
+          "host": [
+            "{{base_url}}/http/d3sftp/producer"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ordemProducao\": {\n    \"numeroOrdem\": \"OP-00045210\",\n    \"material\": \"MAT-GEN-001\",\n    \"quantidade\": 500\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "D4 - ProcessDirect",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/d4processdirect",
+          "host": [
+            "{{base_url}}/http/d4processdirect"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fornecedor\": \"1000100\",\n  \"material\": \"MAT-GEN-001\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://SEU-TENANT-RT",
+      "type": "string"
+    },
+    {
+      "key": "clientid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clientsecret",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "key": "username",
+        "value": "{{clientid}}",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "{{clientsecret}}",
+        "type": "string"
+      }
+    ]
+  }
+}

@@ -61,4 +61,13 @@ Mensagens de entrada (JSON) utilizadas nos testes dos laboratórios. Podem ser i
 
 > 💡 Os cenários E0, E1, E2, E4 e E5 reaproveitam os mesmos payloads já existentes do Bloco D (`d1-consulta-*.json` e `d4-teste*.json`), já que testam a camada de API Management (Proxy/Policies) sobre os mesmos backends, sem alterar a estrutura do payload de negócio em si.
 
+#### Novos payloads dos Blocos E e F
+
+| Arquivo | Cenário | Abrir |
+|---|---|---|
+| e6-e7-mes-order-status-write.json | E6+E7 — gravação/atualização de status MES | [ver](./e6-e7-mes-order-status-write.json) |
+| f4-b2b-asn.json | F4 — ASN B2B via mTLS | [ver](./f4-b2b-asn.json) |
+| f5-mm-purchase-order-change.json | F5 — alteração de pedido SAP MM com CSRF | [ver](./f5-mm-purchase-order-change.json) |
+| f6-mm-supplier-confirmation-valid.json | F6 — confirmação de fornecedor válida, planejada | [ver](./f6-mm-supplier-confirmation-valid.json) |
+
 📌 Voltar para o [README principal do projeto](../README.md)

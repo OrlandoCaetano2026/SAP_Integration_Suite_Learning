@@ -60,10 +60,19 @@ SAP Integration Suite → Design → pacote de destino
 
 | Arquivo | Cenário | Doc |
 |---|---|---|
-| E3_VendorOverride.zip | Escrita via API (UPDATE em vendor_block_status) — usado nos testes de Scope do OAuth | [doc](../docs/22-e3-oauth-scopes.md) |
+| E3_VendorOverride.zip | Escrita via API usada nos testes OAuth | [doc](../docs/22-e3-oauth-scopes.md) |
+| E6_E7_MES_OrderStatus_ProcessDirect.zip | Backend MES Order Status | [doc](../docs/24-e6-e7-mes-order-status-backend.md) |
 
-> 💡 Os demais cenários do Bloco E (E0, E1, E2, E4, E5, E12) não geram novos artefatos de iFlow — eles reaproveitam os iFlows já exportados do Bloco D (`D1_OData_Adapter`, `D4_ProcessDirect_Main`) expostos através de API Proxies e Policies configuradas na capability API Management, que não são exportáveis como .zip.
+#### Ⓕ Bloco F — Segurança
 
-💡 Ao adicionar novos iFlows, mantenha o nome do .zip igual ao nome do artefato no Integration Suite.
+| Arquivo | Cenário | Doc |
+|---|---|---|
+| F4_B2B_ClientCertificate_Receiver.zip | Client Certificate Authentication e mTLS | [doc](../docs/26-f4-b2b-client-certificate-mtls.md) |
+| F5_MM_PurchaseOrder_CSRF_Protected_API.zip | CSRF real em alteração de pedido SAP MM | [doc](../docs/27-f5-csrf-token-validation.md) |
+| F6_MM_SupplierConfirmation_Backend.zip | API Threat Protection | [doc planejado](../docs/28-f6-api-threat-protection.md) |
+
+💡 Policies e API Proxies do API Management não são exportados como iFlow `.zip`.
+
+💡 Mantenha o nome do `.zip` igual ao ID técnico do artefato no Integration Suite.
 
 📌 Voltar para o [README principal do projeto](../README.md)

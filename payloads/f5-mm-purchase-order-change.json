@@ -1,0 +1,14 @@
+{
+  "purchaseOrder": "4500001234",
+  "item": "00010",
+  "material": "MAT-GEN-001",
+  "plant": "1000",
+  "previousQuantity": 100,
+  "newQuantity": 150,
+  "previousNetPrice": 350.0,
+  "newNetPrice": 400.0,
+  "currency": "BRL",
+  "deliveryDate": "2026-08-25",
+  "changeReason": "PRODUCTION_REQUIREMENT_INCREASE",
+  "changedBy": "MM-PURCHASING-USER"
+}

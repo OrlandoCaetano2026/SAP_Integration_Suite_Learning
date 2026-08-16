@@ -1,0 +1,176 @@
+{
+  "info": {
+    "name": "SAP Integration Suite Learning - Bloco B",
+    "description": "Padrões de Integração",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "B1 - Router ALTO",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/b1router",
+          "host": [
+            "{{base_url}}/http/b1router"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-3001\",\n    \"valor\": 5000\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "B2 - Content Enricher",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/b2enricher",
+          "host": [
+            "{{base_url}}/http/b2enricher"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-4001\",\n    \"produto\": \"Balança Industrial\",\n    \"quantidade\": 3\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "B3 - Splitter",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/b3splitter",
+          "host": [
+            "{{base_url}}/http/b3splitter"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-5001\",\n    \"itens\": [\n      {\n        \"produto\": \"Balança Industrial\",\n        \"quantidade\": 2\n      },\n      {\n        \"produto\": \"Etiqueta Térmica\",\n        \"quantidade\": 100\n      }\n    ]\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "B4 - Aggregator",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/b4aggregator",
+          "host": [
+            "{{base_url}}/http/b4aggregator"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-6002\",\n    \"itens\": [\n      {\n        \"codigo\": \"MAT-001\",\n        \"quantidade\": 2\n      },\n      {\n        \"codigo\": \"MAT-002\",\n        \"quantidade\": 8\n      }\n    ]\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "B5 - Multicast",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/b5multicast",
+          "host": [
+            "{{base_url}}/http/b5multicast"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ordemProducao\": {\n    \"numero\": \"OP-9001\",\n    \"produto\": \"Balança Industrial\",\n    \"quantidadeProduzir\": 50\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://SEU-TENANT-RT",
+      "type": "string"
+    },
+    {
+      "key": "clientid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clientsecret",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "key": "username",
+        "value": "{{clientid}}",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "{{clientsecret}}",
+        "type": "string"
+      }
+    ]
+  }
+}

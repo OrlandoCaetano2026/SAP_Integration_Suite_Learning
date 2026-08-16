@@ -1,0 +1,180 @@
+{
+  "info": {
+    "name": "SAP Integration Suite Learning - Bloco F",
+    "description": "Segurança: mTLS e CSRF",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "F4 - ASN com certificado válido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/f4/b2b/client-certificate",
+          "host": [
+            "{{base_url}}/http/f4/b2b/client-certificate"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"partnerId\": \"SUPPLIER-B2B-001\",\n  \"deliveryNumber\": \"ASN-2026-000145\",\n  \"purchaseOrder\": \"4500001234\",\n  \"material\": \"MAT-GEN-001\",\n  \"quantity\": 150,\n  \"plant\": \"1000\",\n  \"expectedDeliveryDate\": \"2026-08-20\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "F5 - CSRF Token Fetch",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-CSRF-Token",
+            "value": "Fetch"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/f5/mm/purchase-order",
+          "host": [
+            "{{base_url}}/http/f5/mm/purchase-order"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const token = pm.response.headers.get(\"x-csrf-token\");",
+              "if (token) pm.environment.set(\"f5_csrf_token\", token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "F5 - POST válido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{f5_csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/f5/mm/purchase-order",
+          "host": [
+            "{{base_url}}/http/f5/mm/purchase-order"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"purchaseOrder\": \"4500001234\",\n  \"item\": \"00010\",\n  \"material\": \"MAT-GEN-001\",\n  \"plant\": \"1000\",\n  \"previousQuantity\": 100,\n  \"newQuantity\": 150,\n  \"previousNetPrice\": 350.0,\n  \"newNetPrice\": 400.0,\n  \"currency\": \"BRL\",\n  \"deliveryDate\": \"2026-08-25\",\n  \"changeReason\": \"PRODUCTION_REQUIREMENT_INCREASE\",\n  \"changedBy\": \"MM-PURCHASING-USER\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "F5 - PUT método inválido",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{f5_csrf_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/f5/mm/purchase-order",
+          "host": [
+            "{{base_url}}/http/f5/mm/purchase-order"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"purchaseOrder\": \"4500001234\",\n  \"item\": \"00010\",\n  \"material\": \"MAT-GEN-001\",\n  \"plant\": \"1000\",\n  \"previousQuantity\": 100,\n  \"newQuantity\": 150,\n  \"previousNetPrice\": 350.0,\n  \"newNetPrice\": 400.0,\n  \"currency\": \"BRL\",\n  \"deliveryDate\": \"2026-08-25\",\n  \"changeReason\": \"PRODUCTION_REQUIREMENT_INCREASE\",\n  \"changedBy\": \"MM-PURCHASING-USER\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://SEU-TENANT-RT",
+      "type": "string"
+    },
+    {
+      "key": "clientid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clientsecret",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "f5_csrf_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "key": "username",
+        "value": "{{clientid}}",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "{{clientsecret}}",
+        "type": "string"
+      }
+    ]
+  }
+}

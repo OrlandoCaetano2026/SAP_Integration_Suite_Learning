@@ -43,11 +43,21 @@
 
 | Lab | Cenário | Evidências | Doc |
 |---|---|---|---|
-| lab18 | E0, E1, E12 — API Proxy + Basic Authentication (KVM) | [pasta](./lab18) | [doc](../docs/20-e-api-management-proxy-basic-auth.md) |
+| lab18 | E0, E1, E12 — API Proxy + Basic Authentication | [pasta](./lab18) | [doc](../docs/20-e-api-management-proxy-basic-auth.md) |
 | lab19 | E2 — Verify API Key | [pasta](./lab19) | [doc](../docs/21-e2-verify-api-key.md) |
-| lab20 | E3 — OAuth 2.0 e Scopes (Fornecedor vs. Compliance) | [pasta](./lab20) | [doc](../docs/22-e3-oauth-scopes.md) |
-| lab21 | E4, E5 — Quota Dinâmica e Spike Arrest | [pasta](./lab21) | [doc](../docs/23-e4-e5-quota-spike-arrest.md) |
+| lab20 | E3 — OAuth 2.0 e Scopes | [pasta](./lab20) | [doc](../docs/22-e3-oauth-scopes.md) |
+| lab21 | E4+E5 — Quota e Spike Arrest | [pasta](./lab21) | [doc](../docs/23-e4-e5-quota-spike-arrest.md) |
+| lab22 | E6+E7 — MES Order Status | [pasta](./lab22) | [doc](../docs/24-e6-e7-mes-order-status-backend.md) |
+| lab23 | E10 — API Analytics | [pasta](./lab23) | [doc](../docs/25-e10-api-analytics.md) |
 
-💡 **Convenção de nomes:** os arquivos seguem a ordem narrativa do cenário (ex.: 01-iflow, 02-postman, 03-...), com dados sensíveis (URLs de tenant, credenciais, headers de rastreamento) borrados antes do commit.
+### Ⓕ Bloco F — Segurança
+
+| Lab | Cenário | Evidências | Doc |
+|---|---|---|---|
+| lab24 | F4 — Client Certificate e mTLS | [pasta](./lab24) | [doc](../docs/26-f4-b2b-client-certificate-mtls.md) |
+| lab25 | F5 — CSRF Token Validation | [pasta](./lab25) | [doc](../docs/27-f5-csrf-token-validation.md) |
+| lab26 | F6 — API Threat Protection | pasta a criar | [doc planejado](../docs/28-f6-api-threat-protection.md) |
+
+💡 **Convenção de nomes:** os arquivos seguem a ordem narrativa de cada laboratório e os dados sensíveis devem ser mascarados antes do commit.
 
 📌 Voltar para o [README principal do projeto](../README.md)

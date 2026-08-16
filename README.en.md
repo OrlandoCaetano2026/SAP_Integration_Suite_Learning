@@ -181,34 +181,33 @@ Goes **beyond the official journey**, covering topics highly valued in real proj
 
 #### Ⓔ Block E — API Management 🥇
 
-| # | Scenario | Goal | Doc |
-|---|---|---|---|
-| E0 | Capability activation + API Provider | Enable API Management on the tenant and connect to the real backend | [view](docs/20-e-api-management-proxy-basic-auth.md) |
-| E1 | API Proxy pointing to backend | Expose a controlled API | [view](docs/20-e-api-management-proxy-basic-auth.md) |
-| E2 | Policy: Verify API Key | Basic key-based authentication | [view](docs/21-e2-verify-api-key.md) |
-| E3 | Policy: OAuth | Secure authentication, write via API and differentiated Scopes | [view](docs/22-e3-oauth-scopes.md) |
-| E4 | Policy: Quota | Limit the number of calls (dynamic commercial plans) | [view](docs/23-e4-e5-quota-spike-arrest.md) |
-| E5 | Policy: Spike Arrest | Protection against traffic spikes | [view](docs/23-e4-e5-quota-spike-arrest.md) |
-| E6 | Policy: JSON ↔ XML | Format conversion | — |
-| E7 | Policy: Assign Message | Manipulate request/response | — |
-| E8 | API Products and plans | Group and distribute APIs | — |
-| E9 | Developer Portal | API publishing | — |
-| E10 | API Analytics | Usage monitoring | — |
-| E11 | Policy: Access Control | IP-based access control (whitelist/blacklist) | — |
-| E12 | Policy: Basic Authentication | Proxy authentication against the real backend | [view](docs/20-e-api-management-proxy-basic-auth.md) |
+| # | Scenario | Goal | Doc | Status |
+|---|---|---|---|---|
+| E0, E1, E12 | Capability, API Proxy and Basic Authentication | Expose a backend with KVM-based technical authentication | [20](docs/20-e-api-management-proxy-basic-auth.md) | ✅ |
+| E2 | Verify API Key | Control access with Consumer Keys | [21](docs/21-e2-verify-api-key.md) | ✅ |
+| E3 | OAuth 2.0 and Scopes | Client Credentials, Products, Apps and scope authorization | [22](docs/22-e3-oauth-scopes.md) | ✅ |
+| E4+E5 | Quota and Spike Arrest | Limit consumption and protect against traffic bursts | [23](docs/23-e4-e5-quota-spike-arrest.md) | ✅ |
+| E6+E7 | JSON → XML and Assign Message | XML response and scope-based conditional visibility | [24](docs/24-e6-e7-mes-order-status-backend.md) | ✅ |
+| E8+E9 | Products, Rate Plans, Apps and Developer Hub | Governed distribution and consumption | [21](docs/21-e2-verify-api-key.md), [22](docs/22-e3-oauth-scopes.md), [23](docs/23-e4-e5-quota-spike-arrest.md), [24](docs/24-e6-e7-mes-order-status-backend.md) | ✅ |
+| E10 | API Analytics | Overview, Health, Usage and Custom View | [25](docs/25-e10-api-analytics.md) | ✅ |
 
-> 💡 Scenarios **E8 (API Products and plans)** and **E9 (Developer Portal)** have already been extensively explored in practice within docs 21, 22, and 23 (creation of Products, Rate Plans, and Developer Apps), although they don't yet have a dedicated, standalone document.
+> ✅ **Block E completed on August 16, 2026.**
 
 #### Ⓕ Block F — Security (cross-cutting) 🥇
 
-| # | Scenario | Goal | Doc |
-|---|---|---|---|
-| F1 | Basic Authentication | Simple authentication | — |
-| F2 | API Key | Key-based access control | — |
-| F3 | OAuth 2.0 | Secure authorization | — |
-| F4 | Certificates / Keystore | Certificate-based security | — |
-| F5 | Real CSRF | Protection against Cross-Site Request Forgery | — |
-| F6 | Client Certificate Authentication (mTLS) | Mutual certificate-based authentication | — |
+| # | Scenario | Goal | Doc | Status |
+|---|---|---|---|---|
+| F1 | Basic Authentication | Already practiced in Block E; improvements postponed until after certification | [20](docs/20-e-api-management-proxy-basic-auth.md), [24](docs/24-e6-e7-mes-order-status-backend.md) | ✅ Covered |
+| F2 | API Key | Already practiced in E2 | [21](docs/21-e2-verify-api-key.md) | ✅ Covered |
+| F3 | OAuth 2.0 | Already practiced in E3 and E6+E7 | [22](docs/22-e3-oauth-scopes.md), [24](docs/24-e6-e7-mes-order-status-backend.md) | ✅ Covered |
+| F4 | Keystore, Client Certificate and mTLS | Inbound B2B authentication with X.509 | [26](docs/26-f4-b2b-client-certificate-mtls.md) | ✅ |
+| F5 | Real CSRF | Session-bound token and cookies for an SAP MM purchase order change | [27](docs/27-f5-csrf-token-validation.md) | ✅ |
+| F6 | API Threat Protection | JSON, XML and Regular Expression Protection | [28](docs/28-f6-api-threat-protection.md) | 🔄 Next |
+| F7 | PGP Message-Level Security | Message encryption, signing and verification | — | ⏳ |
+| F8 | SAML / Principal Propagation | Identity propagation, subject to environment support | — | ⏳ |
+| F9 | Security comparison matrix | Consolidation of controls and negative tests | — | ⏳ |
+
+> 🔒 Future post-certification hardening: combine **mTLS + CSRF** and deepen Basic Auth, API Key and OAuth negative tests.
 
 #### Ⓖ Block G — SAP MM / PP / QM Scenarios 🥈
 

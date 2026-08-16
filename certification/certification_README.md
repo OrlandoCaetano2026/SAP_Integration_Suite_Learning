@@ -1,78 +1,43 @@
-## 🎓 Certificação — SAP Integration Suite
+### 🎓 Certificação — SAP Integration Suite
 
-Esta pasta acompanha a jornada de preparação e certificação em **SAP Integration Suite**, reunindo o status de estudo, o histórico de execução e o certificado oficial (quando concluído).
+Esta pasta acompanha a preparação para **SAP Certified Associate — Integration Developer**.
 
-### 🎯 Certificação-alvo
+#### 📊 Status por bloco
 
-**SAP Certified Associate — Integration Developer**
-Trilha oficial: [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite)
-
-### 📊 Status da preparação
-
-#### Ⓐ Bloco A — CPI Fundamentos
-
-| Cenário | Descrição | Data | Status |
+| Bloco | Período | Status | Observação |
 |---|---|---|---|
-| A1 | HTTP → Content Modifier → Webhook | 01/08/2026 | ✅ |
-| A2 | Timer → Request Reply → API pública | 01/08/2026 | ✅ |
-| A3 | Message Mapping (JSON → XML) | 02/08/2026 | ✅ |
-| A4 | Groovy Script | 03/08/2026 | ✅ |
+| A — CPI Fundamentos | 01-03/08/2026 | ✅ Concluído | A1-A4 |
+| B — Padrões de Integração | 03-04/08/2026 | ✅ Concluído | B1-B5 |
+| C — Resiliência e Erros | 04-06/08/2026 | ✅ Concluído | C1-C4 |
+| D — Conectividade / Adapters | 06-10/08/2026 | ✅ Concluído | D1-D4; JDBC incorporado ao D4 |
+| E — API Management | 11-16/08/2026 | ✅ Concluído | E0-E10, E12 e recursos E8/E9 cobertos nos laboratórios |
+| F — Segurança | 16/08/2026 | 🔄 Em andamento | F4 e F5 concluídos; F6 é o próximo |
+| G — SAP MM / PP / QM | — | ⏳ Planejado | Cenários complementares |
+| H — Event-Driven e E2E | — | ⏳ Planejado | Event Mesh e cenário final |
 
-#### Ⓑ Bloco B — Padrões de Integração
+#### Ⓕ Bloco F — Roadmap aprovado
 
-| Cenário | Descrição | Data | Status |
-|---|---|---|---|
-| B1 | Content-Based Router | 03/08/2026 | ✅ |
-| B2 | Content Enricher (OData V4) | 03/08/2026 | ✅ |
-| B3 | Splitter | 03/08/2026 | ✅ |
-| B4 | Aggregator (CamelSplitComplete) | 04/08/2026 | ✅ |
-| B5 | Multicast (MES/PLM/ERP) | 04/08/2026 | ✅ |
-
-#### Ⓒ Bloco C — Resiliência e Erros
-
-| Cenário | Descrição | Data | Status |
-|---|---|---|---|
-| C1 | Exception Subprocess | 04/08/2026 | ✅ |
-| C2 | Retry (HTTP Adapter) | 04/08/2026 | ✅ |
-| C3 | Dead Letter / Reprocessamento (JMS) | 05/08/2026 | ✅ |
-| C4 | Data Store & Idempotência (2 abordagens) | 06/08/2026 | ✅ |
-
-#### Ⓓ Bloco D — Conectividade / Adapters
-
-| Cenário | Descrição | Data | Status |
-|---|---|---|---|
-| D1 | OData Adapter (query dinâmica) | 06/08/2026 | ✅ |
-| D2 | SOAP Adapter (Split/Gather) | 07/08/2026 | ✅ |
-| D3 | SFTP Adapter (Producer + Consumer) | 07 e 10/08/2026 | ✅ |
-| D4 | ProcessDirect + JDBC (validação de fornecedor) | 10/08/2026 | ✅ |
-
-> 💡 O cenário **D5 — JDBC Adapter**, originalmente planejado separadamente, foi incorporado ao **D4**.
-
-#### Ⓔ Bloco E — API Management (em andamento)
-
-| Cenário | Descrição | Data | Status |
-|---|---|---|---|
-| E0 | Ativação da capability + API Provider | 11/08/2026 | ✅ |
-| E1 | API Proxy apontando para backend | 11/08/2026 | ✅ |
-| E2 | Policy: Verify API Key | 11/08/2026 | ✅ |
-| E3 | Policy: OAuth (Scopes + escrita via API) | 11-12/08/2026 | ✅ |
-| E4 | Policy: Quota (planos comerciais dinâmicos) | 12/08/2026 | ✅ |
-| E5 | Policy: Spike Arrest | 12/08/2026 | ✅ |
-| E6 | Policy: JSON ↔ XML | — | ⬜ |
-| E7 | Policy: Assign Message | — | ⬜ |
-| E8 | API Products e planos | 11-12/08/2026 | ✅ (coberto nos docs 21-23) |
-| E9 | Developer Portal | 11-12/08/2026 | ✅ (coberto nos docs 21-23) |
-| E10 | Analytics de API | — | ⬜ |
-| E11 | Policy: Access Control | — | ⬜ |
-| E12 | Policy: Basic Authentication | 11/08/2026 | ✅ |
-
-#### 🔜 Próximos blocos
-
-| Bloco | Descrição | Status |
+| Cenário | Tema | Status |
 |---|---|---|
-| Ⓕ F | Segurança (CSRF real, Client Certificate, OAuth 2.0, Keystore) | ⬜ |
-| Ⓖ G | Cenários SAP MM / PP / QM | ⬜ |
-| Ⓗ H | Event-Driven e End-to-End | ⬜ |
+| F1 | Basic Authentication | ✅ Coberto nos docs 20 e 24 |
+| F2 | API Key | ✅ Coberto no doc 21 |
+| F3 | OAuth 2.0 | ✅ Coberto nos docs 22 e 24 |
+| F4 | Keystore, Client Certificate e mTLS | ✅ [Doc 26](../docs/26-f4-b2b-client-certificate-mtls.md) |
+| F5 | CSRF Token Validation | ✅ [Doc 27](../docs/27-f5-csrf-token-validation.md) |
+| F6 | API Threat Protection | 🔄 Próximo cenário |
+| F7 | PGP Message-Level Security | ⏳ Planejado |
+| F8 | SAML / Principal Propagation | ⏳ Condicional ao ambiente |
+| F9 | Matriz comparativa de segurança | ⏳ Planejado |
+
+> Melhorias adicionais de Basic Auth, API Key e OAuth e o cenário combinado mTLS + CSRF ficam para hardening pós-certificação.
+
+#### 🎯 Progresso geral
+
+- **Blocos concluídos:** 5 de 8, A até E.
+- **Bloco atual:** F — Segurança.
+- **Laboratórios de segurança novos concluídos:** F4 e F5.
+- **Próximo laboratório:** F6 — API Threat Protection.
+- **Prova:** a agendar.
 
 #### 🧪 Simulados
 
@@ -81,40 +46,8 @@ Trilha oficial: [Developing with SAP Integration Suite](https://learning.sap.com
 | Simulado por bloco | ⬜ |
 | Simulado final | ⬜ |
 
-### 📅 Registro (por bloco)
+#### 📎 Certificado
 
-| Bloco | Data inicial | Data final | Status |
-|---|---|---|---|
-| **Bloco A** — CPI Fundamentos | 01/08/2026 | 03/08/2026 | ✅ Concluído |
-| **Bloco B** — Padrões de Integração | 03/08/2026 | 04/08/2026 | ✅ Concluído |
-| **Bloco C** — Resiliência e Erros | 04/08/2026 | 06/08/2026 | ✅ Concluído |
-| **Bloco D** — Conectividade / Adapters | 06/08/2026 | 10/08/2026 | ✅ Concluído |
-| **Bloco E** — API Management | 11/08/2026 | — | 🔄 Em andamento (E0-E5, E8, E9 concluídos; faltam E6, E7, E10, E11) |
-| **Bloco F** — Segurança | — | — | ⏳ Planejado |
-| **Bloco G** — Cenários SAP MM / PP / QM | — | — | ⏳ Planejado |
-| **Bloco H** — Event-Driven e End-to-End | — | — | ⏳ Planejado |
-
-### ⏱️ Total até a certificação
-
-#### 🎯 Progresso geral
-
-| Métrica | Valor |
-|---|---|
-| **Cenários concluídos** | 24 |
-| **Blocos concluídos** | 4 de 8 (A, B, C e D) |
-| **Bloco em andamento** | E — API Management (E0-E5, E8, E9 concluídos; faltam E6, E7, E10, E11) |
-| **Próximo bloco** | F — Segurança (após finalizar o E) |
-| **Data de início** | 01/08/2026 |
-| **Prova de certificação** | ⏳ A agendar |
-
-**Jornada em andamento** 🚀
-
-### 📎 Certificado
-
-O certificado oficial será anexado a esta pasta após a aprovação no exame.
-```
-certification/
-└── (certificado-sap-integration-suite.pdf)
-```
+O certificado oficial será anexado após a aprovação no exame.
 
 📌 Voltar para o [README principal do projeto](../README.md)

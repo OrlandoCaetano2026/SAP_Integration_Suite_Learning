@@ -1,0 +1,9 @@
+{
+  "idRastreamento": "TRK-58291",
+  "numeroPedido": "4500001234",
+  "origem": "MES",
+  "destino": "ERP",
+  "statusIntegracao": "REPROCESSAMENTO_AGENDADO",
+  "tentativasReprocessamento": 1,
+  "filaDestino": "producao_pedidos"
+}

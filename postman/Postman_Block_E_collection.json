@@ -1,0 +1,164 @@
+{
+  "info": {
+    "name": "SAP Integration Suite Learning - Bloco E",
+    "description": "API Management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "E2 - Verify API Key",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "apikey",
+            "value": "{{consumer_api_key}}"
+          }
+        ],
+        "url": {
+          "raw": "{{apim_base_url}}/v1/vendorvalidation",
+          "host": [
+            "{{apim_base_url}}/v1/vendorvalidation"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fornecedor\": \"1000350\",\n  \"material\": \"MAT-GEN-003\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "E3 - OAuth Vendor Override",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{apim_base_url}}/v1/vendoroverride",
+          "host": [
+            "{{apim_base_url}}/v1/vendoroverride"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fornecedor\": \"1000200\",\n  \"material\": \"MAT-GEN-001\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token_manual}}",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "E6+E7 - Legacy XML",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/xml"
+          }
+        ],
+        "url": {
+          "raw": "{{apim_base_url}}/v1/mesorderstatus/status/TRK-58291",
+          "host": [
+            "{{apim_base_url}}/v1/mesorderstatus/status/TRK-58291"
+          ]
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "E10 - Tracking Not Found",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/xml"
+          }
+        ],
+        "url": {
+          "raw": "{{apim_base_url}}/v1/mesorderstatus/status/TRK-99999",
+          "host": [
+            "{{apim_base_url}}/v1/mesorderstatus/status/TRK-99999"
+          ]
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://SEU-TENANT-RT",
+      "type": "string"
+    },
+    {
+      "key": "clientid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clientsecret",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "apim_base_url",
+      "value": "https://SEU-TENANT-APIM",
+      "type": "string"
+    },
+    {
+      "key": "consumer_api_key",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "access_token_manual",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mes_legacy_access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mes_ops_access_token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

@@ -52,20 +52,29 @@
 
 | Cenário | Doc | Descrição |
 |---|---|---|
-| E0, E1, E12 | [20 — API Proxy + Basic Authentication](./20-e-api-management-proxy-basic-auth.md) | Ativação da capability, API Provider, primeiro API Proxy e autenticação do Proxy junto ao backend via Key Value Map criptografado |
-| E2 | [21 — Verify API Key](./21-e2-verify-api-key.md) | Proteção do Proxy contra consumidores externos via API Key, com fluxo completo de API Product e Developer Hub |
-| E3 | [22 — OAuth 2.0 e Scopes](./22-e3-oauth-scopes.md) | Servidor de tokens OAuth Client Credentials, primeira operação de escrita via API, e permissões diferenciadas por Scope (Fornecedor vs. Compliance) |
-| E4, E5 | [23 — Quota Dinâmica e Spike Arrest](./23-e4-e5-quota-spike-arrest.md) | Planos comerciais (Free/Premium) com limite de chamadas dinâmico, e proteção contra rajadas instantâneas de tráfego |
+| E0, E1, E12 | [20 — API Proxy + Basic Authentication](./20-e-api-management-proxy-basic-auth.md) | API Provider, Proxy e KVM com Basic Authentication |
+| E2 | [21 — Verify API Key](./21-e2-verify-api-key.md) | API Product, Developer App e Consumer Key |
+| E3 | [22 — OAuth 2.0 e Scopes](./22-e3-oauth-scopes.md) | Client Credentials, autorização por scopes e escrita via API |
+| E4+E5 | [23 — Quota Dinâmica e Spike Arrest](./23-e4-e5-quota-spike-arrest.md) | Controle de consumo e proteção contra rajadas |
+| E6+E7 | [24 — MES Order Status](./24-e6-e7-mes-order-status-backend.md) | Backend, Products, Apps, Assign Message, mascaramento condicional e JSON → XML |
+| E8+E9 | [Docs 21 a 24](./21-e2-verify-api-key.md) | Products, Rate Plans, Apps e Developer Hub praticados de forma integrada |
+| E10 | [25 — API Analytics](./25-e10-api-analytics.md) | Overview, Health, Usage e Custom View operacional |
 
-> 💡 Os cenários **E8 (API Products e planos)** e **E9 (Developer Portal)** já foram amplamente explorados na prática dentro dos docs 21, 22 e 23 (criação de Products, Rate Plans e Developer Apps), embora ainda não possuam um documento dedicado e isolado.
+> ✅ Bloco E concluído em 16/08/2026.
 
-### 🔜 Próximos blocos
+### Ⓕ Bloco F — Segurança
 
-| Bloco | Tema |
-|---|---|
-| Ⓔ E | Policies restantes: JSON ↔ XML, Assign Message, Access Control, API Analytics |
-| Ⓕ F | Segurança (CSRF real, Client Certificate, OAuth 2.0, Keystore) |
-| Ⓖ G | Cenários SAP MM / PP / QM |
-| Ⓗ H | Event-Driven e End-to-End |
+| Cenário | Doc | Descrição |
+|---|---|---|
+| F4 | [26 — B2B Client Certificate e mTLS](./26-f4-b2b-client-certificate-mtls.md) | Certificate Service Key, PFX e testes sem certificado, válido e não confiável |
+| F5 | [27 — CSRF Token Validation](./27-f5-csrf-token-validation.md) | Alteração de pedido SAP MM com token e cookies vinculados à sessão |
+| F6 | [28 — API Threat Protection](./28-f6-api-threat-protection.md) | JSON, XML e Regular Expression Protection, próximo cenário |
+
+### 📍 Status atual
+
+- Blocos A, B, C, D e E concluídos.
+- F1, F2 e F3 cobertos nos cenários anteriores.
+- F4 e F5 concluídos em 16/08/2026.
+- Próximo cenário: F6 — API Threat Protection.
 
 📌 Voltar para o [README principal do projeto](../README.md)

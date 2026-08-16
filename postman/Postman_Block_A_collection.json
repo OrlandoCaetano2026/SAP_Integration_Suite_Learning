@@ -1,0 +1,122 @@
+{
+  "info": {
+    "name": "SAP Integration Suite Learning - Bloco A",
+    "description": "CPI Fundamentos",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "A1 - HTTP to Webhook",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/lab01",
+          "host": [
+            "{{base_url}}/http/lab01"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": \"1001\",\n  \"produto\": \"Balança Industrial\",\n  \"quantidade\": 5\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "A3 - Message Mapping",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/a3mapping",
+          "host": [
+            "{{base_url}}/http/a3mapping"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pedido\": {\n    \"numero\": \"PED-1001\",\n    \"cliente\": \"Orlando Caetano\",\n    \"valor\": \"2500.00\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "A4 - Groovy Script",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/a4groovy",
+          "host": [
+            "{{base_url}}/http/a4groovy"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pedido\": \"PED-2001\",\n  \"material\": \"Balança Industrial BK-3000\",\n  \"quantidade\": 5,\n  \"valorUnitario\": 700.0,\n  \"centro\": \"1000\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://SEU-TENANT-RT",
+      "type": "string"
+    },
+    {
+      "key": "clientid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clientsecret",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "key": "username",
+        "value": "{{clientid}}",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "{{clientsecret}}",
+        "type": "string"
+      }
+    ]
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "info": {
+    "name": "SAP Integration Suite Learning - Bloco C",
+    "description": "Resiliência e Erros",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "C1 - Exception Subprocess",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/c1exception",
+          "host": [
+            "{{base_url}}/http/c1exception"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ordemProducao\": {\n    \"numero\": \"OP-8001\",\n    \"centro\": \"1000\",\n    \"quantidadeProduzir\": 50\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "C2 - Retry",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/c2retry",
+          "host": [
+            "{{base_url}}/http/c2retry"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ordemProducao\": {\n    \"numero\": \"OP-9500\",\n    \"centro\": \"1000\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "C3 - Dead Letter Producer",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/c3producer",
+          "host": [
+            "{{base_url}}/http/c3producer"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"confirmacaoProducao\": {\n    \"ordem\": \"OP-9900\",\n    \"material\": \"PROD-X-3000\",\n    \"quantidadeConfirmada\": 30\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "C4 - Data Store CREATE",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/http/c4datastore",
+          "host": [
+            "{{base_url}}/http/c4datastore"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"purchaseOrder\": \"4500001234\",\n  \"item\": \"00010\",\n  \"material\": \"MAT-GEN-001\",\n  \"plant\": \"1000\",\n  \"previousQuantity\": 100,\n  \"newQuantity\": 150,\n  \"previousNetPrice\": 350.0,\n  \"newNetPrice\": 400.0,\n  \"currency\": \"BRL\",\n  \"deliveryDate\": \"2026-08-25\",\n  \"changeReason\": \"PRODUCTION_REQUIREMENT_INCREASE\",\n  \"changedBy\": \"MM-PURCHASING-USER\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://SEU-TENANT-RT",
+      "type": "string"
+    },
+    {
+      "key": "clientid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clientsecret",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "key": "username",
+        "value": "{{clientid}}",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "{{clientsecret}}",
+        "type": "string"
+      }
+    ]
+  }
+}

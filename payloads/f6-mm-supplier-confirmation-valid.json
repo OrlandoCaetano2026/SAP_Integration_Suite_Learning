@@ -1,0 +1,19 @@
+{
+  "supplier": {
+    "supplierId": "SUPPLIER-1000",
+    "supplierName": "Generic Industrial Supplier"
+  },
+  "purchaseOrder": "4500001234",
+  "plant": "1000",
+  "currency": "BRL",
+  "items": [
+    {
+      "item": "00010",
+      "material": "MAT-GEN-001",
+      "confirmedQuantity": 150,
+      "netPrice": 400.0,
+      "deliveryDate": "2026-08-25"
+    }
+  ],
+  "confirmationStatus": "ACCEPTED"
+}
