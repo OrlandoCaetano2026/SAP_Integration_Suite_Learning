@@ -64,12 +64,28 @@
 
 ### Ⓕ Bloco F — Segurança
 
-| Cenário | Doc | Descrição |
-|---|---|---|
-| F4 | [26 — B2B Client Certificate e mTLS](./26-f4-b2b-client-certificate-mtls.md) | Certificate Service Key, PFX e testes sem certificado, válido e não confiável |
-| F5 | [27 — CSRF Token Validation](./27-f5-csrf-token-validation.md) | Alteração de pedido SAP MM com token e cookies vinculados à sessão |
-| F6 | [28 — API Threat Protection](./28-f6-api-threat-protection.md) | JSON, XML e Regular Expression Protection, próximo cenário |
+| Cenário | Doc | Descrição | Status |
+|---|---|---|---|
+| F4 | [26 — B2B Client Certificate e mTLS](./26-f4-b2b-client-certificate-mtls.md) | Certificate Service Key, X.509, autenticação de cliente e mTLS B2B | ✅ Concluído |
+| F5 | [27 — CSRF Token Validation](./27-f5-csrf-token-validation.md) | Token CSRF e cookies vinculados à sessão em alteração SAP MM | ✅ Concluído |
+| F6 | [28 — API Threat Protection](./28-f6-api-threat-protection.md) | JSON, XML e Regular Expression Threat Protection | ✅ Concluído |
+| F7 | [29 — PGP Message-Level Security](./29-f7-pgp-message-level-security.md) | Criptografia, assinatura, verificação e testes negativos PGP | ✅ Concluído |
+| F8A–F8B | [30 — Authentication Context and Technical User SAML Bearer](./30-f8-authentication-context-technical-user-saml-bearer.md) | Contexto inbound, anti-spoofing, RFC 7522, introspecção e autorização | ✅ Concluído |
+| F8C–F8E | [31 — End-User Principal Propagation and Authorization](./31-f8-end-user-principal-propagation-authorization.md) | Propagação de principal humano e autorização Buyer/Manager | 🔄 Próximo documento |
+| F8D | [32 — SAML Web SSO Federation](./32-f8-saml-web-sso-federation.md) | Login federado interativo | ⏳ Planejado |
+| F8F–F8G | [33 — SAML and Token Security Negative Tests](./33-f8-saml-token-security-negative-tests.md) | Trust, assinatura, expiração, revogação e replay | ⏳ Planejado |
+| F8H | [34 — Identity Propagation Security Matrix](./34-f8-identity-propagation-security-matrix.md) | Consolidação e hardening | ⏳ Planejado |
 
+### 📍 Status atual
+
+- Blocos A, B, C, D e E concluídos.
+- F1, F2 e F3 cobertos nos cenários anteriores.
+- F4, F5, F6 e F7 concluídos.
+- F8A e F8B concluídos no Documento 30.
+- Próximo cenário: F8C — End-User Principal Propagation, consolidado com F8E no Documento 31.
+- F8 foi dividido em documentos modulares para preservar profundidade técnica e navegação.
+
+📌 Voltar para o [README principal do projeto](../README.md)
 ### 📍 Status atual
 
 - Blocos A, B, C, D e E concluídos.

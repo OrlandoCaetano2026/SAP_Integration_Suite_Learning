@@ -56,7 +56,12 @@
 |---|---|---|---|
 | lab24 | F4 — Client Certificate e mTLS | [pasta](./lab24) | [doc](../docs/26-f4-b2b-client-certificate-mtls.md) |
 | lab25 | F5 — CSRF Token Validation | [pasta](./lab25) | [doc](../docs/27-f5-csrf-token-validation.md) |
-| lab26 | F6 — API Threat Protection | pasta a criar | [doc planejado](../docs/28-f6-api-threat-protection.md) |
+| lab26 | F6 — API Threat Protection | [pasta](./lab26) | [doc](../docs/28-f6-api-threat-protection.md) |
+| lab29 | F7 — PGP Message-Level Security | [pasta](./lab29) | [doc](../docs/29-f7-pgp-message-level-security.md) |
+| lab30 | F8A–F8B — Authentication Context e Technical User SAML Bearer | [pasta](./lab30) | [doc](../docs/30-f8-authentication-context-technical-user-saml-bearer.md) |
+
+💡 **F8A–F8B:** o `lab30` contém 26 evidências cobrindo contexto inbound, rejeição de spoofing, WSO2, RFC 7522, token introspection e autorização positiva/negativa.
+
 
 💡 **Convenção de nomes:** os arquivos seguem a ordem narrativa de cada laboratório e os dados sensíveis devem ser mascarados antes do commit.
 
