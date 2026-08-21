@@ -922,31 +922,31 @@ def String resolveMatchedGroup(
 
 ## 10. Evidências
 
-> Todas as referências abaixo foram validadas contra os nomes técnicos definidos para a pasta `evidences/lab30`.
+> Todas as referências abaixo foram validadas contra os nomes técnicos definidos para a pasta `evidences/lab28`.
 
 ### F8A
 
 #### Evidência 01 — iFlow de captura do contexto
 
-![F8A iFlow](../evidences/lab30/01-cpi-f8a-authenticated-principal-capture-iflow.png)
+![F8A iFlow](../evidences/lab28/01-cpi-f8a-authenticated-principal-capture-iflow.png)
 
 O iFlow F8A está implantado e iniciado, contendo a captura segura do contexto e a construção da resposta de diagnóstico.
 
 #### Evidência 02 — Allowed Headers
 
-![F8A Runtime Configuration](../evidences/lab30/02-cpi-f8a-principal-capture-runtime-configuration.png)
+![F8A Runtime Configuration](../evidences/lab28/02-cpi-f8a-principal-capture-runtime-configuration.png)
 
 A Runtime Configuration permite os headers de identidade somente para detectar tentativas controladas de spoofing.
 
 #### Evidência 03 — Baseline técnico
 
-![F8A Technical Client Baseline](../evidences/lab30/03-postman-f8a-technical-client-baseline.png)
+![F8A Technical Client Baseline](../evidences/lab28/03-postman-f8a-technical-client-baseline.png)
 
 A chamada Client Credentials retorna `TECHNICAL_CLIENT`, sem principal humano e sem propagação ponta a ponta.
 
 #### Evidência 04 — Spoofing rejeitado
 
-![F8A Spoofed Principal Rejected](../evidences/lab30/04-postman-f8a-spoofed-principal-header-rejected.png)
+![F8A Spoofed Principal Rejected](../evidences/lab28/04-postman-f8a-spoofed-principal-header-rejected.png)
 
 Os headers declarados pelo caller são detectados, mas o valor permanece não aceito como identidade confiável.
 
@@ -954,61 +954,61 @@ Os headers declarados pelo caller são detectados, mas o valor permanece não ac
 
 #### Evidência 05 — Console WSO2
 
-![WSO2 Console](../evidences/lab30/05-wso2-f8-identity-server-console-overview.png)
+![WSO2 Console](../evidences/lab28/05-wso2-f8-identity-server-console-overview.png)
 
 O WSO2 Identity Server está operacional e disponível para administrar aplicações, identidades, grupos e connections.
 
 #### Evidência 06 — Grupos de compras
 
-![WSO2 Purchasing Groups](../evidences/lab30/06-wso2-f8-purchasing-user-groups-created.png)
+![WSO2 Purchasing Groups](../evidences/lab28/06-wso2-f8-purchasing-user-groups-created.png)
 
 Foram criados grupos separados para compradores e gestores.
 
 #### Evidência 07 — Usuários de compras
 
-![WSO2 Purchasing Users](../evidences/lab30/07-wso2-f8-purchasing-users-created.png)
+![WSO2 Purchasing Users](../evidences/lab28/07-wso2-f8-purchasing-users-created.png)
 
 Foram criadas identidades fictícias para buyer e manager. O principal técnico foi criado posteriormente e associado ao grupo Buyers, processo descrito neste documento sem captura adicional.
 
 #### Evidência 08 — Aplicação OAuth
 
-![WSO2 OAuth Application](../evidences/lab30/08-wso2-f8-oauth-application-created.png)
+![WSO2 OAuth Application](../evidences/lab28/08-wso2-f8-oauth-application-created.png)
 
 A aplicação confidencial OAuth/OIDC foi criada com Client ID e Client Secret protegido.
 
 #### Evidência 09 — Grant SAML2 habilitado
 
-![WSO2 SAML2 Grant](../evidences/lab30/09-wso2-f8-saml2-bearer-grant-enabled.png)
+![WSO2 SAML2 Grant](../evidences/lab28/09-wso2-f8-saml2-bearer-grant-enabled.png)
 
 Os grants Client Credential e SAML2 estão habilitados, enquanto grants legados permanecem desabilitados.
 
 #### Evidência 10 — Token local por Client Credentials
 
-![WSO2 Local Token](../evidences/lab30/10-postman-f8-wso2-client-credentials-token-issued.png)
+![WSO2 Local Token](../evidences/lab28/10-postman-f8-wso2-client-credentials-token-issued.png)
 
 O token endpoint local emitiu Bearer token, validando a infraestrutura OAuth antes do SAML Bearer.
 
 #### Evidência 11 — Túnel HTTPS
 
-![ngrok Tunnel](../evidences/lab30/11-ngrok-f8-wso2-public-https-tunnel-active.png)
+![ngrok Tunnel](../evidences/lab28/11-ngrok-f8-wso2-public-https-tunnel-active.png)
 
 O túnel HTTPS temporário encaminha o domínio público ao WSO2 local na porta 9443.
 
 #### Evidência 12 — Token endpoint público
 
-![WSO2 Public Token Endpoint](../evidences/lab30/12-postman-f8-wso2-public-token-endpoint-validated.png)
+![WSO2 Public Token Endpoint](../evidences/lab28/12-postman-f8-wso2-public-token-endpoint-validated.png)
 
 A URL pública do token endpoint foi validada com Client Credentials antes de ser utilizada pelo SAP Integration Suite.
 
 #### Evidência 13 — Key Pair
 
-![CPI SAML Signing Key Pair](../evidences/lab30/13-cpi-f8-saml-bearer-signing-key-pair-created.png)
+![CPI SAML Signing Key Pair](../evidences/lab28/13-cpi-f8-saml-bearer-signing-key-pair-created.png)
 
 O Key Pair RSA de 3072 bits foi criado com CN correspondente ao principal técnico. A private key permanece no tenant.
 
 #### Evidência 14 — Issuer, Alias e trust
 
-![WSO2 Issuer Alias Validation](../evidences/lab30/14-postman-f8-wso2-saml-issuer-alias-configuration-validated.png)
+![WSO2 Issuer Alias Validation](../evidences/lab28/14-postman-f8-wso2-saml-issuer-alias-configuration-validated.png)
 
 A Management API confirmou Issuer, token endpoint Alias, Connection habilitada e certificado confiável configurado.
 
@@ -1016,13 +1016,13 @@ A Management API confirmou Issuer, token endpoint Alias, Connection habilitada e
 
 #### Evidência 15 — Token SAML Bearer emitido
 
-![SAML Bearer Token Issued](../evidences/lab30/15-postman-f8b-technical-user-saml-bearer-token-issued.png)
+![SAML Bearer Token Issued](../evidences/lab28/15-postman-f8b-technical-user-saml-bearer-token-issued.png)
 
 A assertion assinada foi aceita pelo WSO2 e trocada por Bearer token. O token foi mascarado antes da resposta.
 
 #### Evidência 16 — Processamento do token exchange
 
-![SAML Bearer Message Processing](../evidences/lab30/16-cpi-f8b-saml-bearer-token-exchange-message-processing.png)
+![SAML Bearer Message Processing](../evidences/lab28/16-cpi-f8b-saml-bearer-token-exchange-message-processing.png)
 
 O Monitor comprova a execução completa da geração, assinatura, token request, validação e resposta.
 
@@ -1030,19 +1030,19 @@ O Monitor comprova a execução completa da geração, assinatura, token request
 
 #### Evidência 17 — iFlow com introspecção
 
-![Token Introspection iFlow](../evidences/lab30/17-cpi-f8b-saml-bearer-token-introspection-iflow.png)
+![Token Introspection iFlow](../evidences/lab28/17-cpi-f8b-saml-bearer-token-introspection-iflow.png)
 
 O iFlow contém uma segunda chamada outbound dedicada à introspecção do access token.
 
 #### Evidência 18 — Token ativo e subject técnico
 
-![Token Introspection Validated](../evidences/lab30/18-postman-f8b-saml-bearer-token-introspection-validated.png)
+![Token Introspection Validated](../evidences/lab28/18-postman-f8b-saml-bearer-token-introspection-validated.png)
 
 A introspecção confirmou token ativo, tipo Bearer e subject `f8.technical.purchasing.user`, sem expor o token integral.
 
 #### Evidência 19 — Processamento da introspecção
 
-![Token Introspection Processing](../evidences/lab30/19-cpi-f8b-token-introspection-message-processing.png)
+![Token Introspection Processing](../evidences/lab28/19-cpi-f8b-token-introspection-message-processing.png)
 
 O Monitor comprova os dois ciclos outbound: emissão e introspecção.
 
@@ -1050,43 +1050,43 @@ O Monitor comprova os dois ciclos outbound: emissão e introspecção.
 
 #### Evidência 20 — iFlow com Router de autorização
 
-![Protected Resource Authorization iFlow](../evidences/lab30/20-cpi-f8b-protected-resource-authorization-iflow.png)
+![Protected Resource Authorization iFlow](../evidences/lab28/20-cpi-f8b-protected-resource-authorization-iflow.png)
 
 O iFlow implantado contém política de autorização com caminhos concedido, negado e operação não suportada.
 
 #### Evidência 21 — READ autorizado
 
-![Purchase Requisition Read Authorized](../evidences/lab30/21-postman-f8b-purchase-requisition-read-authorized.png)
+![Purchase Requisition Read Authorized](../evidences/lab28/21-postman-f8b-purchase-requisition-read-authorized.png)
 
 O principal técnico do grupo Buyers recebeu `200 OK` e acessou o recurso protegido de requisições de compra.
 
 #### Evidência 22 — Caminho autorizado
 
-![Authorized Resource Processing](../evidences/lab30/22-cpi-f8b-authorized-resource-message-processing.png)
+![Authorized Resource Processing](../evidences/lab28/22-cpi-f8b-authorized-resource-message-processing.png)
 
 O Router selecionou `Authorization_Granted` e finalizou em `End_Authorized`.
 
 #### Evidência 23 — APPROVE negado
 
-![Purchase Requisition Approval Denied](../evidences/lab30/23-postman-f8b-purchase-requisition-approval-denied.png)
+![Purchase Requisition Approval Denied](../evidences/lab28/23-postman-f8b-purchase-requisition-approval-denied.png)
 
 O token estava ativo, mas o principal Buyers não possuía o grupo Managers. A resposta correta foi `403 Forbidden`.
 
 #### Evidência 24 — Caminho negado
 
-![Authorization Denied Processing](../evidences/lab30/24-cpi-f8b-authorization-denied-message-processing.png)
+![Authorization Denied Processing](../evidences/lab28/24-cpi-f8b-authorization-denied-message-processing.png)
 
 O Router selecionou `Authorization_Denied`, sem retornar dados do recurso protegido.
 
 #### Evidência 25 — Operação não suportada
 
-![Unsupported Operation Rejected](../evidences/lab30/25-postman-f8b-unsupported-operation-rejected.png)
+![Unsupported Operation Rejected](../evidences/lab28/25-postman-f8b-unsupported-operation-rejected.png)
 
 A operação `DELETE` retornou `400 Bad Request` e informou as operações permitidas.
 
 #### Evidência 26 — Caminho default
 
-![Unsupported Operation Processing](../evidences/lab30/26-cpi-f8b-unsupported-operation-message-processing.png)
+![Unsupported Operation Processing](../evidences/lab28/26-cpi-f8b-unsupported-operation-message-processing.png)
 
 A rota default tratou a operação não suportada e finalizou em `End_Unsupported`.
 
