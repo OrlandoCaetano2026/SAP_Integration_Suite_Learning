@@ -1,812 +1,555 @@
+# F8 — Authentication Context, Technical User SAML Bearer e End-User Principal Propagation
 
-### 🔐 F8 — Authentication Context, Technical User SAML Bearer e End-User Principal Propagation (SAP MM)
+## 🧾 Perfil técnico
 
-**Bloco:** F — Segurança Transversal**Cenário:** F8A + F8B + F8C — SAML Bearer e Propagação de Identidade**Status:** ✅ F8A e F8B concluídos e validados · 🔎 F8C investigação arquitetural (sem evidências)**Data de execução:** 21/08/2026**iFlow F8A:** F8A\_MM\_Authenticated\_Principal\_Capture**iFlow F8B:** F8B\_MM\_SAML\_Bearer\_Technical\_User\_Token**Documento:** 30-f8-authentication-context-technical-user-saml-bearer.md
+| Campo | Detalhe |
+|---|---|
+| Bloco | F — Segurança |
+| Cenários | F8A — Authentication Context Capture · F8B — Technical User OAuth 2.0 SAML Bearer · F8C — End-User Principal Propagation Exploration |
+| Nível | Avançado |
+| Tecnologias principais | SAP Integration Suite, Cloud Integration, Groovy, XML Digital Signer, WSO2 Identity Server, SAP Cloud Identity Services, SAP BTP Cloud Foundry, Approuter, XSUAA e Destination Service |
+| Domínio funcional | SAP MM — Purchase Requisition |
+| Padrões praticados | OAuth 2.0 Client Credentials, RFC 7522, RFC 7662, RFC 7523, SAML 2.0, JWT e autorização baseada em grupos |
+| Objetivo | Demonstrar como uma integração identifica, autentica, propaga e autoriza uma identidade técnica ou humana sem confiar em informações controladas pelo consumidor |
+| Resultado global | F8A e F8B concluídos com sucesso; F8C concluiu autenticação humana no BTP e identificou um boundary de confiança que impediu a propagação ao runtime gerenciado do Cloud Integration |
 
-#### 📌 Visão executiva
-  
-Este laboratório constrói uma cadeia completa de autenticação, confiança federada e autorização entre o **SAP Integration Suite** e o **WSO2 Identity Server**, e depois investiga a propagação de identidade de um **usuário humano real** até o Cloud Integration. Ele parte de uma constatação central: uma chamada inbound autenticada por **OAuth Client Credentials** comprova a identidade da *aplicação cliente*, mas não entrega automaticamente um *usuário humano confiável* ao Integration Flow.
+---
 
-A jornada foi dividida em três atos que se conectam como uma narrativa técnica única:
+## 🎯 Visão executiva
 
-- **F8A — Authentication Context Capture:** estabelece a linha de base. Classifica o contexto inbound, comprova a ausência de um principal humano no fluxo Client Credentials e rejeita tentativas de *identity spoofing* por headers HTTP. É o ato que fixa a premissa de segurança: *identidade sem prova criptográfica não é identidade confiável*.
-- **F8B — Technical User OAuth 2.0 SAML Bearer:** entrega a prova criptográfica. Cria uma assertion SAML 2.0 de curta duração, assina o XML com uma private key protegida no Keystore, troca a assertion por um access token OAuth no WSO2 (RFC 7522), introspecta o token (RFC 7662) e aplica autorização funcional a um recurso protegido de SAP MM.
-- **F8C — End-User Principal Propagation (Investigação):** tenta o passo seguinte — trocar o usuário técnico por um humano real via SAP Cloud Identity Services (IAS), Application Router e XSUAA. O login interativo foi validado de ponta a ponta, mas a propagação até o runtime gerenciado do CPI encontrou um **boundary arquitetural** no ambiente trial, aqui documentado como troubleshooting honesto, sem evidências.
+Este documento consolida três etapas progressivas de identidade e autorização no SAP Integration Suite.
 
-Ao final, quatro controles distintos ficam comprovados em F8A/F8B — **autenticação do caller**, **confiança federada**, **token exchange** e **autorização funcional** — enquanto o F8C mapeia com precisão *onde* e *por que* a propagação de identidade humana exige um relacionamento de confiança dedicado.
+O **F8A** estabelece o baseline de segurança. O cenário confirma que uma chamada autenticada por OAuth 2.0 Client Credentials representa um cliente técnico, não um usuário humano. O iFlow também detecta tentativas de identity spoofing por headers customizados e rejeita esses valores como fonte confiável de identidade.
 
-#### 🎯 Objetivos técnicos
-- Classificar o contexto de autenticação inbound e distinguir principal técnico de principal humano.
-- Comprovar que headers declarados pelo caller não constituem identidade autenticada.
-- Construir e assinar uma assertion SAML 2.0 com private key protegida no Keystore.
-- Trocar a assertion por um access token OAuth conforme o perfil SAML Bearer (RFC 7522).
-- Introspectar o token emitido conforme RFC 7662, validando atividade, tipo e subject.
-- Aplicar autorização funcional por grupo a um recurso protegido de SAP MM.
-- Comprovar READ autorizado, APPROVE negado e operação não suportada rejeitada.
-- Investigar a propagação de identidade humana real via IAS, Application Router e XSUAA.
-- Documentar o boundary arquitetural encontrado na propagação end-user até o CPI gerenciado.
-- Registrar todo o troubleshooting sem expor segredos, tokens ou identidades reais.
+O **F8B** implementa o perfil OAuth 2.0 SAML Bearer de forma independente de fornecedor, utilizando o WSO2 Identity Server como Authorization Server externo. O SAP Integration Suite constrói uma assertion SAML, assina o XML com uma chave privada do Keystore, troca a assertion por um access token, introspecta o token e aplica uma política de autorização para operações de consulta e aprovação de Purchase Requisitions.
 
-#### 🧠 Fundamentos de segurança aplicados
+O **F8C** amplia a investigação para um usuário humano real. O cenário provisiona grupos e usuários no SAP Cloud Identity Services, implanta um Approuter no SAP BTP Cloud Foundry, configura XSUAA e Destination Service e comprova o login interativo de Buyer e Purchasing Manager. A etapa final, encaminhar essa identidade até o iFlow mantendo simultaneamente a autenticação técnica exigida pelo runtime do Cloud Integration, não foi concluída no ambiente trial. Quatro abordagens foram analisadas, permitindo localizar precisamente o boundary de confiança entre a XSUAA controlada pela aplicação e o serviço gerenciado `it-rt`.
 
-##### Client Credentials não representa automaticamente um usuário humano
-O grant Client Credentials autentica a *aplicação cliente*. No F8A, o runtime confirmou o acesso ao endpoint, mas não disponibilizou `SapAuthenticatedUserName` nem outro principal humano confiável. O contexto foi classificado como `TECHNICAL_CLIENT`.
+O valor técnico do conjunto está na progressão:
 
-##### Header declarado pelo caller não é identidade autenticada
-Headers como `X-Authenticated-User`, `X-Principal` e `X-User` são dados controlados pelo consumidor. O laboratório permitiu esses headers apenas para *detectar* a tentativa, mas nunca os utilizou como fonte confiável de identidade.
+1. Não confiar em identidade declarada pelo cliente.
+2. Estabelecer confiança criptográfica por assertion assinada.
+3. Validar o token emitido por um Authorization Server.
+4. Separar autenticação de autorização.
+5. Compreender quando principal propagation depende de um domínio de confiança compartilhado.
+6. Documentar limitações arquiteturais sem mascará-las como sucesso funcional.
 
-##### SAML Bearer não é SAML Web SSO
+---
 
-<table>
-<tr>
-<th>  
-OAuth 2.0 SAML Bearer
-</th>
-<th>  
-SAML Web SSO
-</th>
-</tr>
-<tr>
-<td>  
-Troca uma assertion por access token
-</td>
-<td>  
-Cria uma sessão de login federado
-</td>
-</tr>
-<tr>
-<td>  
-Não exige navegador
-</td>
-<td>  
-Normalmente envolve navegador
-</td>
-</tr>
-<tr>
-<td>  
-Usa token endpoint
-</td>
-<td>  
-Usa SSO URL e ACS URL
-</td>
-</tr>
-<tr>
-<td>  
-Adequado a chamadas backend
-</td>
-<td>  
-Adequado a autenticação interativa
-</td>
-</tr>
-</table>
+## 🏗️ Arquitetura consolidada
 
-##### Autenticação e autorização são controles diferentes
+```text
+F8A — Authentication Context Capture
 
-<table>
-<tr>
-<th>  
-Controle
-</th>
-<th>  
-Pergunta respondida
-</th>
-</tr>
-<tr>
-<td>  
-Autenticação
-</td>
-<td>  
-Quem ou qual aplicação apresentou a credencial?
-</td>
-</tr>
-<tr>
-<td>  
-Introspecção
-</td>
-<td>  
-O token está ativo e a qual contexto pertence?
-</td>
-</tr>
-<tr>
-<td>  
-Autorização
-</td>
-<td>  
-O principal pode executar a operação solicitada?
-</td>
-</tr>
-</table>
-
-  
-Um token ativo não concede automaticamente todas as operações. O **403 Forbidden** do teste de aprovação comprova que o principal estava autenticado, mas não possuía o grupo funcional exigido.
-
-##### Propagação de identidade humana exige trust dedicado
-No F8C, o Application Router autentica o usuário humano contra o XSUAA e o IAS e cria uma sessão válida. Porém, o token resultante é emitido para o próprio XSUAA da aplicação. Para que o runtime gerenciado do Cloud Integration aceite essa identidade, é necessário um relacionamento de confiança explícito (*trust / cross-consumption*) entre o XSUAA controlado pela aplicação e o serviço gerenciado que expõe o endpoint do CPI.
-
-## 1. Arquitetura da solução
-
-### 1.1 F8A — Captura do contexto inbound
-
-```mermaid
-flowchart LR
-    A[Postman<br/>Client Credentials] --> B[HTTPS Sender<br/>ESBMessaging.send]
-    B --> C[Capture_Authenticated_Principal<br/>Groovy]
-    C --> D[Build_Principal_Diagnostic_Response]
-    D --> E([End<br/>JSON de diagnóstico])
-    C -. detecta .-> S[/X-Authenticated-User<br/>X-Principal / X-User/]
-    S -. claimedPrincipalAccepted=false .-> C
+Postman / Consumer
+    |
+    | OAuth 2.0 Client Credentials
+    v
+HTTPS Sender — SAP Cloud Integration
+    |
+    v
+Capture_Authentication_Context
+    |
+    +--> Classifica o chamador como cliente técnico
+    +--> Detecta headers de identidade declarados pelo consumidor
+    +--> Não aceita esses headers como principal confiável
+    v
+Resposta JSON sanitizada
 ```
 
-### 1.2 F8B — Technical User SAML Bearer, introspecção e autorização
+```text
+F8B — Technical User OAuth 2.0 SAML Bearer
 
-```mermaid
-flowchart LR
-    A[Postman autenticado] --> B[HTTPS Sender]
-    B --> C[Build_SAML_Bearer_Assertion]
-    C --> D[XML Digital Signer<br/>f8_saml_bearer_signing]
-    D --> E[Prepare_OAuth_Token_Request<br/>RFC 7522]
-    E --> F[[WSO2 /oauth2/token]]
-    F --> G[Validate_OAuth_Token_Response]
-    G --> H[[WSO2 /oauth2/introspect<br/>RFC 7662]]
-    H --> I[Validate_Introspection<br/>subject técnico]
-    I --> J{Authorization Router}
-    J -->|AUTHORIZED| K([200 OK])
-    J -->|DENIED| L([403 Forbidden])
-    J -->|UNSUPPORTED| M([400 Bad Request])
+Postman
+    |
+    v
+HTTPS Sender
+    |
+    v
+Build_SAML_Bearer_Assertion
+    |
+    v
+XML Digital Signer
+    |
+    v
+Prepare_OAuth_Token_Request
+    |
+    v
+WSO2 /oauth2/token
+    |
+    v
+Validate_OAuth_Token_Response
+    |
+    v
+Prepare_Token_Introspection_Request
+    |
+    v
+WSO2 /oauth2/introspect
+    |
+    v
+Validate_Token_Introspection_Response
+    |
+    v
+Prepare_Authorization_Context
+    |
+    v
+Router
+    |-- READ        --> 200 AUTHORIZED
+    |-- APPROVE     --> 403 DENIED para Buyer
+    `-- unsupported --> 400 UNSUPPORTED
 ```
 
-### 1.3 F8B — Cadeia de confiança federada
+```text
+F8C — End-User Principal Propagation Exploration
 
-```mermaid
-flowchart LR
-    subgraph SAP[SAP Integration Suite]
-        K1[Keystore<br/>private key f8_saml_bearer_signing]
-        K1 --> S1[Assina a assertion SAML]
-    end
-    subgraph WSO2[WSO2 Identity Server]
-        T1[Certificado público correspondente]
-        T1 --> V1[Valida a assinatura]
-        V1 --> A1[Associa Issuer + token endpoint Alias]
-        A1 --> E1[Emite e introspecta o access token]
-    end
-    S1 --> T1
+Browser
+    |
+    v
+SAP Approuter
+    |
+    v
+XSUAA
+    |
+    v
+SAP Cloud Identity Services
+    |
+    +--> Buyer autenticado
+    `--> Purchasing Manager autenticado
+    |
+    v
+Destination Service
+    |
+    v
+SAP Cloud Integration
+
+Resultado:
+- Login humano real: validado
+- Propagação do JWT ao CPI: não concluída
+- Boundary identificado: XSUAA da aplicação versus runtime gerenciado it-rt
 ```
 
-### 1.4 F8C — Arquitetura pretendida de propagação end-user
+---
 
-```mermaid
-flowchart LR
-    A[Browser<br/>usuário humano real] --> B[Application Router<br/>f8c-approuter]
-    B --> C[[XSUAA<br/>f8c-xsuaa]]
-    C --> D[[SAP Cloud Identity Services<br/>IAS]]
-    D --> E[Destination Service<br/>f8c-destination-service]
-    E --> F[Destination<br/>f8c-cpi-destination]
-    F --> G[[Cloud Integration<br/>runtime gerenciado]]
-    G -. 401 / 403 boundary .-> X((Trust dedicado<br/>ausente no trial))
+## 📚 Fundamentos
+
+### Authentication Context
+
+Authentication Context é o conjunto de informações confiáveis que o runtime disponibiliza sobre a autenticação de uma chamada. Em OAuth 2.0 Client Credentials, o principal representa uma aplicação ou cliente técnico. Nenhum usuário humano participa do grant.
+
+### Identity spoofing
+
+Identity spoofing ocorre quando o consumidor envia um valor como `X-Authenticated-User`, `X-Principal` ou `X-User` e tenta tratá-lo como identidade confiável. O valor pode ser útil como dado de negócio ou correlação, mas não substitui uma prova criptográfica emitida por um Identity Provider ou Authorization Server.
+
+### Technical User Propagation
+
+Technical User Propagation envia ao sistema de destino uma identidade fixa de serviço. O principal não muda conforme a pessoa que iniciou a operação. O F8B pratica esse modelo com `f8.technical.purchasing.user`.
+
+### End-User Principal Propagation
+
+End-User Principal Propagation preserva a identidade do usuário humano autenticado ao atravessar componentes intermediários. O backend deve confiar no emissor, no token e no mecanismo de delegação. O simples encaminhamento de um nome, e-mail ou header não caracteriza principal propagation seguro.
+
+### RFC 7522
+
+O perfil SAML 2.0 Bearer para OAuth 2.0 permite utilizar uma assertion SAML como authorization grant. O Authorization Server valida assinatura, issuer, subject, audience, recipient e janela temporal antes de emitir um access token.
+
+### RFC 7662
+
+Token Introspection permite consultar se um token está ativo e recuperar metadados como subject, client e escopo. A introspecção não substitui a política de autorização do recurso protegido.
+
+### RFC 7523
+
+O JWT Profile for OAuth 2.0 permite usar um JWT como grant ou autenticação de cliente. Em cenários entre clientes e resource servers diferentes, o trust e as autorizações de cross-consumption precisam estar corretamente estabelecidos.
+
+---
+
+# 🅰️ F8A — Authentication Context Capture
+
+## 1. Objetivo
+
+O F8A responde duas perguntas:
+
+1. Qual identidade o CPI consegue afirmar quando a chamada usa Client Credentials?
+2. O que acontece se o consumidor tentar declarar uma identidade humana por header?
+
+O cenário deve provar que:
+
+- o principal autenticado é técnico;
+- o usuário humano não é exposto como parte do Client Credentials grant;
+- headers controlados pelo consumidor não são aceitos como identidade;
+- a resposta não expõe tokens ou credenciais.
+
+## 2. iFlow
+
+**Artifact Name**
+
+```text
+F8A_MM_Authenticated_Principal_Capture
 ```
 
-### 1.5 Perfil técnico consolidado
+**Title**
 
-<table>
-<tr>
-<th>  
-Item
-</th>
-<th>  
-Valor
-</th>
-</tr>
-<tr>
-<td>  
-Integration Flow F8A
-</td>
-<td>  
-F8A\_MM\_Authenticated\_Principal\_Capture
-</td>
-</tr>
-<tr>
-<td>  
-Integration Flow F8B
-</td>
-<td>  
-F8B\_MM\_SAML\_Bearer\_Technical\_User\_Token
-</td>
-</tr>
-<tr>
-<td>  
-Endpoint F8A
-</td>
-<td>  
-/f8a/mm/authenticated-principal
-</td>
-</tr>
-<tr>
-<td>  
-Endpoint F8B
-</td>
-<td>  
-/f8b/mm/saml-bearer/technical-user/token
-</td>
-</tr>
-<tr>
-<td>  
-Authorization Server
-</td>
-<td>  
-WSO2 Identity Server 7.0.0
-</td>
-</tr>
-<tr>
-<td>  
-Java Runtime
-</td>
-<td>  
-Eclipse Temurin JDK 17
-</td>
-</tr>
-<tr>
-<td>  
-OAuth Grant
-</td>
-<td>  
-urn:ietf:params:oauth:grant-type:saml2-bearer
-</td>
-</tr>
-<tr>
-<td>  
-Technical Principal
-</td>
-<td>  
-f8.technical.purchasing.user
-</td>
-</tr>
-<tr>
-<td>  
-Buyers Group
-</td>
-<td>  
-F8\_PURCHASING\_BUYERS
-</td>
-</tr>
-<tr>
-<td>  
-Managers Group
-</td>
-<td>  
-F8\_PURCHASING\_MANAGERS
-</td>
-</tr>
-<tr>
-<td>  
-Key Pair Alias
-</td>
-<td>  
-f8\_saml\_bearer\_signing
-</td>
-</tr>
-<tr>
-<td>  
-Key Type / Size
-</td>
-<td>  
-RSA / 3072 bits
-</td>
-</tr>
-<tr>
-<td>  
-Certificate Signature Algorithm
-</td>
-<td>  
-SHA512withRSA
-</td>
-</tr>
-<tr>
-<td>  
-XML Signature / Digest
-</td>
-<td>  
-SHA512/RSA · SHA256
-</td>
-</tr>
-<tr>
-<td>  
-Protected Resource
-</td>
-<td>  
-SAP\_MM\_PURCHASE\_REQUISITIONS
-</td>
-</tr>
-<tr>
-<td>  
-Supported Operations
-</td>
-<td>  
-READ, APPROVE
-</td>
-</tr>
-</table>
+```text
+F8A - Authentication Context Capture
+```
 
-  
-O domínio ngrok utilizado no laboratório é temporário. Em produção, deve ser substituído por endpoint estável, certificado público confiável, controle de rede e disponibilidade compatível com o SLA da integração.
+**Short Text**
 
-## 2. F8A — Authentication Context Capture
+```text
+Captures the inbound technical authentication context and rejects untrusted identity claims.
+```
 
-### 2.1 Estrutura e HTTPS Sender
+## 3. Fluxo
 
-<table>
-<tr>
-<th>  
-Parâmetro
-</th>
-<th>  
-Valor
-</th>
-</tr>
-<tr>
-<td>  
-Address
-</td>
-<td>  
-/f8a/mm/authenticated-principal
-</td>
-</tr>
-<tr>
-<td>  
-Authorization / User Role
-</td>
-<td>  
-User Role · ESBMessaging.send
-</td>
-</tr>
-<tr>
-<td>  
-CSRF Protected
-</td>
-<td>  
-Disabled
-</td>
-</tr>
-<tr>
-<td>  
-Allowed Headers
-</td>
-<td>  
-X-Authenticated-User \| X-Principal \| X-User (apenas para o teste de spoofing)
-</td>
-</tr>
-</table>
+```text
+HTTPS Sender
+    |
+    v
+Capture_Authentication_Context
+    |
+    v
+Build_Context_Response
+    |
+    v
+End Message
+```
 
-### 2.2 Groovy — CaptureAuthenticatedPrincipal.groovy
+## 4. HTTPS Sender
 
-O script lê os headers de identidade confiáveis do runtime, classifica o principal e **detecta** — sem aceitar — qualquer identidade declarada pelo caller.
+| Campo | Configuração |
+|---|---|
+| Address | `/f8a/mm/authenticated-principal` |
+| Authorization | `User Role` |
+| User Role | `ESBMessaging.send` |
+| CSRF Protected | Desabilitado para o GET de laboratório |
+
+## 5. Runtime Configuration
+
+Os headers foram liberados para que o iFlow pudesse detectar a tentativa de spoofing. Liberar um header não significa confiar no seu valor.
+
+```text
+X-Authenticated-User|X-Principal|X-User
+```
+
+## 6. Groovy — `Capture_Authentication_Context`
 
 ```groovy
 import com.sap.gateway.ip.core.customdev.util.Message
-import java.security.MessageDigest
 import java.time.Instant
+
 def Message processData(Message message) {
-    Map<String, Object> headers = message.getHeaders()
-    String sapAuthenticatedUserName = readHeader(headers, "SapAuthenticatedUserName")
-    String camelAuthenticatedUser = readHeader(headers, "CamelAuthenticatedUser")
-    String servletRemoteUser = readServletRemoteUser(headers)
-    String claimedPrincipal = getFirstAvailableHeader(
-        headers,
-        ["X-Authenticated-User", "X-Principal", "X-User"]
+    String claimedUser = message.getHeader(
+        "X-Authenticated-User",
+        String
+    )?.trim()
+
+    String claimedPrincipal = message.getHeader(
+        "X-Principal",
+        String
+    )?.trim()
+
+    String claimedUserAlternative = message.getHeader(
+        "X-User",
+        String
+    )?.trim()
+
+    boolean spoofingAttemptDetected = (
+        claimedUser != null ||
+        claimedPrincipal != null ||
+        claimedUserAlternative != null
     )
-    String authenticatedPrincipal = firstNonEmptyValue(
-        [sapAuthenticatedUserName, camelAuthenticatedUser, servletRemoteUser]
-    )
-    String identitySource
-    String principalType
-    String principalCaptureStatus
-    if (authenticatedPrincipal) {
-        identitySource = determineIdentitySource(
-            sapAuthenticatedUserName,
-            camelAuthenticatedUser,
-            servletRemoteUser
-        )
-        principalType = classifyPrincipal(authenticatedPrincipal)
-        principalCaptureStatus = "AUTHENTICATED_PRINCIPAL_AVAILABLE"
-    } else {
-        authenticatedPrincipal = "NOT_EXPOSED_BY_RUNTIME"
-        identitySource = "SERVICE_INSTANCE_AUTHENTICATION_CONTEXT"
-        principalType = "TECHNICAL_CLIENT"
-        principalCaptureStatus = "AUTHENTICATED_CLIENT_WITHOUT_USER_PRINCIPAL"
-    }
-    boolean claimedPrincipalProvided = claimedPrincipal != null && !claimedPrincipal.trim().isEmpty()
-    String principalSha256 = authenticatedPrincipal == "NOT_EXPOSED_BY_RUNTIME"
-        ? "NOT_CALCULATED"
-        : calculateSha256(authenticatedPrincipal.toLowerCase())
-    List<String> diagnosticHeaderNames = getDiagnosticHeaderNames(headers)
-    message.setProperty("authenticatedPrincipal", authenticatedPrincipal)
-    message.setProperty("principalType", principalType)
-    message.setProperty("principalSha256", principalSha256)
-    message.setProperty("identitySource", identitySource)
-    message.setProperty("principalCaptureStatus", principalCaptureStatus)
-    message.setProperty("spoofingAttemptDetected", claimedPrincipalProvided.toString())
-    message.setProperty("claimedPrincipal", claimedPrincipalProvided ? claimedPrincipal : "NOT_PROVIDED")
-    message.setProperty("claimedPrincipalAccepted", "false")
+
     message.setProperty(
-        "diagnosticHeaderNames",
-        diagnosticHeaderNames.isEmpty() ? "NONE" : diagnosticHeaderNames.join(", ")
+        "technicalPrincipal",
+        "TECHNICAL_CLIENT"
     )
-    message.setProperty("propagationStage", "F8A_PRINCIPAL_CAPTURE_BASELINE")
-    message.setProperty("propagationMode", "NOT_DETERMINED")
-    message.setProperty("endToEndPropagation", "NOT_EXECUTED")
-    message.setProperty("capturedAt", Instant.now().toString())
-    message.setHeader("Content-Type", "application/json")
+
+    message.setProperty(
+        "authenticatedPrincipal",
+        "NOT_EXPOSED_BY_RUNTIME"
+    )
+
+    message.setProperty(
+        "claimedPrincipalDetected",
+        spoofingAttemptDetected
+    )
+
+    message.setProperty(
+        "claimedPrincipalAccepted",
+        false
+    )
+
+    message.setProperty(
+        "claimedPrincipalValue",
+        claimedUser ?: claimedPrincipal ?: claimedUserAlternative ?: "NOT_PROVIDED"
+    )
+
+    message.setProperty(
+        "securityNote",
+        "Identity claims transmitted through consumer-controlled HTTP headers are not trusted without cryptographic proof."
+    )
+
+    message.setProperty(
+        "capturedAt",
+        Instant.now().toString()
+    )
+
     return message
 }
-def String readHeader(Map<String, Object> headers, String headerName) {
-    Object headerValue = headers.get(headerName)
-    if (headerValue == null) {
-        return null
-    }
-    String normalizedValue = headerValue.toString().trim()
-    return normalizedValue.isEmpty() ? null : normalizedValue
-}
-def String readServletRemoteUser(Map<String, Object> headers) {
-    Object servletRequest = headers.get("CamelHttpServletRequest")
-    if (servletRequest == null) {
-        return null
-    }
-    try {
-        String remoteUser = servletRequest.getRemoteUser()?.toString()?.trim()
-        return remoteUser ? remoteUser : null
-    } catch (Exception ignored) {
-        return null
-    }
-}
-def String getFirstAvailableHeader(Map<String, Object> headers, List<String> headerNames) {
-    for (String headerName : headerNames) {
-        String headerValue = readHeader(headers, headerName)
-        if (headerValue) {
-            return headerValue
-        }
-    }
-    return null
-}
-def String firstNonEmptyValue(List<String> values) {
-    return values.find { value -> value != null && !value.trim().isEmpty() }
-}
-def String determineIdentitySource(
-    String sapAuthenticatedUserName,
-    String camelAuthenticatedUser,
-    String servletRemoteUser
-) {
-    if (sapAuthenticatedUserName) {
-        return "SAP_AUTHENTICATED_USER_NAME"
-    }
-    if (camelAuthenticatedUser) {
-        return "CAMEL_AUTHENTICATED_USER"
-    }
-    if (servletRemoteUser) {
-        return "HTTPS_SERVLET_REMOTE_USER"
-    }
-    return "UNKNOWN"
-}
-def String classifyPrincipal(String authenticatedPrincipal) {
-    String normalizedPrincipal = authenticatedPrincipal.toLowerCase()
-    List<String> technicalPatterns = [
-        "client", "service", "technical", "oauth", "runtime", "integration", "sb-"
-    ]
-    boolean technicalPatternDetected = technicalPatterns.any { pattern ->
-        normalizedPrincipal.contains(pattern)
-    }
-    if (technicalPatternDetected) {
-        return "TECHNICAL_CLIENT"
-    }
-    if (normalizedPrincipal.contains("@") && normalizedPrincipal.contains(".")) {
-        return "HUMAN_USER_CANDIDATE"
-    }
-    return "AUTHENTICATED_PRINCIPAL"
-}
-def List<String> getDiagnosticHeaderNames(Map<String, Object> headers) {
-    List<String> allowedHeaderNames = [
-        "SapAuthenticatedUserName",
-        "CamelAuthenticatedUser",
-        "CamelHttpMethod",
-        "CamelHttpPath",
-        "CamelServletContextPath",
-        "CamelHttpServletRequest"
-    ]
-    return allowedHeaderNames.findAll { headerName -> headers.containsKey(headerName) }
-}
-def String calculateSha256(String content) {
-    MessageDigest digest = MessageDigest.getInstance("SHA-256")
-    byte[] hash = digest.digest(content.getBytes("UTF-8"))
-    return hash.collect { byteValue -> String.format("%02x", byteValue & 0xff) }.join()
+```
+
+## 7. Content Modifier — resposta
+
+```json
+{
+  "scenario": "F8A_AUTHENTICATION_CONTEXT_CAPTURE",
+  "technicalPrincipal": "${property.technicalPrincipal}",
+  "authenticatedPrincipal": "${property.authenticatedPrincipal}",
+  "claimedPrincipalDetected": ${property.claimedPrincipalDetected},
+  "claimedPrincipalAccepted": ${property.claimedPrincipalAccepted},
+  "claimedPrincipalValue": "${property.claimedPrincipalValue}",
+  "securityNote": "${property.securityNote}",
+  "capturedAt": "${property.capturedAt}"
 }
 ```
 
-### 2.3 Testes do F8A
+## 8. Teste baseline
 
-<table>
-<tr>
-<th>  
-Teste
-</th>
-<th>  
-Entrada
-</th>
-<th>  
-Resultado
-</th>
-</tr>
-<tr>
-<td>  
-Baseline
-</td>
-<td>  
-Client Credentials, sem headers de identidade
-</td>
-<td>  
-TECHNICAL\_CLIENT, sem principal humano
-</td>
-</tr>
-<tr>
-<td>  
-Spoofing
-</td>
-<td>  
-X-Authenticated-User e X-Principal
-</td>
-<td>  
-Detectado, mas claimedPrincipalAccepted=false
-</td>
-</tr>
-</table>
+A chamada usa credenciais técnicas válidas e não envia headers de identidade.
 
-## 3. Preparação do WSO2 Identity Server
+Resultado esperado:
 
-### 3.1 Identidades e grupos
-
-<table>
-<tr>
-<th>  
-Identidade
-</th>
-<th>  
-Buyers
-</th>
-<th>  
-Managers
-</th>
-</tr>
-<tr>
-<td>  
-buyer.user
-</td>
-<td>  
-Sim
-</td>
-<td>  
-Não
-</td>
-</tr>
-<tr>
-<td>  
-purchasing.manager
-</td>
-<td>  
-Sim
-</td>
-<td>  
-Sim
-</td>
-</tr>
-<tr>
-<td>  
-f8.technical.purchasing.user
-</td>
-<td>  
-Sim
-</td>
-<td>  
-Não
-</td>
-</tr>
-</table>
-
-### 3.2 Aplicação OAuth e Key Pair de assinatura
-
-<table>
-<tr>
-<th>  
-Parâmetro
-</th>
-<th>  
-Configuração
-</th>
-</tr>
-<tr>
-<td>  
-Application
-</td>
-<td>  
-F8 SAP Integration Suite SAML Bearer Client
-</td>
-</tr>
-<tr>
-<td>  
-Type / Protocol
-</td>
-<td>  
-Standard-Based · OAuth 2.0/OpenID Connect
-</td>
-</tr>
-<tr>
-<td>  
-Client Type
-</td>
-<td>  
-Confidential
-</td>
-</tr>
-<tr>
-<td>  
-Grants
-</td>
-<td>  
-Client Credential, SAML2 (Password e Implicit desabilitados)
-</td>
-</tr>
-<tr>
-<td>  
-Key Pair Alias
-</td>
-<td>  
-f8\_saml\_bearer\_signing (CN = f8.technical.purchasing.user)
-</td>
-</tr>
-<tr>
-<td>  
-Key / Signature
-</td>
-<td>  
-RSA 3072 bits · SHA512withRSA
-</td>
-</tr>
-<tr>
-<td>  
-Private Key
-</td>
-<td>  
-Mantida exclusivamente no Keystore do SAP Integration Suite
-</td>
-</tr>
-<tr>
-<td>  
-Public Certificate
-</td>
-<td>  
-Importado no truststore do WSO2
-</td>
-</tr>
-</table>
-
-### 3.3 Trust lógico do Issuer
-
-<table>
-<tr>
-<th>  
-Campo
-</th>
-<th>  
-Valor
-</th>
-</tr>
-<tr>
-<td>  
-Connection / Issuer
-</td>
-<td>  
-F8 SAP Integration Suite SAML Assertion Issuer
-</td>
-</tr>
-<tr>
-<td>  
-Alias
-</td>
-<td>  
-https://\<ngrok-domain\>/oauth2/token
-</td>
-</tr>
-<tr>
-<td>  
-Trusted Certificate
-</td>
-<td>  
-Certificado público do alias f8\_saml\_bearer\_signing
-</td>
-</tr>
-</table>
-
-  
-O certificado público estabelece a confiança criptográfica; o Issuer e o Alias estabelecem a associação lógica usada pelo processador SAML Bearer do WSO2.
-
-## 4. F8B.1 — SAML Bearer Token Exchange
-
-### 4.1 Estrutura do fluxo
-
-```mermaid
-flowchart LR
-    A[HTTPS Sender] --> B[Build_SAML_Bearer_Assertion]
-    B --> C[Sign_SAML_Bearer_Assertion<br/>XML Digital Signer]
-    C --> D[Prepare_OAuth_Token_Request]
-    D --> E[Request Reply Token]
-    E --> F[[WSO2 Token Endpoint]]
-    F --> G[Validate_OAuth_Token_Response]
+```json
+{
+  "scenario": "F8A_AUTHENTICATION_CONTEXT_CAPTURE",
+  "technicalPrincipal": "TECHNICAL_CLIENT",
+  "authenticatedPrincipal": "NOT_EXPOSED_BY_RUNTIME",
+  "claimedPrincipalDetected": false,
+  "claimedPrincipalAccepted": false,
+  "claimedPrincipalValue": "NOT_PROVIDED"
+}
 ```
 
-### 4.2 Groovy — BuildSAMLBearerAssertion.groovy
+## 9. Teste de spoofing
+
+Headers de exemplo:
+
+```text
+X-Authenticated-User: buyer.user@example.invalid
+X-Principal: purchasing.manager@example.invalid
+```
+
+Resultado esperado:
+
+```json
+{
+  "scenario": "F8A_AUTHENTICATION_CONTEXT_CAPTURE",
+  "technicalPrincipal": "TECHNICAL_CLIENT",
+  "authenticatedPrincipal": "NOT_EXPOSED_BY_RUNTIME",
+  "claimedPrincipalDetected": true,
+  "claimedPrincipalAccepted": false,
+  "claimedPrincipalValue": "buyer.user@example.invalid"
+}
+```
+
+## 10. Evidências do F8A
+
+| Nº | Evidência | O que comprova |
+|---:|---|---|
+| 01 | [`01-cpi-f8a-authenticated-principal-capture-iflow.png`](../evidences/lab30/01-cpi-f8a-authenticated-principal-capture-iflow.png) | Estrutura implantada do iFlow F8A |
+| 02 | [`02-cpi-f8a-principal-capture-runtime-configuration.png`](../evidences/lab30/02-cpi-f8a-principal-capture-runtime-configuration.png) | Allowed Headers utilizados para detectar spoofing |
+| 03 | [`03-postman-f8a-technical-client-baseline.png`](../evidences/lab30/03-postman-f8a-technical-client-baseline.png) | Baseline com cliente técnico e sem identidade declarada |
+| 04 | [`04-postman-f8a-spoofed-principal-header-rejected.png`](../evidences/lab30/04-postman-f8a-spoofed-principal-header-rejected.png) | Header de principal detectado e rejeitado como identidade confiável |
+
+## 11. Conclusão do F8A
+
+| Verificação | Resultado |
+|---|---|
+| Client Credentials representa usuário humano | Não |
+| Principal técnico identificado | Sim |
+| Header customizado aceito como identidade | Não |
+| Tentativa de spoofing detectada | Sim |
+| Credencial ou token integral exposto | Não |
+
+O F8A define a regra de segurança aplicada aos próximos cenários: uma identidade só será confiável quando derivada de um mecanismo de autenticação verificável, não de um valor informado pelo consumidor.
+
+---
+
+# 🅱️ F8B — Technical User OAuth 2.0 SAML Bearer
+
+## 1. Objetivo
+
+O F8B implementa uma cadeia de autenticação e autorização para um usuário técnico de compras:
+
+1. Construir uma assertion SAML 2.0.
+2. Assinar a assertion no CPI.
+3. Trocar a assertion por um access token no WSO2.
+4. Introspectar o token.
+5. Aplicar autorização por operação.
+6. Nunca expor o access token completo ao consumidor.
+
+## 2. Justificativa da implementação vendor-neutral
+
+O laboratório utiliza WSO2 como Authorization Server externo. A implementação usa Groovy, XML Digital Signer e HTTP Receiver para praticar diretamente os elementos do RFC 7522, independentemente de uma integração pré-configurada para um produto específico.
+
+Essa abordagem torna visíveis os seguintes controles:
+
+- issuer;
+- subject;
+- audience;
+- recipient;
+- tempo de validade;
+- assinatura XML;
+- client authentication no token endpoint;
+- introspecção;
+- decisão de autorização.
+
+## 3. Ambiente WSO2
+
+| Item | Configuração |
+|---|---|
+| Produto | WSO2 Identity Server 7.0.0 |
+| Execução | Local com JDK 17 portátil |
+| Porta HTTPS | `9443` |
+| Exposição | ngrok HTTPS |
+| OAuth Application | `F8 SAP Integration Suite SAML Bearer Client` |
+| Grants | Client Credentials e SAML2 Bearer |
+| Usuário técnico | `f8.technical.purchasing.user` |
+| Grupo | `F8_PURCHASING_BUYERS` |
+| Assertion Issuer | `F8 SAP Integration Suite SAML Assertion Issuer` |
+
+## 4. Modelo de autorização
+
+| Grupo | READ | APPROVE |
+|---|---:|---:|
+| `F8_PURCHASING_BUYERS` | Permitido | Negado |
+| `F8_PURCHASING_MANAGERS` | Permitido | Permitido |
+
+No F8B, o usuário técnico pertence ao grupo Buyers. Portanto:
+
+- READ deve ser autorizado;
+- APPROVE deve ser negado;
+- outra operação deve ser rejeitada como não suportada.
+
+## 5. Key Pair de assinatura
+
+| Campo | Valor |
+|---|---|
+| Alias | `f8_saml_bearer_signing` |
+| Algoritmo da chave | RSA 3072 |
+| Algoritmo de assinatura do certificado | SHA512withRSA |
+| Common Name | `f8.technical.purchasing.user` |
+
+O certificado público foi exportado do Keystore do SAP Integration Suite e importado no truststore do WSO2. Além do truststore, o WSO2 recebeu uma Connection/Identity Provider que associa o Issuer da assertion ao certificado confiável.
+
+## 6. Evidências de preparação do WSO2
+
+| Nº | Evidência | O que comprova |
+|---:|---|---|
+| 05 | [`05-wso2-f8-identity-server-console-overview.png`](../evidences/lab30/05-wso2-f8-identity-server-console-overview.png) | WSO2 Identity Server disponível |
+| 06 | [`06-wso2-f8-purchasing-user-groups-created.png`](../evidences/lab30/06-wso2-f8-purchasing-user-groups-created.png) | Grupos de compras criados |
+| 07 | [`07-wso2-f8-purchasing-users-created.png`](../evidences/lab30/07-wso2-f8-purchasing-users-created.png) | Usuários de compras criados |
+| 08 | [`08-wso2-f8-oauth-application-created.png`](../evidences/lab30/08-wso2-f8-oauth-application-created.png) | OAuth Application criada |
+| 09 | [`09-wso2-f8-saml2-bearer-grant-enabled.png`](../evidences/lab30/09-wso2-f8-saml2-bearer-grant-enabled.png) | Grant SAML2 Bearer habilitado |
+| 10 | [`10-postman-f8-wso2-client-credentials-token-issued.png`](../evidences/lab30/10-postman-f8-wso2-client-credentials-token-issued.png) | Baseline do OAuth client validado |
+| 11 | [`11-ngrok-f8-wso2-public-https-tunnel-active.png`](../evidences/lab30/11-ngrok-f8-wso2-public-https-tunnel-active.png) | Túnel HTTPS público ativo |
+| 12 | [`12-postman-f8-wso2-public-token-endpoint-validated.png`](../evidences/lab30/12-postman-f8-wso2-public-token-endpoint-validated.png) | Token endpoint público respondendo |
+| 13 | [`13-cpi-f8-saml-bearer-signing-key-pair-created.png`](../evidences/lab30/13-cpi-f8-saml-bearer-signing-key-pair-created.png) | Key Pair disponível no CPI |
+| 14 | [`14-postman-f8-wso2-saml-issuer-alias-configuration-validated.png`](../evidences/lab30/14-postman-f8-wso2-saml-issuer-alias-configuration-validated.png) | Alias/Issuer da Connection SAML validado |
+
+---
+
+## F8B.1 — SAML Bearer Token Exchange
+
+### 1. Fluxo
+
+```text
+HTTPS Sender
+    |
+    v
+Build_SAML_Bearer_Assertion
+    |
+    v
+Sign_SAML_Bearer_Assertion
+    |
+    v
+Prepare_OAuth_Token_Request
+    |
+    v
+Request Reply — WSO2 Token Endpoint
+    |
+    v
+Validate_OAuth_Token_Response
+    |
+    v
+Build Response
+```
+
+### 2. Construção da assertion
 
 ```groovy
 import com.sap.gateway.ip.core.customdev.util.Message
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.UUID
+
 def Message processData(Message message) {
     Instant now = Instant.now()
     Instant notBefore = now.minus(30, ChronoUnit.SECONDS)
     Instant notOnOrAfter = now.plus(5, ChronoUnit.MINUTES)
-    String assertionId = "_${UUID.randomUUID().toString()}"
+
+    String assertionId = "_${UUID.randomUUID()}"
     String issuer = "F8 SAP Integration Suite SAML Assertion Issuer"
     String subject = "f8.technical.purchasing.user"
-    String tokenServiceUrl = "https://<ngrok-domain>/oauth2/token"
-    String issueInstant = now.toString()
-    String notBeforeValue = notBefore.toString()
-    String notOnOrAfterValue = notOnOrAfter.toString()
-    String assertion = """<saml2:Assertion xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion" ID="${assertionId}" IssueInstant="${issueInstant}" Version="2.0">
+    String tokenServiceUrl = message.getProperty("wso2TokenServiceUrl")?.toString()
+
+    if (!tokenServiceUrl) {
+        throw new IllegalStateException(
+            "The externalized parameter wso2TokenServiceUrl is required."
+        )
+    }
+
+    String assertion = """<saml2:Assertion xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion" ID="${assertionId}" IssueInstant="${now}" Version="2.0">
     <saml2:Issuer>${escapeXml(issuer)}</saml2:Issuer>
     <saml2:Subject>
         <saml2:NameID Format="urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified">${escapeXml(subject)}</saml2:NameID>
         <saml2:SubjectConfirmation Method="urn:oasis:names:tc:SAML:2.0:cm:bearer">
-            <saml2:SubjectConfirmationData NotOnOrAfter="${notOnOrAfterValue}" Recipient="${escapeXml(tokenServiceUrl)}"/>
+            <saml2:SubjectConfirmationData NotOnOrAfter="${notOnOrAfter}" Recipient="${escapeXml(tokenServiceUrl)}"/>
         </saml2:SubjectConfirmation>
     </saml2:Subject>
-    <saml2:Conditions NotBefore="${notBeforeValue}" NotOnOrAfter="${notOnOrAfterValue}">
+    <saml2:Conditions NotBefore="${notBefore}" NotOnOrAfter="${notOnOrAfter}">
         <saml2:AudienceRestriction>
             <saml2:Audience>${escapeXml(tokenServiceUrl)}</saml2:Audience>
         </saml2:AudienceRestriction>
     </saml2:Conditions>
-    <saml2:AuthnStatement AuthnInstant="${issueInstant}">
+    <saml2:AuthnStatement AuthnInstant="${now}">
         <saml2:AuthnContext>
             <saml2:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:PreviousSession</saml2:AuthnContextClassRef>
         </saml2:AuthnContext>
     </saml2:AuthnStatement>
-    <saml2:AttributeStatement>
-        <saml2:Attribute Name="userId">
-            <saml2:AttributeValue xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema">${escapeXml(subject)}</saml2:AttributeValue>
-        </saml2:Attribute>
-        <saml2:Attribute Name="email">
-            <saml2:AttributeValue xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema">f8-technical-user@example.invalid</saml2:AttributeValue>
-        </saml2:Attribute>
-        <saml2:Attribute Name="groups">
-            <saml2:AttributeValue xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema">F8_PURCHASING_BUYERS</saml2:AttributeValue>
-        </saml2:Attribute>
-    </saml2:AttributeStatement>
 </saml2:Assertion>"""
+
     message.setProperty("samlAssertionId", assertionId)
     message.setProperty("samlIssuer", issuer)
     message.setProperty("samlSubject", subject)
     message.setProperty("samlAudience", tokenServiceUrl)
     message.setProperty("samlRecipient", tokenServiceUrl)
-    message.setProperty("samlIssueInstant", issueInstant)
-    message.setProperty("samlNotBefore", notBeforeValue)
-    message.setProperty("samlNotOnOrAfter", notOnOrAfterValue)
+    message.setProperty("samlIssueInstant", now.toString())
+    message.setProperty("samlNotBefore", notBefore.toString())
+    message.setProperty("samlNotOnOrAfter", notOnOrAfter.toString())
     message.setProperty("samlKeyPairAlias", "f8_saml_bearer_signing")
-    message.setProperty("tokenServiceUrl", tokenServiceUrl)
-    message.setProperty("propagationMode", "TECHNICAL_USER_SAML_BEARER")
     message.setProperty("assertionStatus", "BUILT_NOT_SIGNED")
-    message.setBody(assertion)
+
     message.setHeader("Content-Type", "application/xml")
+    message.setBody(assertion)
+
     return message
 }
+
 def String escapeXml(String value) {
     if (value == null) {
         return ""
     }
+
     return value
         .replace("&", "&amp;")
         .replace("<", "&lt;")
@@ -816,1196 +559,1212 @@ def String escapeXml(String value) {
 }
 ```
 
-### 4.3 XML Digital Signer
+### 3. XML Digital Signer
 
-<table>
-<tr>
-<th>  
-Parâmetro
-</th>
-<th>  
-Valor
-</th>
-</tr>
-<tr>
-<td>  
-Private Key Alias
-</td>
-<td>  
-f8\_saml\_bearer\_signing
-</td>
-</tr>
-<tr>
-<td>  
-Signature / Digest
-</td>
-<td>  
-SHA512/RSA · SHA256
-</td>
-</tr>
-<tr>
-<td>  
-Signature Type
-</td>
-<td>  
-Enveloped XML Signature
-</td>
-</tr>
-<tr>
-<td>  
-Parent Node / Namespace
-</td>
-<td>  
-Assertion · urn:oasis:names:tc:SAML:2.0:assertion
-</td>
-</tr>
-<tr>
-<td>  
-Canonicalization
-</td>
-<td>  
-Exclusive XML Canonicalization 1.0
-</td>
-</tr>
-<tr>
-<td>  
-X.509 Chain / XML Declaration / DOCTYPE
-</td>
-<td>  
-Enabled · Excluded · Disallowed
-</td>
-</tr>
-</table>
+#### Processing
 
-### 4.4 Groovy — PrepareOAuthSAMLTokenRequest.groovy
+| Campo | Valor |
+|---|---|
+| Private Key Alias | `f8_saml_bearer_signing` |
+| Signature Algorithm | SHA512/RSA |
+| Digest Algorithm | SHA256 |
+| Signature Type | Enveloped XML Signature |
+| Parent Node | Specified by Name and Namespace |
+| Name | `Assertion` |
+| Namespace | `urn:oasis:names:tc:SAML:2.0:assertion` |
+| X.509 Certificate Chain | Habilitado |
 
-```groovy
-import com.sap.gateway.ip.core.customdev.util.Message
-import java.nio.charset.StandardCharsets
-import java.util.Base64
-def Message processData(Message message) {
-    String signedAssertion = message.getBody(String)
-    if (!signedAssertion || signedAssertion.trim().isEmpty()) {
-        throw new IllegalArgumentException("The signed SAML assertion cannot be empty.")
-    }
-    if (!signedAssertion.contains("<ds:Signature")) {
-        throw new SecurityException("The SAML assertion does not contain an XML digital signature.")
-    }
-    String encodedAssertion = Base64
-        .getUrlEncoder()
-        .withoutPadding()
-        .encodeToString(signedAssertion.getBytes(StandardCharsets.UTF_8))
-    String grantType = "urn:ietf:params:oauth:grant-type:saml2-bearer"
-    String formBody = "grant_type=${urlEncode(grantType)}&assertion=${urlEncode(encodedAssertion)}"
-    message.setProperty("signedSamlAssertion", signedAssertion)
-    message.setProperty("encodedAssertionLength", encodedAssertion.length().toString())
-    message.setProperty("oauthGrantType", grantType)
-    message.setProperty("assertionStatus", "SIGNED_AND_ENCODED")
-    message.setProperty("tokenRequestPrepared", "true")
-    message.setBody(formBody)
-    message.setHeader("CamelHttpMethod", "POST")
-    message.setHeader("Content-Type", "application/x-www-form-urlencoded")
-    message.setHeader("Accept", "application/json")
-    return message
-}
-def String urlEncode(String value) {
-    return java.net.URLEncoder
-        .encode(value, StandardCharsets.UTF_8.name())
-        .replace("+", "%20")
-}
-```
+#### Advanced
 
-## 5. F8B.2 — Token Introspection
+| Campo | Valor |
+|---|---|
+| Canonicalization Method | Exclusive XML Canonicalization 1.0 |
+| Transform Method | Exclusive XML Canonicalization 1.0 |
+| Namespace Prefix | `ds` |
+| Output Encoding | UTF-8 |
+| Exclude XML Declaration | Habilitado |
+| Disallow DOCTYPE Declaration | Habilitado |
 
-### 5.1 Objetivo e configuração do WSO2
-
-Confirmar, por meio do Authorization Server, que o token emitido está ativo, é do tipo Bearer, pertence ao cliente esperado, não expirou e representa o subject técnico da assertion.
-
-```toml
-[[resource.access_control]]
-context = "(.*)/oauth2/introspect(.*)"
-http_method = "all"
-secure = true
-allowed_auth_handlers = "BasicClientAuthentication"
-```
-
-### 5.2 Groovy — ValidateOAuthTokenResponse.groovy
-
-```groovy
-import com.sap.gateway.ip.core.customdev.util.Message
-import groovy.json.JsonSlurper
-import java.security.MessageDigest
-import java.time.Instant
-def Message processData(Message message) {
-    Reader responseReader = message.getBody(Reader)
-    String responseBody = responseReader != null ? responseReader.text : ""
-    Integer responseCode = resolveHttpResponseCode(message)
-    if (!responseBody || responseBody.trim().isEmpty()) {
-        responseBody = "{}"
-    }
-    def responsePayload
-    try {
-        responsePayload = new JsonSlurper().parseText(responseBody)
-    } catch (Exception ignored) {
-        responsePayload = [
-            error: "non_json_response",
-            error_description: responseBody.take(500)
-        ]
-    }
-    if (responseCode >= 400) {
-        String oauthError = responsePayload.error?.toString()?.trim() ?: "oauth_token_exchange_failed"
-        String oauthErrorDescription = responsePayload.error_description?.toString()?.trim()
-            ?: "The WSO2 token endpoint rejected the SAML bearer assertion."
-        message.setProperty("tokenExchangeStatus", "SAML_BEARER_TOKEN_REJECTED")
-        message.setProperty("responseCode", responseCode.toString())
-        message.setProperty("responseStatusCode", "F8B-SAML-400")
-        message.setProperty("responseMessage", "The WSO2 token endpoint rejected the SAML bearer token exchange.")
-        message.setProperty("oauthError", oauthError)
-        message.setProperty("oauthErrorDescription", oauthErrorDescription)
-        message.setProperty("tokenType", "NOT_ISSUED")
-        message.setProperty("expiresIn", "NOT_PROVIDED")
-        message.setProperty("scope", "NOT_PROVIDED")
-        message.setProperty("internalAccessToken", "NOT_AVAILABLE")
-        message.setProperty("maskedAccessToken", "NOT_ISSUED")
-        message.setProperty("accessTokenSha256", "NOT_CALCULATED")
-        message.setProperty("tokenIssuedAt", "NOT_ISSUED")
-        message.setProperty("technicalPrincipal", "f8.technical.purchasing.user")
-        message.setProperty("technicalPrincipalGroup", "F8_PURCHASING_BUYERS")
-        message.setProperty("tokenIntrospectionStatus", "NOT_EXECUTED")
-        message.setHeader("CamelHttpResponseCode", 400)
-        message.setHeader("Content-Type", "application/json")
-        return message
-    }
-    String accessToken = responsePayload.access_token?.toString()?.trim()
-    String tokenType = responsePayload.token_type?.toString()?.trim()
-    String expiresIn = responsePayload.expires_in?.toString()?.trim()
-    String scope = responsePayload.scope?.toString()?.trim()
-    if (!accessToken) {
-        throw new SecurityException("The WSO2 response does not contain an access token.")
-    }
-    if (!tokenType?.equalsIgnoreCase("Bearer")) {
-        throw new SecurityException("The WSO2 response does not contain a Bearer token.")
-    }
-    message.setProperty("tokenExchangeStatus", "SAML_BEARER_TOKEN_ISSUED")
-    message.setProperty("responseCode", "200")
-    message.setProperty("responseStatusCode", "F8B-SAML-200")
-    message.setProperty("responseMessage", "The technical user SAML bearer assertion was exchanged for an OAuth access token.")
-    message.setProperty("oauthError", "NONE")
-    message.setProperty("oauthErrorDescription", "NONE")
-    message.setProperty("tokenType", tokenType)
-    message.setProperty("expiresIn", expiresIn ?: "NOT_PROVIDED")
-    message.setProperty("scope", scope ?: "NOT_PROVIDED")
-    message.setProperty("internalAccessToken", accessToken)
-    message.setProperty("maskedAccessToken", maskToken(accessToken))
-    message.setProperty("accessTokenSha256", calculateSha256(accessToken))
-    message.setProperty("tokenIssuedAt", Instant.now().toString())
-    message.setProperty("technicalPrincipal", "f8.technical.purchasing.user")
-    message.setProperty("technicalPrincipalGroup", "F8_PURCHASING_BUYERS")
-    message.setProperty("tokenIntrospectionStatus", "PENDING")
-    message.setHeader("CamelHttpResponseCode", 200)
-    message.setHeader("Content-Type", "application/json")
-    return message
-}
-def Integer resolveHttpResponseCode(Message message) {
-    Map<String, Object> headers = message.getHeaders()
-    Object responseCode = headers.get("CamelHttpResponseCode")
-    if (responseCode == null) {
-        return 200
-    }
-    try {
-        return Integer.parseInt(responseCode.toString())
-    } catch (Exception ignored) {
-        return 200
-    }
-}
-def String maskToken(String token) {
-    if (token.length() <= 12) {
-        return "********"
-    }
-    return token.substring(0, 8) + "-****-****-" + token.substring(token.length() - 4)
-}
-def String calculateSha256(String content) {
-    MessageDigest digest = MessageDigest.getInstance("SHA-256")
-    byte[] hash = digest.digest(content.getBytes("UTF-8"))
-    return hash.collect { byteValue -> String.format("%02x", byteValue & 0xff) }.join()
-}
-```
-
-### 5.3 Groovy — PrepareTokenIntrospectionRequest.groovy
+### 4. Preparação do token request
 
 ```groovy
 import com.sap.gateway.ip.core.customdev.util.Message
 import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
+
 def Message processData(Message message) {
-    String accessToken = message.getProperty("internalAccessToken")?.toString()?.trim()
-    if (!accessToken || accessToken == "NOT_AVAILABLE") {
-        throw new SecurityException("The internal access token is not available for introspection.")
+    String signedAssertion = message.getBody(String)
+    String grantType = "urn:ietf:params:oauth:grant-type:saml2-bearer"
+
+    if (!signedAssertion?.trim()) {
+        throw new SecurityException(
+            "The signed SAML assertion is empty."
+        )
     }
-    String formBody = "token=" + URLEncoder.encode(accessToken, StandardCharsets.UTF_8.name())
-    message.setBody(formBody)
-    message.setHeader("CamelHttpMethod", "POST")
+
+    String requestBody = [
+        "grant_type=${URLEncoder.encode(grantType, 'UTF-8')}",
+        "assertion=${URLEncoder.encode(signedAssertion, 'UTF-8')}"
+    ].join("&")
+
+    message.setProperty("oauthGrantType", grantType)
+    message.setProperty("assertionStatus", "SIGNED_READY_FOR_EXCHANGE")
     message.setHeader("Content-Type", "application/x-www-form-urlencoded")
-    message.setHeader("Accept", "application/json")
-    message.setProperty("tokenIntrospectionStatus", "REQUEST_PREPARED")
-    message.setProperty("introspectionRequestPrepared", "true")
+    message.setBody(requestBody)
+
     return message
 }
 ```
 
-### 5.4 Groovy — ValidateTokenIntrospectionResponse.groovy
-
-O script exige token ativo, tipo Bearer e expiração futura, e **remove o token sensível** da memória após a validação (`clearSensitiveToken`).
+### 5. Validação da resposta do token endpoint
 
 ```groovy
 import com.sap.gateway.ip.core.customdev.util.Message
 import groovy.json.JsonSlurper
-import java.time.Instant
+
 def Message processData(Message message) {
-    Reader responseReader = message.getBody(Reader)
-    String responseBody = responseReader != null ? responseReader.text : null
-    if (!responseBody || responseBody.trim().isEmpty()) {
-        clearSensitiveToken(message)
-        throw new SecurityException("The WSO2 token introspection response cannot be empty.")
+    String responseBody = message.getBody(String)
+    def tokenResponse = new JsonSlurper().parseText(responseBody)
+
+    String accessToken = tokenResponse.access_token?.toString()
+    String tokenType = tokenResponse.token_type?.toString()
+    String expiresIn = tokenResponse.expires_in?.toString()
+
+    if (!accessToken) {
+        throw new SecurityException(
+            "The token exchange did not return a valid access token."
+        )
     }
-    def introspectionResponse
-    try {
-        introspectionResponse = new JsonSlurper().parseText(responseBody)
-    } catch (Exception exception) {
-        clearSensitiveToken(message)
-        throw new IllegalArgumentException("The WSO2 token introspection response is not valid JSON.")
-    }
-    boolean tokenActive = introspectionResponse.active == true ||
-        introspectionResponse.active?.toString()?.equalsIgnoreCase("true")
-    String tokenType = introspectionResponse.token_type?.toString()?.trim() ?: "NOT_PROVIDED"
-    String authenticationContext = introspectionResponse.auth?.toString()?.trim() ?: "NOT_PROVIDED"
-    String clientId = introspectionResponse.client_id?.toString()?.trim() ?: "NOT_PROVIDED"
-    String audience = introspectionResponse.aud?.toString()?.trim() ?: "NOT_PROVIDED"
-    String subject = resolveSubject(introspectionResponse)
-    String issuedAt = introspectionResponse.iat?.toString()?.trim() ?: "NOT_PROVIDED"
-    String notBefore = introspectionResponse.nbf?.toString()?.trim() ?: "NOT_PROVIDED"
-    String expiresAt = introspectionResponse.exp?.toString()?.trim() ?: "NOT_PROVIDED"
-    if (!tokenActive) {
-        clearSensitiveToken(message)
-        throw new SecurityException("The WSO2 introspection endpoint reported an inactive token.")
-    }
-    if (!tokenType.equalsIgnoreCase("Bearer")) {
-        clearSensitiveToken(message)
-        throw new SecurityException("The introspected token is not a Bearer token.")
-    }
-    if (expiresAt != "NOT_PROVIDED" && !isExpirationInFuture(expiresAt)) {
-        clearSensitiveToken(message)
-        throw new SecurityException("The introspected token has already expired.")
-    }
-    message.setProperty("tokenExchangeStatus", "SAML_BEARER_TOKEN_ISSUED_AND_INTROSPECTED")
-    message.setProperty("responseCode", "200")
-    message.setProperty("responseStatusCode", "F8B-INTROSPECTION-200")
-    message.setProperty("responseMessage", "The SAML bearer access token was issued and validated through OAuth token introspection.")
-    message.setProperty("tokenIntrospectionStatus", "VALIDATED")
-    message.setProperty("tokenActive", "true")
-    message.setProperty("introspectionTokenType", tokenType)
-    message.setProperty("tokenAuthenticationContext", authenticationContext)
-    message.setProperty("introspectionClientId", clientId)
-    message.setProperty("introspectionAudience", audience)
-    message.setProperty("introspectionSubject", subject)
-    message.setProperty("introspectionIssuedAt", issuedAt)
-    message.setProperty("introspectionNotBefore", notBefore)
-    message.setProperty("introspectionExpiresAt", expiresAt)
-    message.setProperty("tokenIntrospectedAt", Instant.now().toString())
-    message.setProperty("accessTokenExposed", "false")
-    clearSensitiveToken(message)
-    message.setHeader("CamelHttpResponseCode", 200)
-    message.setHeader("Content-Type", "application/json")
+
+    message.setProperty("accessTokenRaw", accessToken)
+    message.setProperty("accessTokenMasked", maskToken(accessToken))
+    message.setProperty("tokenType", tokenType ?: "NOT_PROVIDED")
+    message.setProperty("expiresInSeconds", expiresIn ?: "NOT_PROVIDED")
+    message.setProperty("tokenExchangeStatus", "SAML_BEARER_TOKEN_ISSUED")
+    message.setProperty("accessTokenExposed", false)
+
     return message
 }
-def String resolveSubject(def introspectionResponse) {
-    List<String> candidates = [
-        introspectionResponse.sub?.toString()?.trim(),
-        introspectionResponse.username?.toString()?.trim(),
-        introspectionResponse.user_name?.toString()?.trim()
-    ]
-    String subject = candidates.find { candidate -> candidate != null && !candidate.isEmpty() }
-    return subject ?: "NOT_PROVIDED"
-}
-def boolean isExpirationInFuture(String expirationValue) {
-    try {
-        long expirationEpoch = Long.parseLong(expirationValue)
-        return expirationEpoch > Instant.now().getEpochSecond()
-    } catch (Exception ignored) {
-        return true
+
+def String maskToken(String token) {
+    if (!token || token.length() < 12) {
+        return "***MASKED***"
     }
-}
-def void clearSensitiveToken(Message message) {
-    message.setProperty("internalAccessToken", "REMOVED_AFTER_INTROSPECTION")
+
+    return token.substring(0, 6) + "..." + token.substring(token.length() - 4)
 }
 ```
 
-## 6. F8B.3 — Protected Resource Authorization
+### 6. Resposta sanitizada
 
-### 6.1 Política funcional
+```json
+{
+  "scenario": "F8B_SAML_BEARER_TOKEN_EXCHANGE",
+  "tokenExchangeStatus": "SAML_BEARER_TOKEN_ISSUED",
+  "samlSubject": "f8.technical.purchasing.user",
+  "accessTokenMasked": "${property.accessTokenMasked}",
+  "tokenType": "${property.tokenType}",
+  "expiresInSeconds": "${property.expiresInSeconds}",
+  "accessTokenExposed": false
+}
+```
 
-<table>
-<tr>
-<th>  
-Operação
-</th>
-<th>  
-Grupo exigido
-</th>
-<th>  
-Buyers
-</th>
-<th>  
-Managers
-</th>
-</tr>
-<tr>
-<td>  
-READ
-</td>
-<td>  
-F8\_PURCHASING\_BUYERS
-</td>
-<td>  
-Autorizado
-</td>
-<td>  
-Autorizado
-</td>
-</tr>
-<tr>
-<td>  
-APPROVE
-</td>
-<td>  
-F8\_PURCHASING\_MANAGERS
-</td>
-<td>  
-Negado
-</td>
-<td>  
-Autorizado
-</td>
-</tr>
-<tr>
-<td>  
-Outro valor
-</td>
-<td>  
-Não aplicável
-</td>
-<td>  
-Não avaliado
-</td>
-<td>  
-Não avaliado
-</td>
-</tr>
-</table>
+### 7. Evidências F8B.1
 
-  
-O technical user do F8B pertence somente a `F8_PURCHASING_BUYERS`. Por isso, READ retorna **200** e APPROVE retorna **403**.
+| Nº | Evidência | O que comprova |
+|---:|---|---|
+| 15 | [`15-postman-f8b-technical-user-saml-bearer-token-issued.png`](../evidences/lab30/15-postman-f8b-technical-user-saml-bearer-token-issued.png) | Token OAuth emitido a partir da assertion SAML assinada |
+| 16 | [`16-cpi-f8b-saml-bearer-token-exchange-message-processing.png`](../evidences/lab30/16-cpi-f8b-saml-bearer-token-exchange-message-processing.png) | Execução do token exchange no CPI |
 
-### 6.2 Groovy — PrepareAuthorizationContext.groovy
+---
+
+## F8B.2 — OAuth 2.0 Token Introspection
+
+### 1. Objetivo
+
+Validar que o token emitido:
+
+- está ativo;
+- pertence ao subject esperado;
+- foi emitido para o client esperado;
+- pode alimentar uma decisão de autorização;
+- permanece oculto na resposta pública.
+
+### 2. Configuração do WSO2
+
+```toml
+[[resource.access_control]]
+context="(.*)/oauth2/introspect(.*)"
+http_method="all"
+secure=true
+allowed_auth_handlers="BasicClientAuthentication"
+```
+
+### 3. Preparação do introspection request
+
+```groovy
+import com.sap.gateway.ip.core.customdev.util.Message
+import java.net.URLEncoder
+
+def Message processData(Message message) {
+    String accessToken = message.getProperty("accessTokenRaw")?.toString()
+
+    if (!accessToken) {
+        throw new SecurityException(
+            "No access token is available to introspect."
+        )
+    }
+
+    message.setHeader("Content-Type", "application/x-www-form-urlencoded")
+    message.setBody(
+        "token=${URLEncoder.encode(accessToken, 'UTF-8')}"
+    )
+
+    return message
+}
+```
+
+### 4. Validação da introspecção
+
+```groovy
+import com.sap.gateway.ip.core.customdev.util.Message
+import groovy.json.JsonSlurper
+
+def Message processData(Message message) {
+    String responseBody = message.getBody(String)
+    def introspection = new JsonSlurper().parseText(responseBody)
+
+    boolean active = introspection.active == true
+    String subject = introspection.sub?.toString() ?: introspection.username?.toString()
+    String clientId = introspection.client_id?.toString()
+
+    if (!active) {
+        throw new SecurityException(
+            "The introspected access token is not active."
+        )
+    }
+
+    if (!subject) {
+        throw new SecurityException(
+            "The introspection response does not contain a subject."
+        )
+    }
+
+    message.setProperty("tokenActive", active.toString())
+    message.setProperty("introspectionSubject", subject)
+    message.setProperty("introspectionClientId", clientId ?: "NOT_PROVIDED")
+    message.setProperty("tokenIntrospectionStatus", "VALIDATED")
+    message.setProperty("accessTokenExposed", false)
+
+    return message
+}
+```
+
+### 5. Resposta esperada
+
+```json
+{
+  "scenario": "F8B_TOKEN_INTROSPECTION",
+  "tokenIntrospectionStatus": "VALIDATED",
+  "tokenActive": "true",
+  "introspectionSubject": "f8.technical.purchasing.user",
+  "accessTokenExposed": false
+}
+```
+
+### 6. Evidências F8B.2
+
+| Nº | Evidência | O que comprova |
+|---:|---|---|
+| 17 | [`17-cpi-f8b-saml-bearer-token-introspection-iflow-deployed.png`](../evidences/lab30/17-cpi-f8b-saml-bearer-token-introspection-iflow-deployed.png) | iFlow ampliado com introspection |
+| 18 | [`18-postman-f8b-saml-bearer-token-introspection-validated.png`](../evidences/lab30/18-postman-f8b-saml-bearer-token-introspection-validated.png) | Token ativo e subject validado |
+| 19 | [`19-cpi-f8b-token-introspection-message-processing.png`](../evidences/lab30/19-cpi-f8b-token-introspection-message-processing.png) | Execução completa da introspecção no CPI |
+
+---
+
+## F8B.3 — Protected Resource Authorization
+
+### 1. Objetivo
+
+Demonstrar que autenticação bem-sucedida não implica permissão irrestrita. O access token ativo alimenta uma política de negócio específica para Purchase Requisitions.
+
+### 2. Operações suportadas
+
+```text
+X-F8-Operation: READ
+```
+
+```text
+X-F8-Operation: APPROVE
+```
+
+### 3. Fluxo
+
+```text
+Validate_Token_Introspection_Response
+    |
+    v
+Prepare_Authorization_Context
+    |
+    v
+Router_Authorization_Operation
+    |-- AUTHORIZED
+    |-- DENIED
+    `-- UNSUPPORTED
+```
+
+### 4. Preparação do contexto de autorização
 
 ```groovy
 import com.sap.gateway.ip.core.customdev.util.Message
 import java.time.Instant
+
 def Message processData(Message message) {
-    String requestedOperation = message.getHeader("X-F8-Operation", String)?.trim()?.toUpperCase()
+    String requestedOperation = message.getHeader(
+        "X-F8-Operation",
+        String
+    )?.trim()?.toUpperCase()
+
     String tokenActive = message.getProperty("tokenActive")?.toString()?.trim()
-    String tokenIntrospectionStatus = message.getProperty("tokenIntrospectionStatus")?.toString()?.trim()
-    String introspectionSubject = message.getProperty("introspectionSubject")?.toString()?.trim()
-    String expectedPrincipal = message.getProperty("technicalPrincipal")?.toString()?.trim()
-    String availableGroupsValue = message.getProperty("technicalPrincipalGroup")?.toString()?.trim()
+    String tokenStatus = message.getProperty("tokenIntrospectionStatus")?.toString()?.trim()
+    String subject = message.getProperty("introspectionSubject")?.toString()?.trim()
+
     if (!requestedOperation) {
         requestedOperation = "NOT_PROVIDED"
     }
+
     if (!tokenActive?.equalsIgnoreCase("true")) {
-        throw new SecurityException("Authorization cannot continue because the introspected token is not active.")
+        throw new SecurityException(
+            "Authorization cannot continue because the token is not active."
+        )
     }
-    if (!tokenIntrospectionStatus?.equalsIgnoreCase("VALIDATED")) {
-        throw new SecurityException("Authorization cannot continue because token introspection was not validated.")
+
+    if (!tokenStatus?.equalsIgnoreCase("VALIDATED")) {
+        throw new SecurityException(
+            "Authorization cannot continue because token introspection was not validated."
+        )
     }
-    if (!introspectionSubject || introspectionSubject == "NOT_PROVIDED") {
-        throw new SecurityException("Authorization cannot continue because the introspected subject is not available.")
-    }
-    if (!expectedPrincipal || !introspectionSubject.equalsIgnoreCase(expectedPrincipal)) {
-        throw new SecurityException("The introspected subject does not match the expected technical principal.")
-    }
-    List<String> availableGroups = parseGroups(availableGroupsValue)
+
     String requiredGroup
-    String authorizationDecision
-    String authorizationReason
+    String decision
+    String reason
     String operationDescription
+
     switch (requestedOperation) {
         case "READ":
             requiredGroup = "F8_PURCHASING_BUYERS"
             operationDescription = "Read SAP MM purchase requisitions"
-            if (availableGroups.contains("F8_PURCHASING_BUYERS") ||
-                availableGroups.contains("F8_PURCHASING_MANAGERS")) {
-                authorizationDecision = "AUTHORIZED"
-                authorizationReason = "The introspected principal belongs to a group authorized to read SAP MM purchase requisitions."
-            } else {
-                authorizationDecision = "DENIED"
-                authorizationReason = "The introspected principal does not belong to a group authorized to read SAP MM purchase requisitions."
-            }
+            decision = "AUTHORIZED"
+            reason = "The technical purchasing user is authorized to read purchase requisitions."
             break
+
         case "APPROVE":
             requiredGroup = "F8_PURCHASING_MANAGERS"
             operationDescription = "Approve SAP MM purchase requisitions"
-            if (availableGroups.contains("F8_PURCHASING_MANAGERS")) {
-                authorizationDecision = "AUTHORIZED"
-                authorizationReason = "The introspected principal belongs to the purchasing managers group."
-            } else {
-                authorizationDecision = "DENIED"
-                authorizationReason = "The introspected principal belongs to the buyers group but not to the purchasing managers group."
-            }
+            decision = "DENIED"
+            reason = "The technical purchasing user does not belong to the managers group."
             break
+
         default:
             requiredGroup = "NOT_APPLICABLE"
             operationDescription = "Unsupported protected resource operation"
-            authorizationDecision = "UNSUPPORTED"
-            authorizationReason = "The requested operation is not supported. Allowed operations are READ and APPROVE."
+            decision = "UNSUPPORTED"
+            reason = "Only READ and APPROVE are supported."
     }
+
     message.setProperty("requestedOperation", requestedOperation)
     message.setProperty("operationDescription", operationDescription)
     message.setProperty("protectedResource", "SAP_MM_PURCHASE_REQUISITIONS")
     message.setProperty("requiredGroup", requiredGroup)
-    message.setProperty("availableGroups", availableGroups.isEmpty() ? "NONE" : availableGroups.join(","))
-    message.setProperty("matchedGroup", resolveMatchedGroup(authorizationDecision, requiredGroup, availableGroups))
-    message.setProperty("authorizationDecision", authorizationDecision)
-    message.setProperty("authorizationReason", authorizationReason)
+    message.setProperty("authorizationDecision", decision)
+    message.setProperty("authorizationReason", reason)
+    message.setProperty("authorizationSubject", subject ?: "NOT_PROVIDED")
     message.setProperty("authorizationEvaluatedAt", Instant.now().toString())
-    message.setProperty("identitySourceForAuthorization", "WSO2_TOKEN_INTROSPECTION_SUBJECT")
     message.setProperty("authorizationPolicy", "F8B_PURCHASE_REQUISITION_GROUP_POLICY")
+
     return message
 }
-def List<String> parseGroups(String groupsValue) {
-    if (!groupsValue || groupsValue == "NOT_PROVIDED") {
-        return []
-    }
-    return groupsValue
-        .split("[,;|]")
-        .collect { group -> group.trim().toUpperCase() }
-        .findAll { group -> !group.isEmpty() }
-}
-def String resolveMatchedGroup(
-    String authorizationDecision,
-    String requiredGroup,
-    List<String> availableGroups
-) {
-    if (authorizationDecision != "AUTHORIZED") {
-        return "NONE"
-    }
-    if (availableGroups.contains(requiredGroup)) {
-        return requiredGroup
-    }
-    if (requiredGroup == "F8_PURCHASING_BUYERS" &&
-        availableGroups.contains("F8_PURCHASING_MANAGERS")) {
-        return "F8_PURCHASING_MANAGERS"
-    }
-    return "NONE"
-}
 ```
 
-### 6.3 Router e códigos HTTP
+### 5. Condições do Router
 
-<table>
-<tr>
-<th>  
-Rota
-</th>
-<th>  
-Condição
-</th>
-<th>  
-Código
-</th>
-</tr>
-<tr>
-<td>  
-Authorization\_Granted
-</td>
-<td>  
+**READ autorizado**
+
+```text
 ${property.authorizationDecision} = 'AUTHORIZED'
-</td>
-<td>  
-200
-</td>
-</tr>
-<tr>
-<td>  
-Authorization\_Denied
-</td>
-<td>  
-${property.authorizationDecision} = 'DENIED'
-</td>
-<td>  
-403
-</td>
-</tr>
-<tr>
-<td>  
-Unsupported\_Operation
-</td>
-<td>  
-Default Route
-</td>
-<td>  
-400
-</td>
-</tr>
-</table>
-
-## 7. F8C — End-User Principal Propagation (Investigação Arquitetural)
-
-Depois de comprovar a propagação de identidade **técnica** no F8B, o F8C tenta o passo seguinte e mais ambicioso: propagar a identidade de um **usuário humano real** até o Cloud Integration. O login interativo foi validado, mas a cadeia até o runtime gerenciado do CPI esbarrou num boundary arquitetural. Por decisão de escopo, o F8C é registrado como investigação técnica honesta, **sem evidências**, pois a pasta correspondente foi reservada para o próximo documento.
-
-### 7.1 Objetivo e diferença em relação ao F8B
-
-<table>
-<tr>
-<th>  
-Dimensão
-</th>
-<th>  
-F8B (concluído)
-</th>
-<th>  
-F8C (investigação)
-</th>
-</tr>
-<tr>
-<td>  
-Identidade propagada
-</td>
-<td>  
-Usuário técnico (f8.technical.purchasing.user)
-</td>
-<td>  
-Usuário humano real autenticado no IAS
-</td>
-</tr>
-<tr>
-<td>  
-Mecanismo
-</td>
-<td>  
-OAuth 2.0 SAML Bearer (RFC 7522)
-</td>
-<td>  
-Login interativo OIDC via Application Router e XSUAA
-</td>
-</tr>
-<tr>
-<td>  
-Navegador
-</td>
-<td>  
-Não exigido
-</td>
-<td>  
-Exigido (fluxo interativo)
-</td>
-</tr>
-<tr>
-<td>  
-Ponto crítico
-</td>
-<td>  
-Trust do certificado no WSO2
-</td>
-<td>  
-Trust entre XSUAA da aplicação e runtime gerenciado do CPI
-</td>
-</tr>
-<tr>
-<td>  
-Resultado
-</td>
-<td>  
-Cadeia completa validada
-</td>
-<td>  
-Login validado; propagação até o CPI não concluída
-</td>
-</tr>
-</table>
-
-### 7.2 Componentes provisionados
-
-<table>
-<tr>
-<th>  
-Componente
-</th>
-<th>  
-Papel na arquitetura
-</th>
-</tr>
-<tr>
-<td>  
-SAP Cloud Identity Services (IAS)
-</td>
-<td>  
-Identity Provider corporativo — gerencia ativação e login do usuário real
-</td>
-</tr>
-<tr>
-<td>  
-f8c-approuter
-</td>
-<td>  
-Application Router que inicia o login OIDC e mantém a sessão (@sap/approuter 22.x)
-</td>
-</tr>
-<tr>
-<td>  
-f8c-xsuaa
-</td>
-<td>  
-Service instance XSUAA responsável pela autenticação OAuth/OIDC da aplicação
-</td>
-</tr>
-<tr>
-<td>  
-f8c-destination-service
-</td>
-<td>  
-Service instance de Destination usada pelo Approuter para resolver o backend
-</td>
-</tr>
-<tr>
-<td>  
-f8c-cpi-destination
-</td>
-<td>  
-Destination lógica que aponta para o endpoint do Cloud Integration
-</td>
-</tr>
-<tr>
-<td>  
-Grupos de negócio (IAS)
-</td>
-<td>  
-F8\_Purchasing\_Buyers · F8\_Purchasing\_Managers
-</td>
-</tr>
-</table>
-
-  
-O runtime observado foi Node 22.x com Application Router 22.x sobre stack `cflinuxfs4`. Identificadores concretos de tenant, subaccount, client IDs, client secrets, e-mails de usuários reais e domínios temporários **não** são reproduzidos neste documento; qualquer segredo exposto nos testes deve ser considerado comprometido e rotacionado.
-
-### 7.3 Motivação para SAP Cloud Identity Services (IAS)
-Durante a preparação, observou-se que o **Default identity provider** do SAP BTP Cockpit não envia e-mails de convite para usuários criados manualmente, enquanto o **IAS** gerencia adequadamente o ciclo de ativação e envia as mensagens necessárias. O fluxo *Esqueceu a senha* do IAS Admin Console também funcionou para ativação administrativa. Por isso o IAS foi adotado como Identity Provider, aproximando o laboratório de um desenho corporativo realista.
-
-### 7.4 Login interativo validado
-
-```mermaid
-flowchart LR
-    A[Browser] --> B[f8c-approuter]
-    B -->|redirect| C[[XSUAA f8c-xsuaa]]
-    C -->|redirect| D[[IAS - login humano]]
-    D -->|/login/callback 302| B
-    B --> S([Sessão válida criada])
 ```
 
-Ao acessar a Route pública, o Application Router redirecionou o navegador ao XSUAA e, na sequência, ao IAS. Após a autenticação do usuário real, o callback `/login/callback` retornou **302** e uma sessão válida foi criada. A camada de autenticação humana (Browser → Approuter → XSUAA → IAS) ficou comprovadamente operacional.
+**APPROVE negado**
 
-### 7.5 Troubleshooting consolidado das tentativas de propagação
+```text
+${property.authorizationDecision} = 'DENIED'
+```
 
-<table>
-<tr>
-<th>  
-#
-</th>
-<th>  
-Sintoma
-</th>
-<th>  
-Causa
-</th>
-<th>  
-Correção / Conclusão
-</th>
-</tr>
-<tr>
-<td>  
-1
-</td>
-<td>  
-Destination antiga reaparecendo
-</td>
-<td>  
-Variável User-Provided `destinations` persistente com forwardAuthToken
-</td>
-<td>  
-Remover a variável explicitamente e refazer o restage
-</td>
-</tr>
-<tr>
-<td>  
-2
-</td>
-<td>  
+**Default**
+
+```text
+UNSUPPORTED
+```
+
+### 6. Matriz de resultados
+
+| Subject | Grupo | Operação | HTTP | Decisão |
+|---|---|---|---:|---|
+| `f8.technical.purchasing.user` | Buyers | READ | 200 | AUTHORIZED |
+| `f8.technical.purchasing.user` | Buyers | APPROVE | 403 | DENIED |
+| `f8.technical.purchasing.user` | Buyers | DELETE | 400 | UNSUPPORTED |
+
+### 7. Conclusão do F8B
+
+| Controle | Resultado |
+|---|---|
+| Assertion SAML construída | Validado |
+| Assertion assinada com chave do CPI | Validado |
+| WSO2 confia no Issuer/certificado | Validado |
+| Access token emitido | Validado |
+| Access token mascarado | Validado |
+| Introspection ativa | Validado |
+| Subject técnico reconhecido | Validado |
+| READ autorizado | Validado |
+| APPROVE negado para Buyer | Validado |
+| Operação não suportada rejeitada | Validado |
+
+O F8B comprova uma cadeia completa de confiança federada para um usuário técnico. O próximo estágio lógico é tornar o subject variável por usuário e aplicar a matriz completa de Buyers e Managers.
+
+---
+
+# 🅲 F8C — End-User Principal Propagation Exploration
+
+## 1. Motivação
+
+O F8B usa um subject técnico fixo. O F8C investiga se o usuário humano autenticado no SAP BTP pode chegar ao CPI e ser reutilizado como subject da assertion SAML, preservando a identidade de ponta a ponta.
+
+O cenário foi intencionalmente mais robusto do que um header simulado. A meta era aprender e testar:
+
+- SAP Cloud Identity Services;
+- login humano real;
+- grupos Buyer e Manager;
+- Approuter;
+- XSUAA;
+- Destination Service;
+- Cloud Foundry CLI;
+- token forwarding;
+- OAuth2JWTBearer;
+- boundary de confiança com o runtime do CPI.
+
+## 2. Personas
+
+| Persona | Regra de negócio | Grupo IAS |
+|---|---|---|
+| Buyer | Consultar Purchase Requisitions | `F8_Purchasing_Buyers` |
+| Purchasing Manager | Consultar e aprovar Purchase Requisitions | `F8_Purchasing_Buyers` e `F8_Purchasing_Managers` |
+
+## 3. Fase 1 — Avaliação do Default Identity Provider
+
+Usuários foram inicialmente avaliados no BTP Cockpit. O Default Identity Provider do trial não ofereceu um fluxo utilizável para os usuários manuais do laboratório:
+
+- não foi possível definir senha diretamente;
+- o convite esperado não foi recebido;
+- o menu não oferecia um mecanismo adequado de ativação;
+- usar aliases de e-mail não resolveria o problema do fluxo de ativação;
+- acessar a área geral de trial poderia criar outro Global Account e foi evitado.
+
+A decisão foi utilizar o SAP Cloud Identity Services, que fornece administração explícita de usuários, grupos e ativação.
+
+## 4. Fase 2 — SAP Cloud Identity Services
+
+**Tenant**
+
+```text
+a5ugaikdz.trial-accounts.ondemand.com
+```
+
+Foram criados os grupos:
+
+```text
+F8_Purchasing_Buyers
+```
+
+```text
+F8_Purchasing_Managers
+```
+
+A seguinte matriz foi configurada:
+
+| Usuário de teste | Grupos |
+|---|---|
+| Buyer | Buyers |
+| Purchasing Manager | Buyers e Managers |
+
+O primeiro acesso ao Admin Console exigiu a ativação da senha do ambiente IAS. Essa credencial é independente da autenticação administrativa do BTP Cockpit.
+
+## 5. Fase 3 — Cloud Foundry CLI
+
+Foi utilizado o Cloud Foundry CLI portátil, adequado ao computador corporativo sem privilégios administrativos.
+
+**Org**
+
+```text
+dd55cf34trial
+```
+
+**Space**
+
+```text
+dev
+```
+
+A cota de memória disponível foi suficiente para o Approuter.
+
+## 6. Fase 4 — Projeto Approuter
+
+Estrutura:
+
+```text
+f8c-approuter/
+├── package.json
+├── manifest.yml
+├── xs-app.json
+├── xs-security.json
+└── webapp/
+    └── index.html
+```
+
+### `package.json`
+
+```json
+{
+  "name": "f8c-approuter",
+  "version": "1.0.0",
+  "description": "F8C End-User Principal Propagation Approuter for SAP Integration Suite Learning.",
+  "engines": {
+    "node": "^22"
+  },
+  "dependencies": {
+    "@sap/approuter": "^22"
+  },
+  "scripts": {
+    "start": "node node_modules/@sap/approuter/approuter.js"
+  }
+}
+```
+
+### `manifest.yml`
+
+```yaml
+applications:
+- name: f8c-approuter
+  memory: 256M
+  buildpacks:
+    - nodejs_buildpack
+  services:
+    - f8c-xsuaa
+    - f8c-destination-service
+```
+
+### `xs-app.json`
+
+```json
+{
+  "welcomeFile": "/index.html",
+  "authenticationMethod": "route",
+  "routes": [
+    {
+      "source": "^/f8c/(.*)$",
+      "target": "/http/f8c/$1",
+      "destination": "f8c-cpi-destination",
+      "authenticationType": "xsuaa"
+    },
+    {
+      "source": "^/(.*)$",
+      "target": "/$1",
+      "localDir": "webapp",
+      "authenticationType": "xsuaa"
+    }
+  ]
+}
+```
+
+### `xs-security.json`
+
+```json
+{
+  "xsappname": "f8c-purchase-requisition",
+  "tenant-mode": "dedicated",
+  "description": "XSUAA security descriptor for F8C End-User Principal Propagation scenario.",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.Buyer",
+      "description": "Allows reading SAP MM purchase requisitions."
+    },
+    {
+      "name": "$XSAPPNAME.Manager",
+      "description": "Allows approving SAP MM purchase requisitions."
+    }
+  ],
+  "attributes": [],
+  "role-templates": [
+    {
+      "name": "PurchasingBuyer",
+      "description": "Purchasing buyer role template.",
+      "scope-references": [
+        "$XSAPPNAME.Buyer"
+      ]
+    },
+    {
+      "name": "PurchasingManager",
+      "description": "Purchasing manager role template.",
+      "scope-references": [
+        "$XSAPPNAME.Buyer",
+        "$XSAPPNAME.Manager"
+      ]
+    }
+  ],
+  "role-collections": [
+    {
+      "name": "F8_Purchasing_Buyers",
+      "description": "Role collection for SAP MM purchase requisition buyers.",
+      "role-template-references": [
+        "$XSAPPNAME.PurchasingBuyer"
+      ]
+    },
+    {
+      "name": "F8_Purchasing_Managers",
+      "description": "Role collection for SAP MM purchase requisition managers.",
+      "role-template-references": [
+        "$XSAPPNAME.PurchasingManager"
+      ]
+    }
+  ],
+  "oauth2-configuration": {
+    "redirect-uris": [
+      "https://f8c-approuter.cfapps.us10-001.hana.ondemand.com/**",
+      "https://*.cfapps.us10-001.hana.ondemand.com/**"
+    ]
+  }
+}
+```
+
+## 7. Fase 5 — Serviços BTP
+
+Foram utilizados:
+
+| Serviço | Offering | Plano |
+|---|---|---|
+| `f8c-xsuaa` | xsuaa | application |
+| `f8c-destination-service` | destination | lite |
+
+O Approuter foi vinculado aos dois serviços.
+
+A Destination utilizada foi:
+
+```text
+f8c-cpi-destination
+```
+
+## 8. Fase 6 — Correções durante o deploy
+
+### JSON com BOM
+
+O PowerShell 5.1 gravou arquivos com BOM em uma tentativa inicial. O CF CLI não conseguiu interpretar o JSON de configuração. Os arquivos foram regravados sem BOM e validados.
+
+### Node.js indisponível
+
+O buildpack não oferecia a versão 20 solicitada inicialmente. O projeto foi adaptado para Node.js 22.
+
+### Versão inexistente do Approuter
+
+A versão fixada inicialmente não existia no registry. A dependência foi ajustada para a faixa `^22`.
+
+### Redirect URI
+
+O login falhou até a inclusão explícita de `oauth2-configuration.redirect-uris` no security descriptor.
+
+### Destination desconhecida
+
+O Approuter não iniciou enquanto o Destination Service não estava criado e vinculado.
+
+### Variável antiga `destinations`
+
+Uma variável de ambiente antiga com placeholder persistiu mesmo após ser removida do manifesto. Ela foi removida explicitamente com `cf unset-env`.
+
+## 9. Fase 7 — Login humano real
+
+Após as correções:
+
+- o Approuter iniciou;
+- o XSUAA redirecionou para autenticação;
+- o Buyer conseguiu autenticar;
+- o Purchasing Manager conseguiu autenticar em uma sessão separada;
+- a página protegida foi exibida.
+
+Esse resultado conclui com sucesso a parte de autenticação interativa do F8C.
+
+## 10. Fase 8 — Adaptação do iFlow F8B
+
+Em vez de criar o F8C do zero, o iFlow F8B foi copiado e adaptado.
+
+**Artifact Name**
+
+```text
+F8C_MM_EndUser_Principal_Propagation
+```
+
+Foi adicionado o script:
+
+```text
+Extract_XSUAA_JWT_Principal
+```
+
+A intenção era:
+
+1. recuperar o JWT do usuário humano;
+2. validar issuer e expiração;
+3. extrair e-mail, username e scopes;
+4. preencher `realUserSubject` e `realUserGroups`;
+5. construir a assertion SAML com subject dinâmico;
+6. manter o fluxo WSO2 já validado no F8B.
+
+## 11. Tentativa 1 — `NoAuthentication` + `HTML5.ForwardAuthToken`
+
+### Hipótese
+
+O Approuter encaminharia o JWT do usuário no header Authorization até o CPI.
+
+### Resultado
+
+```text
+HTTP 401 Unauthorized
+```
+
+```text
+Bearer error="unauthorized_user", error_description="Bad credentials"
+```
+
+### Diagnóstico
+
+O JWT foi emitido para o client e os scopes da aplicação F8C. O HTTPS Sender do CPI protege o endpoint por um contexto do runtime gerenciado do Cloud Integration. O token da aplicação não continha a autorização esperada para esse resource server.
+
+### Conclusão
+
+Encaminhar diretamente o access token da aplicação não tornou o token automaticamente válido para o CPI.
+
+## 12. Tentativa 2 — Basic Authentication no destino
+
+### Hipótese
+
+A Destination usaria Client ID e Client Secret da Service Key do CPI para autenticar a chamada técnica. O JWT humano seria transportado em outro header.
+
+### Validação do cliente técnico
+
+Um teste direto com `curl` e as credenciais corretas comprovou que o cliente técnico conseguia alcançar o iFlow. Sem o header humano, o Groovy gerava o erro esperado:
+
+```text
+No forwarded XSUAA user token was found in X-Forwarded-User-Token.
+```
+
+Isso provou:
+
+- Client ID e Client Secret estavam válidos;
+- o HTTPS Sender aceitou o cliente técnico;
+- o iFlow foi executado;
+- faltava apenas transportar a identidade humana por um canal confiável.
+
+## 13. Tentativa 3 — Middleware customizado
+
+### Hipótese
+
+O `beforeRequestHandler` copiaria o Authorization da sessão para `X-Forwarded-User-Token` antes de a Destination aplicar Basic Authentication.
+
+### Implementação experimental
+
+```javascript
+var approuter = require("@sap/approuter");
+var ar = approuter();
+
+ar.beforeRequestHandler.use("/f8c", function (req, res, next) {
+    console.log("MIDDLEWARE_EXECUTED: path=" + req.path);
+
+    var incomingAuthorizationHeader = req.headers["authorization"];
+
+    console.log(
+        "MIDDLEWARE_AUTH_HEADER_PRESENT: " +
+        (incomingAuthorizationHeader ? "true" : "false")
+    );
+
+    if (incomingAuthorizationHeader) {
+        req.headers["x-forwarded-user-token"] = incomingAuthorizationHeader;
+        console.log("MIDDLEWARE_TOKEN_COPIED: true");
+    }
+
+    next();
+});
+
+ar.start();
+```
+
+### Logs
+
+```text
+MIDDLEWARE_EXECUTED: path=undefined
+MIDDLEWARE_AUTH_HEADER_PRESENT: false
+```
+
+### Causa
+
+O browser mantém a autenticação pela sessão/cookie. O Authorization usado para o destino é construído em uma etapa posterior do processamento interno do Approuter. O hook executa antes desse momento e, por isso, não possui o JWT esperado.
+
+### Conclusão
+
+O hook documentado não resolveu a necessidade de obter o JWT da sessão no ponto correto do proxy outbound.
+
+## 14. Tentativa 4 — `OAuth2JWTBearer`
+
+### Hipótese
+
+A Destination trocaria o JWT do usuário por um token adequado ao sistema de destino.
+
+### Configuração avaliada
+
+| Campo | Valor |
+|---|---|
+| Authentication | `OAuth2JWTBearer` |
+| Client ID | Service Key do CPI, omitida por segurança |
+| Client Secret | Omitido por segurança |
+| Token Service URL | XSUAA token endpoint do subaccount |
+| Token Service URL Type | Dedicated |
+
+### Incompatibilidade inicial
+
+Ao manter `HTML5.ForwardAuthToken=true`, o Approuter retornou:
+
+```text
+ForwardAuthToken parameter cannot be used in destinations with authentication type not equal NoAuthentication
+```
+
+A propriedade foi removida.
+
+### Resultado sem ForwardAuthToken
+
+```text
+HTTP 403 Forbidden
+```
+
+O Monitor do CPI apresentou:
+
+```text
+Messages (0)
+```
+
+### Diagnóstico
+
+A chamada foi bloqueada antes de chegar ao iFlow. O JWT Bearer flow exige uma relação de confiança e autorizações entre a aplicação de origem e o serviço de destino. A aplicação F8C utiliza a instância `f8c-xsuaa`, enquanto o Cloud Integration utiliza o runtime gerenciado identificado pelo serviço `it-rt`.
+
+A configuração necessária do lado do serviço gerenciado não estava disponível ao projeto no ambiente trial testado.
+
+## 15. Alternativa analisada e descartada — JavaScript/header
+
+Uma aplicação de browser poderia consultar informações do usuário logado e enviar um header com nome ou e-mail.
+
+A alternativa foi descartada porque:
+
+- o header seria controlado pelo cliente;
+- o backend precisaria confiar em um valor não assinado;
+- o modelo reintroduziria o mesmo spoofing demonstrado no F8A;
+- isso não caracterizaria principal propagation seguro.
+
+## 16. Diagnóstico consolidado do F8C
+
+| Abordagem | Resultado | Camada de bloqueio | Conclusão |
+|---|---|---|---|
+| NoAuthentication + ForwardAuthToken | 401 | Proteção do endpoint CPI | Token da aplicação não é automaticamente válido para `it-rt` |
+| Basic Authentication | Cliente técnico aceito | iFlow executado | JWT humano continuava ausente |
+| Middleware customizado | Authorization ausente | Pipeline do Approuter | Hook executa antes do token outbound esperado |
+| OAuth2JWTBearer + ForwardAuthToken | 500 de configuração | Approuter | Configurações incompatíveis |
+| OAuth2JWTBearer sem ForwardAuthToken | 403, `Messages (0)` | Destination/XSUAA antes do CPI | Trust/cross-consumption limitado no ambiente testado |
+| Header via browser | Não implementado | Design de segurança | Descartado por spoofing |
+
+## 17. O que o F8C comprovou
+
+| Verificação | Resultado |
+|---|---|
+| SAP Cloud Identity Services configurado | Validado |
+| Grupos Buyer e Manager criados | Validado |
+| Usuários humanos autenticados | Validado |
+| Approuter implantado | Validado |
+| XSUAA vinculada | Validado |
+| Destination Service vinculada | Validado |
+| Login humano real | Validado |
+| Autenticação técnica no CPI | Validado |
+| Propagação humana até o CPI | Não concluída |
+| Causa do bloqueio localizada | Validado |
+
+## 18. Limite da conclusão
+
+A conclusão deve ser expressa com precisão:
+
+> No ambiente trial e na arquitetura testada, a aplicação controlava uma instância XSUAA própria, enquanto o SAP Cloud Integration utilizava um runtime gerenciado com boundary de confiança distinto. O laboratório não encontrou uma configuração suportada e disponível ao projeto que permitisse trocar ou encaminhar o token humano ao CPI mantendo os requisitos de autenticação do endpoint. O resultado não prova que principal propagation é impossível em todos os ambientes SAP; prova que a configuração necessária não estava acessível no ambiente e no desenho testados.
+
+## 19. Relação com o F8B
+
+O F8B foi bem-sucedido porque o projeto controlava os dois lados da confiança:
+
+- a chave de assinatura no CPI;
+- o certificado confiado no WSO2;
+- o Issuer;
+- o token endpoint;
+- o usuário e os grupos;
+- a política de autorização.
+
+Essa governança explícita permitiu usar uma assertion assinada como ponte entre os componentes.
+
+## 20. Próxima evolução
+
+O próximo cenário deve reutilizar o F8B e trocar o subject fixo por usuários existentes no WSO2:
+
+```text
+buyer.user
+```
+
+```text
+purchasing.manager
+```
+
+Matriz pretendida:
+
+| Usuário | READ | APPROVE |
+|---|---:|---:|
+| `buyer.user` | 200 | 403 |
+| `purchasing.manager` | 200 | 200 |
+
+Essa evolução fecha a autorização por grupos sem depender da propagação cross-domain bloqueada no F8C.
+
+---
+
+# 🔧 Troubleshooting consolidado
+
+## 1. WSO2 truststore password
+
+**Sintoma**
+
+```text
+Keystore was tampered with, or password was incorrect
+```
+
+**Causa raiz**
+
+A senha é case-sensitive.
+
+**Solução**
+
+Utilizar a credencial correta de forma segura, sem armazená-la em documentação ou Git.
+
+## 2. Identity Provider ausente
+
+**Sintoma**
+
+```text
+Identity provider is null
+```
+
+**Causa raiz**
+
+O certificado estava no truststore, mas não existia uma Connection/Identity Provider associando o Issuer à confiança.
+
+**Solução**
+
+Criar a Connection SAML e associar o certificado confiável.
+
+## 3. Token Endpoint Alias ausente
+
+**Sintoma**
+
+```text
+Token Endpoint alias has not been configured in the Identity Provider
+```
+
+**Causa raiz**
+
+Alias não configurado.
+
+**Solução**
+
+Configurar o alias da Connection. No laboratório, a API REST foi utilizada devido a uma falha da UI.
+
+## 4. Endpoint de introspecção incorreto
+
+**Sintoma**
+
+```text
+Missing grant_type parameter value
+```
+
+**Causa raiz**
+
+A requisição foi enviada ao token endpoint.
+
+**Solução**
+
+Usar `/oauth2/introspect` com `token=<access_token>`.
+
+## 5. JSON com BOM
+
+**Sintoma**
+
+O `cf create-service` não interpreta o arquivo corretamente.
+
+**Causa raiz**
+
+PowerShell 5.1 gravou BOM.
+
+**Solução**
+
+Salvar o arquivo sem BOM e validar o JSON antes de executar o CF CLI.
+
+## 6. Node.js não disponível
+
+**Sintoma**
+
+```text
+no match found for ^20.0.0
+```
+
+**Causa raiz**
+
+O buildpack disponível não oferecia Node.js 20.
+
+**Solução**
+
+Usar Node.js 22.
+
+## 7. Versão inexistente do Approuter
+
+**Sintoma**
+
+```text
+No matching version found for @sap/approuter@17.3.0
+```
+
+**Solução**
+
+Usar a faixa validada `^22`.
+
+## 8. OAuth redirect URI
+
+**Sintoma**
+
+```text
+Authorization Request Error
+```
+
+**Causa raiz**
+
+Redirect URI não configurado no security descriptor.
+
+**Solução**
+
+Adicionar `oauth2-configuration.redirect-uris`, atualizar o serviço XSUAA e restage do app.
+
+## 9. Destination desconhecida
+
+**Sintoma**
+
+```text
 Route references unknown destination
-</td>
-<td>  
-Destination Service ausente ou não vinculado
-</td>
-<td>  
-Criar e vincular a service instance de Destination
-</td>
-</tr>
-<tr>
-<td>  
-3
-</td>
-<td>  
-Binding removido no deploy
-</td>
-<td>  
-Manifest reescrito somente com o XSUAA
-</td>
-<td>  
-Manter XSUAA e Destination Service no manifest
-</td>
-</tr>
-<tr>
-<td>  
-4
-</td>
-<td>  
-401 no teste direto ao CPI
-</td>
-<td>  
-Placeholders colados literalmente nas credenciais
-</td>
-<td>  
-Usar valores reais e escapar caracteres especiais no shell
-</td>
-</tr>
-<tr>
-<td>  
-5
-</td>
-<td>  
-500 no teste direto ao CPI
-</td>
-<td>  
-Basic Auth aceita, mas token de usuário ausente no Groovy
-</td>
-<td>  
-Comprova que o request alcançou o iFlow após autenticação
-</td>
-</tr>
-<tr>
-<td>  
-6
-</td>
-<td>  
-Header de autorização ausente no middleware
-</td>
-<td>  
-Authorization Bearer construído em estágio posterior do pipeline
-</td>
-<td>  
-Estratégia de duplicação de JWT descartada
-</td>
-</tr>
-<tr>
-<td>  
-7
-</td>
-<td>  
-401 com token encaminhado (NoAuthentication)
-</td>
-<td>  
-CPI não aceita o JWT do XSUAA da aplicação
-</td>
-<td>  
-Necessário trust dedicado ao runtime gerenciado
-</td>
-</tr>
-<tr>
-<td>  
-8
-</td>
-<td>  
-403 com OAuth2JWTBearer
-</td>
-<td>  
-Falta de trust e cross-consumption entre XSUAA e serviço gerenciado
-</td>
-<td>  
-Boundary arquitetural do ambiente trial
-</td>
-</tr>
-</table>
+```
 
-### 7.6 Boundary arquitetural encontrado
-Todas as tentativas convergiram para o mesmo ponto: a identidade humana é autenticada com sucesso pela camada Application Router + XSUAA + IAS, mas o token resultante é emitido para o XSUAA **controlado pela aplicação**. Para que o runtime gerenciado do Cloud Integration aceite essa identidade, é necessário um relacionamento de confiança explícito e dedicado (*trust / cross-consumption*) entre esse XSUAA e o serviço gerenciado que expõe o endpoint do CPI. No ambiente trial, esse relacionamento não estava disponível de forma direta, o que impediu concluir a propagação end-user até o iFlow.
+**Causa raiz**
 
-> ⚠️ Este é um boundary observado **no ambiente trial** deste laboratório. Não deve ser generalizado como impossibilidade universal. Desenhos corporativos com SAP BTP e SAP Cloud Integration podem estabelecer esse trust por meios oficiais e governados, o que exigiria configuração específica fora do escopo desta investigação.
+Destination Service não estava vinculado ao Approuter.
 
-### 7.7 Estado final do F8C
+**Solução**
 
-<table>
-<tr>
-<th>  
-Item
-</th>
-<th>  
-Estado
-</th>
-</tr>
-<tr>
-<td>  
-Login humano real
-</td>
-<td>  
-Validado
-</td>
-</tr>
-<tr>
-<td>  
-Application Router / XSUAA / Destination Service
-</td>
-<td>  
-Running · funcional · vinculado
-</td>
-</tr>
-<tr>
-<td>  
-Basic Authentication ao CPI
-</td>
-<td>  
-Validada isoladamente
-</td>
-</tr>
-<tr>
-<td>  
-Propagação end-user até o CPI
-</td>
-<td>  
-Não concluída (boundary arquitetural)
-</td>
-</tr>
-<tr>
-<td>  
-Evidências do F8C
-</td>
-<td>  
-Não geradas (pasta reservada ao próximo documento)
-</td>
-</tr>
-</table>
+Criar e bindar `f8c-destination-service` e executar restage.
 
-## 8. Evidências (F8A e F8B)
-  
-As evidências abaixo pertencem exclusivamente ao F8A e ao F8B, validadas contra os nomes técnicos da pasta `evidences/lab28`. O F8C não possui evidências, conforme a seção 7. A narrativa segue a ordem natural da jornada: **capturar o contexto → provar que spoofing não passa → preparar a confiança federada → emitir e introspectar o token → autorizar por identidade**.
+## 10. Placeholder persistente
 
-### 8.1 F8A — Do contexto técnico à rejeição de spoofing
+**Sintoma**
 
-[Evidência 01 — F8A iFlow](../evidences/lab28/01-cpi-f8a-authenticated-principal-capture-iflow.png)  
-**Evidência 01:** o iFlow F8A está implantado e iniciado, com a captura segura do contexto e a construção da resposta de diagnóstico. É o ponto de partida da narrativa: ainda não há identidade humana, apenas o contexto técnico.
+```text
+getaddrinfo ENOTFOUND <runtime-host>
+```
 
-[Evidência 02 — Runtime Configuration](../evidences/lab28/02-cpi-f8a-principal-capture-runtime-configuration.png)  
-**Evidência 02:** a Runtime Configuration permite os headers de identidade **somente** para detectar tentativas controladas de spoofing — nunca para confiar neles.
+**Causa raiz**
 
-[Evidência 03 — Baseline técnico](../evidences/lab28/03-postman-f8a-technical-client-baseline.png)  
-**Evidência 03:** a chamada Client Credentials retorna `TECHNICAL_CLIENT`, sem principal humano e sem propagação ponta a ponta. Fica provado que a aplicação está autenticada, mas nenhum usuário humano foi propagado.
+Variável de ambiente antiga permaneceu no Cloud Foundry.
 
-[Evidência 04 — Spoofing rejeitado](../evidences/lab28/04-postman-f8a-spoofed-principal-header-rejected.png)  
-**Evidência 04:** os headers declarados pelo caller são detectados, mas `claimedPrincipalAccepted=false`. Esta evidência fecha o F8A com a premissa que sustenta todo o F8B: identidade sem prova criptográfica não é aceita.
+**Solução**
 
-### 8.2 Preparação da confiança federada (WSO2 e OAuth)
+```powershell
+cf unset-env f8c-approuter destinations
+cf restage f8c-approuter
+```
 
-[Evidência 05 — Console WSO2](../evidences/lab28/05-wso2-f8-identity-server-console-overview.png)  
-**Evidência 05:** o WSO2 Identity Server está operacional, pronto para administrar aplicações, identidades, grupos e connections — a base sobre a qual a confiança federada será construída.
+## 11. Credenciais invertidas
 
-[Evidência 06 — Grupos de compras](../evidences/lab28/06-wso2-f8-purchasing-user-groups-created.png)  
-**Evidência 06:** grupos separados para compradores e gestores, insumo direto da política de autorização do F8B.3.
+**Sintoma**
 
-[Evidência 07 — Usuários de compras](../evidences/lab28/07-wso2-f8-purchasing-users-created.png)  
-**Evidência 07:** identidades fictícias de buyer e manager. O principal técnico foi criado depois e associado ao grupo Buyers, sem captura adicional.
+```text
+401 Unauthorized
+Bad credentials
+```
 
-[Evidência 08 — Aplicação OAuth](../evidences/lab28/08-wso2-f8-oauth-application-created.png)  
-**Evidência 08:** a aplicação confidencial OAuth/OIDC foi criada com Client ID e Client Secret protegido.
+**Causa raiz**
 
-[Evidência 09 — Grant SAML2 habilitado](../evidences/lab28/09-wso2-f8-saml2-bearer-grant-enabled.png)  
-**Evidência 09:** os grants Client Credential e SAML2 estão habilitados; grants legados permanecem desabilitados, aplicando menor privilégio.
+Client ID e Client Secret foram inicialmente inseridos em campos invertidos ou copiados com placeholders.
 
-[Evidência 10 — Token local por Client Credentials](../evidences/lab28/10-postman-f8-wso2-client-credentials-token-issued.png)  
-**Evidência 10:** o token endpoint local emitiu Bearer token, validando a infraestrutura OAuth **antes** de introduzir o SAML Bearer.
+**Solução**
 
-[Evidência 11 — Túnel HTTPS](../evidences/lab28/11-ngrok-f8-wso2-public-https-tunnel-active.png)  
-**Evidência 11:** o túnel HTTPS temporário encaminha o domínio público ao WSO2 local na porta 9443.
+Reobter a Service Key, usar campos corretos e nunca copiar `<` e `>` dos exemplos.
 
-[Evidência 12 — Token endpoint público](../evidences/lab28/12-postman-f8-wso2-public-token-endpoint-validated.png)  
-**Evidência 12:** a URL pública do token endpoint foi validada com Client Credentials antes de ser usada pelo SAP Integration Suite.
+## 12. ForwardAuthToken incompatível
 
-[Evidência 13 — Key Pair](../evidences/lab28/13-cpi-f8-saml-bearer-signing-key-pair-created.png)  
-**Evidência 13:** o Key Pair RSA de 3072 bits foi criado com CN correspondente ao principal técnico. A private key permanece no tenant — o coração da confiança criptográfica.
+**Sintoma**
 
-[Evidência 14 — Issuer, Alias e trust](../evidences/lab28/14-postman-f8-wso2-saml-issuer-alias-configuration-validated.png)  
-**Evidência 14:** a Management API confirmou Issuer, token endpoint Alias, Connection habilitada e certificado confiável. A confiança federada está pronta.
+```text
+ForwardAuthToken parameter cannot be used in destinations with authentication type not equal NoAuthentication
+```
 
-### 8.3 F8B.1 — Emissão do token
+**Solução**
 
-[Evidência 15 — Token SAML Bearer emitido](../evidences/lab28/15-postman-f8b-technical-user-saml-bearer-token-issued.png)  
-**Evidência 15:** a assertion assinada foi aceita pelo WSO2 e trocada por Bearer token, **mascarado** antes da resposta. É o clímax do token exchange (RFC 7522).
+Não combinar `ForwardAuthToken` com `OAuth2JWTBearer`.
 
-[Evidência 16 — Processamento do token exchange](../evidences/lab28/16-cpi-f8b-saml-bearer-token-exchange-message-processing.png)  
-**Evidência 16:** o Monitor comprova a execução completa: geração, assinatura, token request, validação e resposta.
+## 13. Middleware sem Authorization
 
-### 8.4 F8B.2 — Introspecção
+**Sintoma**
 
-[Evidência 17 — iFlow com introspecção](../evidences/lab28/17-cpi-f8b-saml-bearer-token-introspection-iflow.png)  
-**Evidência 17:** o iFlow contém uma segunda chamada outbound dedicada à introspecção do access token.
+```text
+MIDDLEWARE_AUTH_HEADER_PRESENT: false
+```
 
-[Evidência 18 — Token ativo e subject técnico](../evidences/lab28/18-postman-f8b-saml-bearer-token-introspection-validated.png)  
-**Evidência 18:** a introspecção confirmou token ativo, tipo Bearer e subject `f8.technical.purchasing.user`, sem expor o token integral.
+**Causa raiz**
 
-[Evidência 19 — Processamento da introspecção](../evidences/lab28/19-cpi-f8b-token-introspection-message-processing.png)  
-**Evidência 19:** o Monitor comprova os dois ciclos outbound: emissão e introspecção.
+O hook executou antes da criação do Authorization outbound pelo Approuter.
 
-### 8.5 F8B.3 — Autorização por identidade
+**Solução**
 
-[Evidência 20 — iFlow com Router de autorização](../evidences/lab28/20-cpi-f8b-protected-resource-authorization-iflow.png)  
-**Evidência 20:** o iFlow implantado contém a política com caminhos concedido, negado e operação não suportada.
+Abandonar essa abordagem para captura de token da sessão.
 
-[Evidência 21 — READ autorizado](../evidences/lab28/21-postman-f8b-purchase-requisition-read-authorized.png)  
-**Evidência 21:** o principal técnico do grupo Buyers recebeu **200 OK** e acessou o recurso protegido de requisições de compra.
+## 14. OAuth2JWTBearer bloqueado antes do CPI
 
-[Evidência 22 — Caminho autorizado](../evidences/lab28/22-cpi-f8b-authorized-resource-message-processing.png)  
-**Evidência 22:** o Router selecionou `Authorization_Granted` e finalizou em `End_Authorized`.
+**Sintoma**
 
-[Evidência 23 — APPROVE negado](../evidences/lab28/23-postman-f8b-purchase-requisition-approval-denied.png)  
-**Evidência 23:** o token estava ativo, mas o principal Buyers não possuía o grupo Managers. A resposta correta foi **403 Forbidden** — a prova viva de que autenticação ≠ autorização.
+```text
+HTTP 403 Forbidden
+```
 
-[Evidência 24 — Caminho negado](../evidences/lab28/24-cpi-f8b-authorization-denied-message-processing.png)  
-**Evidência 24:** o Router selecionou `Authorization_Denied`, sem retornar dados do recurso protegido.
+```text
+Messages (0)
+```
 
-[Evidência 25 — Operação não suportada](../evidences/lab28/25-postman-f8b-unsupported-operation-rejected.png)  
-**Evidência 25:** a operação DELETE retornou **400 Bad Request** e informou as operações permitidas.
+**Causa raiz**
 
-[Evidência 26 — Caminho default](../evidences/lab28/26-cpi-f8b-unsupported-operation-message-processing.png)  
-**Evidência 26:** a rota default tratou a operação não suportada e finalizou em `End_Unsupported`, encerrando a narrativa de autorização.
+Trust/cross-consumption necessário não estava disponível na arquitetura trial testada.
 
-## 9. Troubleshooting
+**Solução**
 
-### 9.1 SapAuthenticatedUserName ausente
-**Sintoma:** SecurityException no F8A.  
-**Causa:** o fluxo Client Credentials autenticou uma aplicação técnica, mas não disponibilizou principal humano.  
-**Correção:** classificar o contexto como `AUTHENTICATED_CLIENT_WITHOUT_USER_PRINCIPAL`, sem confiar em headers do caller.
+Documentar o boundary e utilizar um padrão controlável, como o SAML Bearer praticado no F8B, para a próxima evolução.
 
-### 9.2 Headers de spoofing não chegam ao Groovy
-**Causa:** headers customizados não estavam permitidos na Runtime Configuration.  
-**Correção:** adicionar `X-Authenticated-User | X-Principal | X-User` em Allowed Headers.
+---
 
-### 9.3 502 Bad Gateway no ngrok
-**Causa:** o túnel estava online, mas o WSO2 não estava ouvindo em localhost:9443.  
-**Correção:** iniciar o WSO2, validar `TcpTestSucceeded : True` e manter as janelas do WSO2 e ngrok abertas.
+# ✅ Boas práticas aplicadas
 
-### 9.4 Identity provider is null
-**Causa:** o certificado estava no truststore, mas o Issuer da assertion não estava associado a uma Connection lógica no WSO2.  
-**Correção:** criar a Connection SAML e associar o certificado ao Issuer.
+- Não confiar em identidade informada por header do consumidor.
+- Separar autenticação de autorização.
+- Utilizar chave dedicada para assinatura da assertion.
+- Limitar a janela temporal da assertion.
+- Validar issuer, subject, audience e recipient.
+- Não expor access token integral nas respostas.
+- Usar introspection antes da autorização do recurso.
+- Rejeitar operações não suportadas explicitamente.
+- Aplicar menor privilégio na matriz Buyers e Managers.
+- Manter o comportamento fail-closed.
+- Não mascarar limitação arquitetural como sucesso.
+- Não incluir secrets em evidências, documentos ou repositório.
+- Preferir mecanismos suportados e controláveis nos diferentes boundaries de confiança.
 
-### 9.5 Token Endpoint alias has not been configured
-**Causa:** a Connection foi localizada, mas o Alias do token endpoint estava vazio.  
-**Correção:** atualizar homeRealmIdentifier, alias e descrição pela Identity Provider Management API.
+---
 
-### 9.6 Properties aparecem como texto literal
-**Causa:** Message Body configurado como Constant.  
-**Correção:** alterar o tipo para Expression.
+# 🏭 Recomendações para produção
 
-### 9.7 Significado de 401, 403 e 400
+1. Utilizar Identity Provider corporativo e trust formal entre os componentes.
+2. Avaliar o mecanismo de principal propagation suportado para os serviços SAP específicos envolvidos.
+3. Não transportar identidade humana por header sem assinatura e validação.
+4. Manter chaves privadas em Keystore gerenciado e aplicar rotação.
+5. Configurar clocks sincronizados para validação temporal de assertions.
+6. Restringir token e introspection endpoints por rede e credencial.
+7. Usar observabilidade com correlation ID, sem registrar tokens.
+8. Revisar escopos, role collections e grupos de negócio periodicamente.
+9. Separar ambientes de desenvolvimento, qualidade e produção.
+10. Realizar testes negativos de issuer, audience, assinatura, expiração e replay.
+11. Tratar a decisão de autorização no resource server ou policy enforcement point adequado.
+12. Para cenários cross-domain, envolver equipes de BTP Security, Identity e integração desde o desenho.
 
-<table>
-<tr>
-<th>  
-Código
-</th>
-<th>  
-Significado no cenário
-</th>
-</tr>
-<tr>
-<td>  
-401
-</td>
-<td>  
-Credencial ausente ou inválida (no F8C: CPI não aceitou o JWT do XSUAA da aplicação)
-</td>
-</tr>
-<tr>
-<td>  
-403
-</td>
-<td>  
-Principal autenticado, mas sem permissão (no F8C: ausência de trust/cross-consumption)
-</td>
-</tr>
-<tr>
-<td>  
-400
-</td>
-<td>  
-Operação funcional não suportada
-</td>
-</tr>
-</table>
+---
 
-## 10. Boas práticas SAP e de mercado
-- Manter private keys exclusivamente em Keystore gerenciado.
-- Exportar apenas certificados públicos para estabelecer trust.
-- Usar assertions com validade curta e tolerância mínima de clock skew.
-- Validar Issuer, Audience, Recipient, assinatura, subject e validade.
-- Não usar headers customizados como identidade confiável.
-- Não retornar access tokens integrais em respostas, logs ou evidências.
-- Separar autenticação, introspecção e autorização funcional.
-- Usar 403 Forbidden para principal autenticado sem permissão.
-- Aplicar o princípio do menor privilégio a usuários, grupos, scopes e aplicações administrativas.
-- Rotacionar chaves e certificados com sobreposição controlada.
-- Proteger endpoints administrativos e de introspecção.
-- Remover túneis temporários após os testes.
-- Para propagação de identidade humana, estabelecer trust dedicado entre o Authorization Server da aplicação e o serviço gerenciado consumido, em vez de encaminhar tokens sem relacionamento de confiança.
-- Preferir SAP Cloud Identity Services (IAS) como Identity Provider corporativo.
-- Remover variáveis de ambiente User-Provided obsoletas antes de reconfigurar destinations no Application Router.
+# 📊 Matriz comparativa
 
-## 11. Recomendações para produção
+| Critério | F8A | F8B | F8C |
+|---|---|---|---|
+| Tipo de identidade | Cliente técnico | Usuário técnico federado | Usuário humano |
+| Login interativo | Não | Não | Sim |
+| Prova criptográfica | Credencial OAuth do client | Assertion SAML assinada | JWT/XSUAA |
+| Authorization Server | Runtime SAP | WSO2 | XSUAA / IAS |
+| Token introspection | Não | Sim | Não alcançada no CPI |
+| Autorização funcional | Não | Sim | Planejada, não concluída |
+| Resultado | Concluído | Concluído | Exploração concluída |
+| Principal propagation | Não aplicável | Técnica | Não concluída cross-domain |
+| Reaproveitamento | Baseline de segurança | Base do F8E | Aprendizado de arquitetura BTP |
 
-<table>
-<tr>
-<th>  
-Área
-</th>
-<th>  
-Recomendação
-</th>
-</tr>
-<tr>
-<td>  
-Authorization Server
-</td>
-<td>  
-Alta disponibilidade, backup e observabilidade
-</td>
-</tr>
-<tr>
-<td>  
-Endpoint público
-</td>
-<td>  
-DNS corporativo, WAF/API Gateway e certificado válido
-</td>
-</tr>
-<tr>
-<td>  
-Key Pair / Assertion
-</td>
-<td>  
-Expiração, rotação, revogação, janela curta e proteção contra replay
-</td>
-</tr>
-<tr>
-<td>  
-Token / Introspection
-</td>
-<td>  
-TTL compatível com o risco; client dedicado e escopo mínimo na introspecção
-</td>
-</tr>
-<tr>
-<td>  
-Authorization
-</td>
-<td>  
-Preferir grupos, roles e scopes provenientes do Authorization Server
-</td>
-</tr>
-<tr>
-<td>  
-Logs / Auditoria
-</td>
-<td>  
-Não registrar tokens/secrets; correlacionar principal, client, token hash, operação e resultado
-</td>
-</tr>
-<tr>
-<td>  
-Propagação de identidade
-</td>
-<td>  
-Trust dedicado entre XSUAA da aplicação e runtime gerenciado, ou backend próprio que aceite o token do usuário
-</td>
-</tr>
-</table>
+---
 
-### 11.1 Limitação consciente do laboratório
-A associação funcional ao grupo `F8_PURCHASING_BUYERS` foi mantida em property controlada pelo iFlow para exercitar autorização técnica. Em produção, grupos, roles ou scopes devem vir de **claims confiáveis do token** ou de uma fonte de autorização governada, e não definidos estaticamente no fluxo.
+# 🧠 Aprendizados principais
 
-### 11.2 Limitação do Security Material nativo
-O artifact nativo OAuth2 SAML Bearer Assertion do SAP Integration Suite oferece perfis específicos para SuccessFactors, SAP BTP Neo e SAP BTP Cloud Foundry. Como o WSO2 é um Authorization Server externo genérico, o laboratório implementou o perfil RFC 7522 de forma vendor-neutral, mantendo a private key protegida pelo XML Digital Signer.
+1. OAuth Client Credentials não representa uma pessoa.
+2. Headers customizados não são prova de identidade.
+3. Uma assertion assinada permite estabelecer confiança explícita.
+4. Um token ativo não concede automaticamente todas as operações.
+5. A política de autorização deve refletir grupos e responsabilidades de negócio.
+6. Login humano real e principal propagation são problemas diferentes.
+7. O Approuter pode autenticar o usuário sem que o backend aceite automaticamente o mesmo token.
+8. Um serviço gerenciado pode ter boundary de confiança diferente da aplicação.
+9. Status HTTP deve ser analisado junto com logs, Monitor e camada de origem.
+10. Uma exploração malsucedida pode produzir um diagnóstico arquitetural útil e reutilizável.
 
-### 11.3 Limitação de propagação end-user no ambiente trial
-No F8C, a propagação da identidade humana até o runtime gerenciado do Cloud Integration não foi concluída por ausência de trust/cross-consumption dedicados no ambiente trial. Em produção, esse relacionamento pode ser estabelecido por meios oficiais e governados do SAP BTP.
+---
 
-## 12. Conclusão
-  
-O cenário demonstrou uma cadeia completa de segurança de identidade no caminho positivo:
+# 📎 Recursos praticados
 
-Contexto inbound classificado
-→ tentativa de spoofing rejeitada
-→ assertion SAML 2.0 construída e assinada
-→ trust federado no WSO2
-→ token exchange OAuth SAML Bearer
-→ introspecção do token
-→ autorização funcional por grupo
-→ READ 200 · APPROVE 403 · DELETE 400
+OAuth 2.0 Client Credentials · OAuth 2.0 SAML Bearer Assertion · OAuth 2.0 Token Introspection · JWT Bearer Grant · SAML 2.0 · XML Digital Signature · WSO2 Identity Server · SAP Cloud Identity Services · SAP BTP Cloud Foundry · Approuter · XSUAA · Destination Service · Cloud Foundry CLI · Groovy · SAP Integration Suite · Purchase Requisition Authorization · Identity Federation · Principal Propagation
 
-E investigou, no F8C, a fronteira seguinte:
+---
 
-Login humano real via IAS + Approuter + XSUAA
-→ sessão válida criada
-→ propagação até o runtime gerenciado do CPI
-→ boundary arquitetural (trust dedicado ausente no trial)
+## 🔗 Navegação
 
-O laboratório comprova que **autenticação, confiança federada, emissão de token, introspecção e autorização** são controles distintos e complementares, e que **token válido não significa autorização irrestrita**. A identidade confiável deve ser derivada de mecanismos criptográficos e do Authorization Server, nunca de headers arbitrários enviados pelo consumidor.  
-**Recursos praticados:** OAuth 2.0 SAML Bearer · RFC 7522 · RFC 7662 Token Introspection · XML Digital Signature · SHA512withRSA · RSA 3072 · WSO2 Identity Server · SAP Cloud Identity Services (IAS) · Application Router · XSUAA · Destination Service · SAP MM Purchase Requisition Authorization · Principal Propagation · B2B Security  
-**Cenário anterior:** [F7 — PGP Message-Level Security](./29-f7-pgp-message-level-security.md)**Próximo cenário:** [F8D — SAML Web SSO Federation](./32-f8-saml-web-sso-federation.md)
+**Cenário anterior:** [F7 — PGP Message-Level Security](./29-f7-pgp-message-level-security.md)
 
-### 📚 Referências oficiais SAP
-- [Deploying an OAuth2 SAML Bearer Assertion](https://help.sap.com/docs/integration-suite/isuite-integrations-and-apis/deploying-oauth2-saml-bearer-assertion)
-- [OAuth 2.0 SAML Bearer Assertion Authentication](https://help.sap.com/docs/CX_CNS_ESM/f1437ed0c63b464983503b1a1dc6af8a/444f4b2632d0489b9145f8af4a66b8d7.html)
-- [RFC 7522 — SAML 2.0 Profile for OAuth 2.0](https://www.rfc-editor.org/info/rfc7522)
-- [RFC 7662 — OAuth 2.0 Token Introspection](https://www.rfc-editor.org/info/rfc7662)
-- [WSO2 — Token Introspection](https://is.docs.wso2.com/en/6.1.0/references/concepts/authorization/introspection/)
-- [SAP Cloud Identity Services](https://help.sap.com/docs/identity-authentication)
-- [Application Router](https://help.sap.com/docs/btp/sap-business-technology-platform/application-router)
-- [Authorization and Trust Management (XSUAA)](https://help.sap.com/docs/btp/sap-business-technology-platform/authorization-and-trust-management-in-cloud-foundry-environment)
-- [Destination Service](https://help.sap.com/docs/connectivity/sap-btp-connectivity-cf/consuming-destination-service)
+**Próximo cenário:** [F8E — Group-Based Authorization with Real Users](./31-f8e-group-based-authorization-real-users.md)
 
-#### 🛠️ Ferramentas utilizadas
-- SAP Integration Suite — Cloud Integration
-- SAP BTP Process Integration Runtime
-- SAP Cloud Identity Services (IAS)
-- SAP BTP — Application Router, XSUAA e Destination Service
-- WSO2 Identity Server 7.0.0
-- Eclipse Temurin JDK 17
-- ngrok
-- Postman
-- Groovy
-- PowerShell
-- Cloud Foundry CLI
-- Visual Studio Code
-- Git e GitHub
+---
 
-#### 👤 Autor / 📬 Contato
-  
-[LinkedIn](https://www.linkedin.com/in/orlando-caetano/)[GitHub](https://github.com/OrlandoCaetano2026)  
-**Orlando Caetano**Especialista SAP • Integração • Inteligência Artificial
-Consultor SAP MM com know-how em PP, QM e WM  
-📌 Projeto de estudo e portfólio. Os cenários SAP MM, PP e QM são simulações educativas para prática de integração.
+## 📖 Referências
+
+- [RFC 7522 — SAML 2.0 Bearer Assertion Profiles for OAuth 2.0](https://www.rfc-editor.org/rfc/rfc7522)
+- [RFC 7662 — OAuth 2.0 Token Introspection](https://www.rfc-editor.org/rfc/rfc7662)
+- [RFC 7523 — JSON Web Token Profile for OAuth 2.0](https://www.rfc-editor.org/rfc/rfc7523)
+- [SAP Help Portal — SAP Integration Suite](https://help.sap.com/docs/integration-suite)
+- [SAP Help Portal — SAP Cloud Identity Services](https://help.sap.com/docs/cloud-identity-services)
+- [SAP Help Portal — SAP BTP](https://help.sap.com/docs/btp)
+- [SAP Application Router](https://www.npmjs.com/package/@sap/approuter)
+- [WSO2 Identity Server Documentation](https://is.docs.wso2.com/)
+
+---
+
+## 👤 Autor / 📇 Contato
+
+[LinkedIn](https://www.linkedin.com/in/orlando-caetano) `Orlando Caetano` · [GitHub](https://github.com/OrlandoCaetano2026) `OrlandoCaetano2026`
+
+**Orlando Caetano**  
+Especialista SAP · Integração · Inteligência Artificial  
+Consultor SAP MM com know-how em PP, QM e WM
+
+> 📌 Projeto de estudo e portfólio. Os cenários SAP MM, PP e QM apresentados são simulações educativas para prática de integração e segurança.
