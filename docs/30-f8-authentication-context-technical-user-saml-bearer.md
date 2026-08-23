@@ -38,95 +38,71 @@ O valor técnico do conjunto está na progressão:
 
 ## 🏗️ Arquitetura consolidada
 
-```text
-F8A — Authentication Context Capture
+O diagrama abaixo apresenta a evolução dos três cenários. O F8A estabelece o baseline de confiança, o F8B implementa a federação técnica por SAML Bearer e o F8C investiga a propagação de um usuário humano autenticado no SAP BTP.
 
-Postman / Consumer
-    |
-    | OAuth 2.0 Client Credentials
-    v
-HTTPS Sender — SAP Cloud Integration
-    |
-    v
-Capture_Authentication_Context
-    |
-    +--> Classifica o chamador como cliente técnico
-    +--> Detecta headers de identidade declarados pelo consumidor
-    +--> Não aceita esses headers como principal confiável
-    v
-Resposta JSON sanitizada
+```mermaid
+flowchart TB
+    classDef entry fill:#e3f2fd,stroke:#1565c0,color:#0d47a1,stroke-width:2px
+    classDef cpi fill:#fff3e0,stroke:#ef6c00,color:#e65100,stroke-width:2px
+    classDef security fill:#f3e5f5,stroke:#7b1fa2,color:#4a148c,stroke-width:2px
+    classDef success fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20,stroke-width:2px
+    classDef warning fill:#fff8e1,stroke:#f9a825,color:#6d4c41,stroke-width:2px
+    classDef denied fill:#ffebee,stroke:#c62828,color:#b71c1c,stroke-width:2px
+
+    subgraph F8A["F8A · Authentication Context Capture"]
+        A1["Postman / Consumer"]:::entry
+        A2["HTTPS Sender<br/>OAuth 2.0 Client Credentials"]:::cpi
+        A3["Capture Authentication Context<br/>Groovy"]:::cpi
+        A4{"Identity header<br/>provided?"}:::security
+        A5["Technical client baseline<br/>200 OK"]:::success
+        A6["Spoofing detected<br/>Claim rejected"]:::denied
+        A1 --> A2 --> A3 --> A4
+        A4 -->|No| A5
+        A4 -->|Yes| A6
+    end
+
+    subgraph F8B["F8B · Technical User OAuth 2.0 SAML Bearer"]
+        B1["Postman"]:::entry
+        B2["Build SAML Assertion<br/>Groovy"]:::cpi
+        B3["XML Digital Signer<br/>f8_saml_bearer_signing"]:::security
+        B4["WSO2 Token Endpoint<br/>RFC 7522"]:::security
+        B5["Access Token<br/>masked in response"]:::success
+        B6["WSO2 Introspection<br/>RFC 7662"]:::security
+        B7["Authorization Context"]:::cpi
+        B8{"Requested operation"}:::security
+        B9["READ<br/>200 AUTHORIZED"]:::success
+        B10["APPROVE<br/>403 DENIED"]:::denied
+        B11["Unsupported<br/>400 BAD REQUEST"]:::warning
+        B1 --> B2 --> B3 --> B4 --> B5 --> B6 --> B7 --> B8
+        B8 -->|READ| B9
+        B8 -->|APPROVE| B10
+        B8 -->|Other| B11
+    end
+
+    subgraph F8C["F8C · End-User Principal Propagation Exploration"]
+        C1["Browser"]:::entry
+        C2["SAP Approuter"]:::cpi
+        C3["XSUAA"]:::security
+        C4["SAP Cloud Identity Services<br/>Buyer / Manager"]:::security
+        C5["Destination Service"]:::cpi
+        C6["SAP Cloud Integration<br/>it-rt"]:::cpi
+        C7["Login humano real<br/>VALIDATED"]:::success
+        C8["Cross-domain token propagation<br/>NOT COMPLETED"]:::denied
+        C1 --> C2 --> C3 --> C4
+        C4 --> C7
+        C4 --> C5 --> C6 --> C8
+    end
+
+    A5 -. "estabelece o baseline" .-> B1
+    A6 -. "impede confiar em headers" .-> C8
+    B11 -. "base reutilizável para F8E" .-> C1
 ```
 
-```text
-F8B — Technical User OAuth 2.0 SAML Bearer
+### Leitura da arquitetura
 
-Postman
-    |
-    v
-HTTPS Sender
-    |
-    v
-Build_SAML_Bearer_Assertion
-    |
-    v
-XML Digital Signer
-    |
-    v
-Prepare_OAuth_Token_Request
-    |
-    v
-WSO2 /oauth2/token
-    |
-    v
-Validate_OAuth_Token_Response
-    |
-    v
-Prepare_Token_Introspection_Request
-    |
-    v
-WSO2 /oauth2/introspect
-    |
-    v
-Validate_Token_Introspection_Response
-    |
-    v
-Prepare_Authorization_Context
-    |
-    v
-Router
-    |-- READ        --> 200 AUTHORIZED
-    |-- APPROVE     --> 403 DENIED para Buyer
-    `-- unsupported --> 400 UNSUPPORTED
-```
-
-```text
-F8C — End-User Principal Propagation Exploration
-
-Browser
-    |
-    v
-SAP Approuter
-    |
-    v
-XSUAA
-    |
-    v
-SAP Cloud Identity Services
-    |
-    +--> Buyer autenticado
-    `--> Purchasing Manager autenticado
-    |
-    v
-Destination Service
-    |
-    v
-SAP Cloud Integration
-
-Resultado:
-- Login humano real: validado
-- Propagação do JWT ao CPI: não concluída
-- Boundary identificado: XSUAA da aplicação versus runtime gerenciado it-rt
-```
+- **F8A:** comprova que Client Credentials representa um cliente técnico e que headers controlados pelo consumidor não são identidade confiável.
+- **F8B:** estabelece uma cadeia criptográfica controlada entre CPI e WSO2, incluindo emissão, introspecção e autorização.
+- **F8C:** valida o login humano real no BTP, mas identifica um boundary de confiança antes do CPI que impede concluir a propagação cross-domain no ambiente testado.
 
 ---
 
@@ -353,12 +329,37 @@ Resultado esperado:
 
 ## 10. Evidências do F8A
 
-| Nº | Evidência | O que comprova |
-|---:|---|---|
-| 01 | [`01-cpi-f8a-authenticated-principal-capture-iflow.png`](../evidences/lab30/01-cpi-f8a-authenticated-principal-capture-iflow.png) | Estrutura implantada do iFlow F8A |
-| 02 | [`02-cpi-f8a-principal-capture-runtime-configuration.png`](../evidences/lab30/02-cpi-f8a-principal-capture-runtime-configuration.png) | Allowed Headers utilizados para detectar spoofing |
-| 03 | [`03-postman-f8a-technical-client-baseline.png`](../evidences/lab30/03-postman-f8a-technical-client-baseline.png) | Baseline com cliente técnico e sem identidade declarada |
-| 04 | [`04-postman-f8a-spoofed-principal-header-rejected.png`](../evidences/lab30/04-postman-f8a-spoofed-principal-header-rejected.png) | Header de principal detectado e rejeitado como identidade confiável |
+### Evidência 01 — iFlow F8A implantado
+
+A captura apresenta o iFlow `F8A_MM_Authenticated_Principal_Capture` implantado, com HTTPS Sender, Groovy de captura do contexto e Content Modifier responsável pela resposta diagnóstica.
+
+![Evidência 01 — iFlow F8A implantado](../evidences/lab30/01-cpi-f8a-authenticated-principal-capture-iflow.png)
+
+**O que esta evidência comprova:** A evidência comprova que o baseline de autenticação foi implementado no runtime do SAP Cloud Integration antes da execução dos testes de spoofing.
+
+### Evidência 02 — Runtime Configuration do F8A
+
+A captura mostra os Allowed Headers `X-Authenticated-User`, `X-Principal` e `X-User` configurados no iFlow.
+
+![Evidência 02 — Runtime Configuration do F8A](../evidences/lab30/02-cpi-f8a-principal-capture-runtime-configuration.png)
+
+**O que esta evidência comprova:** Os headers foram liberados para detecção e diagnóstico. A configuração não transforma os valores recebidos em identidade confiável.
+
+### Evidência 03 — Baseline com cliente técnico
+
+A chamada Postman retorna `200 OK` sem identidade humana declarada, classificando o chamador como cliente técnico.
+
+![Evidência 03 — Baseline com cliente técnico](../evidences/lab30/03-postman-f8a-technical-client-baseline.png)
+
+**O que esta evidência comprova:** A evidência confirma que OAuth 2.0 Client Credentials autentica a aplicação e não expõe um usuário humano.
+
+### Evidência 04 — Tentativa de spoofing rejeitada
+
+A chamada envia um principal por header e a resposta marca a tentativa como detectada, mantendo `claimedPrincipalAccepted=false`.
+
+![Evidência 04 — Tentativa de spoofing rejeitada](../evidences/lab30/04-postman-f8a-spoofed-principal-header-rejected.png)
+
+**O que esta evidência comprova:** A captura comprova o comportamento fail-closed: o valor é observado para auditoria, mas não é aceito como principal confiável.
 
 ## 11. Conclusão do F8A
 
@@ -443,18 +444,85 @@ O certificado público foi exportado do Keystore do SAP Integration Suite e impo
 
 ## 6. Evidências de preparação do WSO2
 
-| Nº | Evidência | O que comprova |
-|---:|---|---|
-| 05 | [`05-wso2-f8-identity-server-console-overview.png`](../evidences/lab30/05-wso2-f8-identity-server-console-overview.png) | WSO2 Identity Server disponível |
-| 06 | [`06-wso2-f8-purchasing-user-groups-created.png`](../evidences/lab30/06-wso2-f8-purchasing-user-groups-created.png) | Grupos de compras criados |
-| 07 | [`07-wso2-f8-purchasing-users-created.png`](../evidences/lab30/07-wso2-f8-purchasing-users-created.png) | Usuários de compras criados |
-| 08 | [`08-wso2-f8-oauth-application-created.png`](../evidences/lab30/08-wso2-f8-oauth-application-created.png) | OAuth Application criada |
-| 09 | [`09-wso2-f8-saml2-bearer-grant-enabled.png`](../evidences/lab30/09-wso2-f8-saml2-bearer-grant-enabled.png) | Grant SAML2 Bearer habilitado |
-| 10 | [`10-postman-f8-wso2-client-credentials-token-issued.png`](../evidences/lab30/10-postman-f8-wso2-client-credentials-token-issued.png) | Baseline do OAuth client validado |
-| 11 | [`11-ngrok-f8-wso2-public-https-tunnel-active.png`](../evidences/lab30/11-ngrok-f8-wso2-public-https-tunnel-active.png) | Túnel HTTPS público ativo |
-| 12 | [`12-postman-f8-wso2-public-token-endpoint-validated.png`](../evidences/lab30/12-postman-f8-wso2-public-token-endpoint-validated.png) | Token endpoint público respondendo |
-| 13 | [`13-cpi-f8-saml-bearer-signing-key-pair-created.png`](../evidences/lab30/13-cpi-f8-saml-bearer-signing-key-pair-created.png) | Key Pair disponível no CPI |
-| 14 | [`14-postman-f8-wso2-saml-issuer-alias-configuration-validated.png`](../evidences/lab30/14-postman-f8-wso2-saml-issuer-alias-configuration-validated.png) | Alias/Issuer da Connection SAML validado |
+### Evidência 05 — WSO2 Identity Server disponível
+
+A tela inicial do WSO2 confirma que o Authorization Server local está ativo e acessível para a preparação do cenário SAML Bearer.
+
+![Evidência 05 — WSO2 Identity Server disponível](../evidences/lab30/05-wso2-f8-identity-server-console-overview.png)
+
+**O que esta evidência comprova:** A evidência estabelece o ambiente externo utilizado para emissão e introspecção de tokens.
+
+### Evidência 06 — Grupos de compras criados
+
+A captura apresenta `F8_PURCHASING_BUYERS` e `F8_PURCHASING_MANAGERS` no WSO2.
+
+![Evidência 06 — Grupos de compras criados](../evidences/lab30/06-wso2-f8-purchasing-user-groups-created.png)
+
+**O que esta evidência comprova:** Os grupos materializam a segregação de funções entre consulta e aprovação de Purchase Requisitions.
+
+### Evidência 07 — Usuários de negócio criados
+
+A tela lista os usuários `buyer.user` e `purchasing.manager`.
+
+![Evidência 07 — Usuários de negócio criados](../evidences/lab30/07-wso2-f8-purchasing-users-created.png)
+
+**O que esta evidência comprova:** A evidência prepara a evolução do cenário para autorização por identidade real no F8E, além do usuário técnico utilizado no F8B.
+
+### Evidência 08 — OAuth Application criada
+
+A captura mostra a aplicação OAuth 2.0/OpenID Connect criada no WSO2, com Client Secret mascarado.
+
+![Evidência 08 — OAuth Application criada](../evidences/lab30/08-wso2-f8-oauth-application-created.png)
+
+**O que esta evidência comprova:** A aplicação representa o cliente do SAP Integration Suite perante o Authorization Server. O Client ID visível não é reproduzido no texto por não ser necessário ao entendimento.
+
+### Evidência 09 — SAML2 Bearer Grant habilitado
+
+A configuração da aplicação mostra os grants Client Credential e SAML2 habilitados.
+
+![Evidência 09 — SAML2 Bearer Grant habilitado](../evidences/lab30/09-wso2-f8-saml2-bearer-grant-enabled.png)
+
+**O que esta evidência comprova:** A evidência comprova que o WSO2 está apto a receber uma assertion SAML como authorization grant.
+
+### Evidência 10 — Baseline OAuth do WSO2
+
+A chamada Postman obtém um token por Client Credentials diretamente no WSO2.
+
+![Evidência 10 — Baseline OAuth do WSO2](../evidences/lab30/10-postman-f8-wso2-client-credentials-token-issued.png)
+
+**O que esta evidência comprova:** O teste isola e valida o OAuth client antes da introdução da assertion SAML, reduzindo variáveis durante o troubleshooting.
+
+### Evidência 11 — Túnel HTTPS do ngrok ativo
+
+A captura mostra o ngrok encaminhando um endpoint HTTPS público para `https://localhost:9443`.
+
+![Evidência 11 — Túnel HTTPS do ngrok ativo](../evidences/lab30/11-ngrok-f8-wso2-public-https-tunnel-active.png)
+
+**O que esta evidência comprova:** O túnel permite que o tenant SAP Integration Suite alcance o WSO2 executado localmente sem expor credenciais na documentação.
+
+### Evidência 12 — Token endpoint público validado
+
+A chamada Postman ao endpoint público do ngrok retorna `200 OK` e um token com conteúdo protegido na captura.
+
+![Evidência 12 — Token endpoint público validado](../evidences/lab30/12-postman-f8-wso2-public-token-endpoint-validated.png)
+
+**O que esta evidência comprova:** A evidência comprova conectividade externa e funcionamento do token endpoint antes de o CPI consumir o serviço.
+
+### Evidência 13 — Key Pair de assinatura criado
+
+A captura apresenta o alias `f8_saml_bearer_signing`, chave RSA 3072 e algoritmo SHA512withRSA no Keystore do CPI.
+
+![Evidência 13 — Key Pair de assinatura criado](../evidences/lab30/13-cpi-f8-saml-bearer-signing-key-pair-created.png)
+
+**O que esta evidência comprova:** A chave privada permanece no ambiente gerenciado. Apenas o certificado público é exportado para estabelecer confiança no WSO2.
+
+### Evidência 14 — Issuer, certificado e alias validados
+
+A Identity Provider Management API retorna `200 OK`; os testes confirmam Connection habilitada, Issuer e Token Endpoint Alias configurados.
+
+![Evidência 14 — Issuer, certificado e alias validados](../evidences/lab30/14-postman-f8-wso2-saml-issuer-alias-configuration-validated.png)
+
+**O que esta evidência comprova:** A cadeia Base64 exibida representa certificado público. O documento não transcreve esse conteúdo para evitar ruído e exposição desnecessária.
 
 ---
 
@@ -670,10 +738,21 @@ def String maskToken(String token) {
 
 ### 7. Evidências F8B.1
 
-| Nº | Evidência | O que comprova |
-|---:|---|---|
-| 15 | [`15-postman-f8b-technical-user-saml-bearer-token-issued.png`](../evidences/lab30/15-postman-f8b-technical-user-saml-bearer-token-issued.png) | Token OAuth emitido a partir da assertion SAML assinada |
-| 16 | [`16-cpi-f8b-saml-bearer-token-exchange-message-processing.png`](../evidences/lab30/16-cpi-f8b-saml-bearer-token-exchange-message-processing.png) | Execução do token exchange no CPI |
+#### Evidência 15 — SAML Bearer Token Exchange concluído
+
+A resposta Postman confirma `SAML_BEARER_TOKEN_ISSUED`, o subject técnico e o access token mascarado.
+
+![Evidência 15 — SAML Bearer Token Exchange concluído](../evidences/lab30/15-postman-f8b-technical-user-saml-bearer-token-issued.png)
+
+**O que esta evidência comprova:** A evidência comprova o resultado funcional externo do RFC 7522 sem expor o token integral.
+
+#### Evidência 16 — Processamento interno do Token Exchange
+
+O Monitor do CPI apresenta a construção da assertion, assinatura XML, preparação do request, chamada ao WSO2 e validação da resposta.
+
+![Evidência 16 — Processamento interno do Token Exchange](../evidences/lab30/16-cpi-f8b-saml-bearer-token-exchange-message-processing.png)
+
+**O que esta evidência comprova:** A captura comprova que o token não foi simulado no Postman; o fluxo completo foi executado dentro do SAP Integration Suite.
 
 ---
 
@@ -773,11 +852,29 @@ def Message processData(Message message) {
 
 ### 6. Evidências F8B.2
 
-| Nº | Evidência | O que comprova |
-|---:|---|---|
-| 17 | [`17-cpi-f8b-saml-bearer-token-introspection-iflow-deployed.png`](../evidences/lab30/17-cpi-f8b-saml-bearer-token-introspection-iflow-deployed.png) | iFlow ampliado com introspection |
-| 18 | [`18-postman-f8b-saml-bearer-token-introspection-validated.png`](../evidences/lab30/18-postman-f8b-saml-bearer-token-introspection-validated.png) | Token ativo e subject validado |
-| 19 | [`19-cpi-f8b-token-introspection-message-processing.png`](../evidences/lab30/19-cpi-f8b-token-introspection-message-processing.png) | Execução completa da introspecção no CPI |
+#### Evidência 17 — iFlow ampliado com Token Introspection
+
+A captura apresenta o iFlow F8B com um segundo Request Reply e os scripts de preparação e validação da introspecção.
+
+![Evidência 17 — iFlow ampliado com Token Introspection](../evidences/lab30/17-cpi-f8b-saml-bearer-token-introspection-iflow.png)
+
+**O que esta evidência comprova:** A evidência demonstra a evolução arquitetural: o token emitido não é usado para autorização sem validação posterior de atividade e subject.
+
+#### Evidência 18 — Token Introspection validada
+
+A resposta Postman confirma token ativo, subject técnico validado e access token não exposto.
+
+![Evidência 18 — Token Introspection validada](../evidences/lab30/18-postman-f8b-saml-bearer-token-introspection-validated.png)
+
+**O que esta evidência comprova:** A captura comprova o resultado funcional do RFC 7662 utilizado como entrada da política de autorização.
+
+#### Evidência 19 — Processamento interno da Introspection
+
+O Monitor apresenta token exchange e introspection na mesma execução, incluindo os dois Request Reply.
+
+![Evidência 19 — Processamento interno da Introspection](../evidences/lab30/19-cpi-f8b-token-introspection-message-processing.png)
+
+**O que esta evidência comprova:** A evidência comprova a cadeia completa e os tempos de processamento antes da autorização do recurso protegido.
 
 ---
 
@@ -913,7 +1010,67 @@ UNSUPPORTED
 | `f8.technical.purchasing.user` | Buyers | APPROVE | 403 | DENIED |
 | `f8.technical.purchasing.user` | Buyers | DELETE | 400 | UNSUPPORTED |
 
-### 7. Conclusão do F8B
+### 7. Evidências F8B.3 — Protected Resource Authorization
+
+A sequência abaixo preserva os pares de evidência externa e interna. O Postman comprova o contrato HTTP observado pelo consumidor, enquanto o Monitor do CPI comprova a rota realmente executada.
+
+#### Evidência 20 — iFlow final de autorização
+
+A captura apresenta `Prepare_Authorization_Context`, o Router e as rotas Authorized, Denied e Unsupported.
+
+![Evidência 20 — iFlow final de autorização](../evidences/lab30/20-cpi-f8b-protected-resource-authorization-iflow.png)
+
+**O que esta evidência comprova:** A evidência comprova a separação entre autenticação, validação do token e decisão de autorização baseada na operação solicitada.
+
+#### Evidência 21 — READ autorizado
+
+A chamada Postman com operação READ retorna `200 OK`, decisão `AUTHORIZED` e o recurso de Purchase Requisition.
+
+![Evidência 21 — READ autorizado](../evidences/lab30/21-postman-f8b-purchase-requisition-read-authorized.png)
+
+**O que esta evidência comprova:** A captura comprova que o grupo Buyer atende à política necessária para consulta.
+
+#### Evidência 22 — Caminho interno de autorização
+
+O Monitor do CPI mostra a rota `Authorization_Granted` percorrida.
+
+![Evidência 22 — Caminho interno de autorização](../evidences/lab30/22-cpi-f8b-authorized-resource-message-processing.png)
+
+**O que esta evidência comprova:** O par com a evidência 21 confirma tanto o resultado externo quanto o caminho interno efetivamente executado.
+
+#### Evidência 23 — APPROVE negado
+
+A chamada Postman com operação APPROVE retorna `403 Forbidden` e identifica a ausência do grupo Manager.
+
+![Evidência 23 — APPROVE negado](../evidences/lab30/23-postman-f8b-purchase-requisition-approval-denied.png)
+
+**O que esta evidência comprova:** A evidência comprova menor privilégio: um token válido de Buyer não recebe permissão de aprovação.
+
+#### Evidência 24 — Caminho interno de negação
+
+O Monitor mostra o processamento pela rota `Authorization_Denied`.
+
+![Evidência 24 — Caminho interno de negação](../evidences/lab30/24-cpi-f8b-authorization-denied-message-processing.png)
+
+**O que esta evidência comprova:** O par com a evidência 23 confirma que o 403 foi produzido pela política de autorização do iFlow.
+
+#### Evidência 25 — Operação não suportada rejeitada
+
+A chamada Postman com DELETE retorna `400 Bad Request` e informa as operações permitidas.
+
+![Evidência 25 — Operação não suportada rejeitada](../evidences/lab30/25-postman-f8b-unsupported-operation-rejected.png)
+
+**O que esta evidência comprova:** A evidência comprova validação explícita da interface protegida e rejeição de operações fora do contrato.
+
+#### Evidência 26 — Caminho interno de operação não suportada
+
+O Monitor apresenta a rota `Unsupported_Operation`.
+
+![Evidência 26 — Caminho interno de operação não suportada](../evidences/lab30/26-cpi-f8b-unsupported-operation-message-processing.png)
+
+**O que esta evidência comprova:** O par com a evidência 25 confirma o caminho default do Router e o tratamento controlado da operação inválida.
+
+### 8. Conclusão do F8B
 
 | Controle | Resultado |
 |---|---|
@@ -1417,7 +1574,11 @@ O F8B foi bem-sucedido porque o projeto controlava os dois lados da confiança:
 
 Essa governança explícita permitiu usar uma assertion assinada como ponte entre os componentes.
 
-## 20. Próxima evolução
+## 20. Evidências do F8C
+
+Conforme decisão do cenário, o F8C é documentado como exploração arquitetural e **não referencia imagens nesta seção**. A pasta reservada ao próximo documento permanece livre para o F8E. O diagnóstico do F8C é sustentado pelos resultados e logs registrados durante a execução, sem criar links para evidências que não fazem parte do conjunto aprovado de 26 imagens do F8A/F8B.
+
+## 21. Próxima evolução
 
 O próximo cenário deve reutilizar o F8B e trocar o subject fixo por usuários existentes no WSO2:
 
