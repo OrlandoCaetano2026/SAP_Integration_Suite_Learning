@@ -25,7 +25,7 @@
 | Topic | `sap/mm/purchaseorder/created/v1` |
 | Domínio de negócio | SAP MM — Purchase Order |
 | Padrões praticados | Publish/Subscribe, Direct Messaging, Topic-to-Queue Mapping, Guaranteed Messaging, Persistent Messaging, Durable Queue, Temporal Decoupling |
-| Evidências | `evidences/lab30/` — 10 imagens |
+| Evidências | `evidences/Lab30/` — 10 imagens |
 
 ---
 
@@ -191,7 +191,7 @@ h1-eventmesh-broker
 
 ### Evidência 01 — Configuração do Event Broker
 
-![Evidência 01 — Configuração do Event Broker](../evidences/lab30/01-solace-developer-broker-configuration.png)
+![Evidência 01 — Configuração do Event Broker](../evidences/Lab30/01-solace-developer-broker-configuration.png)
 
 **O que esta evidência comprova:** configuração do serviço `H1-EventMesh-Broker`, classe Developer, AWS, região selecionada, release do broker, limite de conexões, capacidade de spool e Message VPN utilizado no laboratório.
 
@@ -203,7 +203,7 @@ Após o provisionamento, o serviço atingiu estado `Running`. Esta etapa é impo
 
 ### Evidência 02 — Event Broker Running
 
-![Evidência 02 — Event Broker Running](../evidences/lab30/02-solace-event-broker-running.png)
+![Evidência 02 — Event Broker Running](../evidences/Lab30/02-solace-event-broker-running.png)
 
 **O que esta evidência comprova:** broker ativo, versão efetivamente provisionada, Message VPN associado e baseline inicial de conexões, queues e utilização antes da configuração de mensageria.
 
@@ -217,7 +217,7 @@ Antes da criação da queue, foi registrado o estado-base do Message VPN. Esse b
 
 ### Evidência 03 — Message VPN baseline
 
-![Evidência 03 — Message VPN baseline](../evidences/lab30/03-solace-home.png)
+![Evidência 03 — Message VPN baseline](../evidences/Lab30/03-solace-home.png)
 
 **O que esta evidência comprova:** Message VPN operacional, limites do ambiente e ausência inicial de filas de negócio naquele instante do laboratório.
 
@@ -241,7 +241,7 @@ A importância dessa associação é arquitetural: o Publisher não precisa publ
 
 ### Evidência 04 — Topic Subscription
 
-![Evidência 04 — Topic Subscription](../evidences/lab30/04-solace-purchase-order-topic-subscription.png)
+![Evidência 04 — Topic Subscription](../evidences/Lab30/04-solace-purchase-order-topic-subscription.png)
 
 **O que esta evidência comprova:** `H1.Q.MM.PURCHASE_ORDER` possui uma Topic Subscription específica para eventos `PurchaseOrderCreated` versão 1.
 
@@ -265,7 +265,7 @@ A quota foi deliberadamente reduzida para 100 MB no laboratório, evitando reser
 
 ### Evidência 05 — Durable Exclusive Queue
 
-![Evidência 05 — Durable Exclusive Queue](../evidences/lab30/05-solace-durable-exclusive-queue-settings.png)
+![Evidência 05 — Durable Exclusive Queue](../evidences/Lab30/05-solace-durable-exclusive-queue-settings.png)
 
 **O que esta evidência comprova:** a queue está habilitada para ingress/egress, usa Access Type Exclusive, quota de 100 MB e permissão de consumo. Essa configuração fornece a base para Guaranteed Messaging.
 
@@ -279,7 +279,7 @@ O recurso `Try Me!` foi utilizado para remover variáveis externas e testar dire
 
 ### Evidência 06 — Publisher e Subscriber conectados
 
-![Evidência 06 — Publisher e Subscriber conectados](../evidences/lab30/06-solace-tryme-publisher-subscriber-connected.png)
+![Evidência 06 — Publisher e Subscriber conectados](../evidences/Lab30/06-solace-tryme-publisher-subscriber-connected.png)
 
 **O que esta evidência comprova:** os dois clientes de teste estabeleceram sessão com o event broker e estavam aptos à troca de eventos.
 
@@ -317,7 +317,7 @@ O Publisher enviou a mensagem em modo **Direct**. Como o subscriber estava onlin
 
 ### Evidência 07 — Direct event published and received
 
-![Evidência 07 — Direct event published and received](../evidences/lab30/07-solace-purchase-order-event-published-received.png)
+![Evidência 07 — Direct event published and received](../evidences/Lab30/07-solace-purchase-order-event-published-received.png)
 
 **O que esta evidência comprova:** `EVT-H1-000001` foi publicado no topic correto e recebido pelo subscriber direto. A tela registra `Delivery Mode: Direct`, criando um baseline explícito para comparação com o teste Persistent.
 
@@ -355,7 +355,7 @@ Como `H1.Q.MM.PURCHASE_ORDER` possuía a subscription correspondente, o broker e
 
 ### Evidência 08 — Persistent events retained in queue
 
-![Evidência 08 — Persistent events retained in queue](../evidences/lab30/08-solace-persistent-event-retained-in-queue.png)
+![Evidência 08 — Persistent events retained in queue](../evidences/Lab30/08-solace-persistent-event-retained-in-queue.png)
 
 **O que esta evidência comprova:** a durable queue apresenta `Current Consumers = 0` e `Messages Queued = 2`. O teste demonstra materialmente que o consumidor pode estar indisponível sem provocar perda dos eventos atraídos pela queue.
 
@@ -383,7 +383,7 @@ Ao estabelecer o bind, o consumer passou ao estado ativo e começou a receber as
 
 ### Evidência 09 — Guaranteed consumer receiving Persistent event
 
-![Evidência 09 — Guaranteed consumer receiving Persistent event](../evidences/lab30/09-solace-guaranteed-message-consumed-from-queue.png)
+![Evidência 09 — Guaranteed consumer receiving Persistent event](../evidences/Lab30/09-solace-guaranteed-message-consumed-from-queue.png)
 
 **O que esta evidência comprova:** `Consumer Active`, bind para `H1.Q.MM.PURCHASE_ORDER`, mensagem `EVT-H1-000002` e `Delivery Mode: Persistent`. Essa é a evidência central de Guaranteed Messaging do laboratório.
 
@@ -395,7 +395,7 @@ Depois que o consumer recebeu e confirmou as mensagens, o broker removeu os iten
 
 ### Evidência 10 — Queue empty after guaranteed consumption
 
-![Evidência 10 — Queue empty after guaranteed consumption](../evidences/lab30/10-solace-queue-empty-after-guaranteed-consumption.png)
+![Evidência 10 — Queue empty after guaranteed consumption](../evidences/Lab30/10-solace-queue-empty-after-guaranteed-consumption.png)
 
 **O que esta evidência comprova:** a queue retorna para `Messages Queued = 0` após o consumo garantido, encerrando o ciclo publish → retain → bind → delivery → acknowledgement.
 
@@ -562,9 +562,9 @@ Será criado **um iFlow novo do zero**, sem copiar artefatos dos blocos anterior
 
 # 17. Navegação
 
-**Cenário anterior:** [F8E — Group-Based Authorization with Real Users](./31-f8e-group-based-authorization-real-users.md)
+**Cenário anterior:** [F8E — End-User SAML Bearer Group-Based Authorization](./31-f8e-end-user-saml-bearer-group-based-authorization.md)
 
-**Próximo cenário:** **H2 — SAP Cloud Integration Publisher to Solace via AMQP** *(Documento 33, a ser criado após a execução do laboratório)*
+**Próximo cenário:** [H2 — SAP Cloud Integration Publisher to Solace via AMQP](./33-h2-sap-cloud-integration-publisher-solace-amqp.md)
 
 ---
 
@@ -598,13 +598,14 @@ Será criado **um iFlow novo do zero**, sem copiar artefatos dos blocos anterior
 
 ---
 
-# 20. Autor / Contato
+## 👤 Autor / 📇 Contato
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Orlando%20Caetano-blue)](https://www.linkedin.com/in/orlando-caetano/) [![GitHub](https://img.shields.io/badge/GitHub-OrlandoCaetano2026-black)](https://github.com/OrlandoCaetano2026)
 
 **Orlando Caetano**  
 Especialista SAP • Integração • Inteligência Artificial  
 Consultor SAP MM com know-how em PP, QM e WM
 
-- **GitHub:** [OrlandoCaetano2026](https://github.com/OrlandoCaetano2026)
-- **LinkedIn:** [Orlando Caetano](https://www.linkedin.com/in/orlando-caetano/)
+![SAP MM](https://img.shields.io/badge/SAP-MM-blue) ![SAP PP](https://img.shields.io/badge/SAP-PP-green) ![SAP QM](https://img.shields.io/badge/SAP-QM-orange) ![SAP WM](https://img.shields.io/badge/SAP-WM-red)
 
-> 📌 Projeto de estudo e portfólio. Os cenários SAP MM, PP, QM, MES e Event-Driven são simulações educacionais para prática de arquitetura e integração.
+> 📌 Projeto de estudo e portfólio. Os cenários SAP MM, PP, QM, MES e Event-Driven são simulações educativas para prática de arquitetura e integração.
