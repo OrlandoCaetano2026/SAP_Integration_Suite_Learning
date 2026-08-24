@@ -78,7 +78,7 @@ SAP Integration Suite
 
 **Evidência 01:** o iFlow `F8E_MM_SAML_Bearer_End_User_Authorization` está implantado e com Runtime Status `Started`. O modelo apresenta os três caminhos após o Router de autorização: `Authorization_Granted`, `Authorization_Denied` e `Unsupported_Operation`. A `Description` do artefato descreve o cenário de autorização de usuário final por grupo.
 
-![Evidência 01 — iFlow F8E implantado e iniciado](../evidences/lab31/01-f8e-iflow-deployed-started.png)
+![Evidência 01 — iFlow F8E implantado e iniciado](../evidences/lab29/01-f8e-iflow-deployed-started.png)
 
 ---
 
@@ -105,11 +105,11 @@ X-F8-Operation: READ
 
 **Evidência 02:** `buyer.user` executa `READ` e recebe **200 AUTHORIZED**, com correspondência de grupo em `F8_PURCHASING_BUYERS`.
 
-![Evidência 02 — Buyer READ autorizado 200](../evidences/lab31/02-f8de-buyer-read-authorized-200.png)
+![Evidência 02 — Buyer READ autorizado 200](../evidences/lab29/02-f8de-buyer-read-authorized-200.png)
 
 **Evidência 03:** representação do ramo `Authorization_Granted → Build_Authorized_Resource_Response → End_Authorized` no modelo de integração. A imagem documenta o caminho arquitetural correspondente à decisão positiva; o resultado efetivo é comprovado pela resposta do Postman acima.
 
-![Evidência 03 — Ramo Authorization_Granted no modelo de integração](../evidences/lab31/03-f8de-flow-authorization-granted.png)
+![Evidência 03 — Ramo Authorization_Granted no modelo de integração](../evidences/lab29/03-f8de-flow-authorization-granted.png)
 
 ---
 
@@ -124,11 +124,11 @@ X-F8-Operation: APPROVE
 
 **Evidência 04:** `buyer.user` tenta `APPROVE` e recebe **403 DENIED**. Esta é a evidência-chave da separação entre autenticação e autorização: o principal está autenticado e o token está ativo, mas a operação é negada por falta de grupo.
 
-![Evidência 04 — Buyer APPROVE negado 403](../evidences/lab31/04-f8de-buyer-approve-denied-403.png)
+![Evidência 04 — Buyer APPROVE negado 403](../evidences/lab29/04-f8de-buyer-approve-denied-403.png)
 
 **Evidência 05:** representação do ramo `Authorization_Denied → Build_Authorization_Denied_Response → End_Denied` no modelo de integração.
 
-![Evidência 05 — Ramo Authorization_Denied no modelo de integração](../evidences/lab31/05-f8de-flow-authorization-denied.png)
+![Evidência 05 — Ramo Authorization_Denied no modelo de integração](../evidences/lab29/05-f8de-flow-authorization-denied.png)
 
 ---
 
@@ -143,7 +143,7 @@ X-F8-Operation: READ
 
 **Evidência 06:** `purchasing.manager` executa `READ` e recebe **200 AUTHORIZED**.
 
-![Evidência 06 — Manager READ autorizado 200](../evidences/lab31/06-f8de-manager-read-authorized-200.png)
+![Evidência 06 — Manager READ autorizado 200](../evidences/lab29/06-f8de-manager-read-authorized-200.png)
 
 ---
 
@@ -158,11 +158,11 @@ X-F8-Operation: APPROVE
 
 **Evidência 07:** `purchasing.manager` executa `APPROVE` e recebe **200 AUTHORIZED**, com correspondência em `F8_PURCHASING_MANAGERS`.
 
-![Evidência 07 — Manager APPROVE autorizado 200](../evidences/lab31/07-f8de-manager-approve-authorized-200.png)
+![Evidência 07 — Manager APPROVE autorizado 200](../evidences/lab29/07-f8de-manager-approve-authorized-200.png)
 
 **Evidência 08:** representação do retorno ao ramo `Authorization_Granted` para uma decisão privilegiada autorizada.
 
-![Evidência 08 — Ramo Authorization_Granted para APPROVE do Manager](../evidences/lab31/08-f8de-flow-manager-authorization-granted.png)
+![Evidência 08 — Ramo Authorization_Granted para APPROVE do Manager](../evidences/lab29/08-f8de-flow-manager-authorization-granted.png)
 
 ---
 
@@ -177,11 +177,11 @@ X-F8-Operation: DELETE
 
 **Evidência 09:** `purchasing.manager` tenta `DELETE` e recebe **400 NOT_EVALUATED**, com a allowlist de operações explicitada na resposta.
 
-![Evidência 09 — Manager DELETE não suportado 400](../evidences/lab31/09-f8de-manager-delete-unsupported-400.png)
+![Evidência 09 — Manager DELETE não suportado 400](../evidences/lab29/09-f8de-manager-delete-unsupported-400.png)
 
 **Evidência 10:** representação do ramo `Unsupported_Operation → Build_Unsupported_Operation_Response → End_Unsupported` no modelo de integração.
 
-![Evidência 10 — Ramo Unsupported_Operation no modelo de integração](../evidences/lab31/10-f8de-flow-unsupported-operation-rejected.png)
+![Evidência 10 — Ramo Unsupported_Operation no modelo de integração](../evidences/lab29/10-f8de-flow-unsupported-operation-rejected.png)
 
 ---
 
