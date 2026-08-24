@@ -1,53 +1,326 @@
-### 🎓 Certificação — SAP Integration Suite
 
+#### 🎓 Certificação — SAP Integration Suite
+  
 Esta pasta acompanha a preparação para **SAP Certified Associate — Integration Developer**.
 
-#### 📊 Status por bloco
+##### 📊 Status por bloco
 
-| Bloco | Período | Status | Observação |
-|---|---|---|---|
-| A — CPI Fundamentos | 01-03/08/2026 | ✅ Concluído | A1-A4 |
-| B — Padrões de Integração | 03-04/08/2026 | ✅ Concluído | B1-B5 |
-| C — Resiliência e Erros | 04-06/08/2026 | ✅ Concluído | C1-C4 |
-| D — Conectividade / Adapters | 06-10/08/2026 | ✅ Concluído | D1-D4; JDBC incorporado ao D4 |
-| E — API Management | 11-16/08/2026 | ✅ Concluído | E0-E10, E12 e recursos E8/E9 cobertos nos laboratórios |
-| F — Segurança | 16-21/08/2026 | 🔄 Em andamento | F4 a F7 e F8A–F8B concluídos; F8C é o próximo |
-| G — SAP MM / PP / QM | — | ⏳ Planejado | Cenários complementares |
-| H — Event-Driven e E2E | — | ⏳ Planejado | Event Mesh e cenário final |
+<table>
+<tr>
+<th>  
+Bloco
+</th>
+<th>  
+Período
+</th>
+<th>  
+Status
+</th>
+<th>  
+Observação
+</th>
+</tr>
+<tr>
+<td>  
+A — CPI Fundamentos
+</td>
+<td>  
+01-03/08/2026
+</td>
+<td>  
+✅ Concluído
+</td>
+<td>  
+A1-A4
+</td>
+</tr>
+<tr>
+<td>  
+B — Padrões de Integração
+</td>
+<td>  
+03-04/08/2026
+</td>
+<td>  
+✅ Concluído
+</td>
+<td>  
+B1-B5
+</td>
+</tr>
+<tr>
+<td>  
+C — Resiliência e Erros
+</td>
+<td>  
+04-06/08/2026
+</td>
+<td>  
+✅ Concluído
+</td>
+<td>  
+C1-C4
+</td>
+</tr>
+<tr>
+<td>  
+D — Conectividade / Adapters
+</td>
+<td>  
+06-10/08/2026
+</td>
+<td>  
+✅ Concluído
+</td>
+<td>  
+D1-D4; JDBC incorporado ao D4
+</td>
+</tr>
+<tr>
+<td>  
+E — API Management
+</td>
+<td>  
+11-16/08/2026
+</td>
+<td>  
+✅ Concluído
+</td>
+<td>  
+E0-E10, E12 e recursos E8/E9 cobertos nos laboratórios
+</td>
+</tr>
+<tr>
+<td>  
+F — Segurança
+</td>
+<td>  
+16-24/08/2026
+</td>
+<td>  
+✅ Concluído
+</td>
+<td>  
+F4 a F7 concluídos; F8A/F8B no Doc 30 e F8E no Doc 31
+</td>
+</tr>
+<tr>
+<td>  
+G — SAP MM / PP / QM
+</td>
+<td>  
+—
+</td>
+<td>  
+⏳ Planejado
+</td>
+<td>  
+Cenários complementares
+</td>
+</tr>
+<tr>
+<td>  
+H — Event-Driven e E2E
+</td>
+<td>  
+24/08/2026
+</td>
+<td>  
+🔄 Em andamento
+</td>
+<td>  
+Event Mesh: H1 a H4 concluídos (Docs 32 a 35)
+</td>
+</tr>
+</table>
 
-#### Ⓕ Bloco F — Roadmap aprovado
 
-| Cenário | Tema | Status |
-|---|---|---|
-| F1 | Basic Authentication | ✅ Coberto nos docs 20 e 24 |
-| F2 | API Key | ✅ Coberto no doc 21 |
-| F3 | OAuth 2.0 | ✅ Coberto nos docs 22 e 24 |
-| F4 | Keystore, Client Certificate e mTLS | ✅ [Doc 26](../docs/26-f4-b2b-client-certificate-mtls.md) |
-| F5 | CSRF Token Validation | ✅ [Doc 27](../docs/27-f5-csrf-token-validation.md) |
-| F6 | API Threat Protection | ✅ [Doc 28](../docs/28-f6-api-threat-protection.md) |
-| F7 | PGP Message-Level Security | ✅ [Doc 29](../docs/29-f7-pgp-message-level-security.md) |
-| F8 | SAML / Principal Propagation | 🔄 F8A–F8B concluídos no [Doc 30](../docs/30-f8-authentication-context-technical-user-saml-bearer.md); F8C é o próximo |
-| F9 | Matriz comparativa de segurança | ⏳ Planejado |
+##### Ⓕ Bloco F — Roadmap aprovado
 
-> Melhorias adicionais de Basic Auth, API Key e OAuth e o cenário combinado mTLS + CSRF ficam para hardening pós-certificação.
+<table>
+<tr>
+<th>  
+Cenário
+</th>
+<th>  
+Tema
+</th>
+<th>  
+Status
+</th>
+</tr>
+<tr>
+<td>  
+F1
+</td>
+<td>  
+Basic Authentication
+</td>
+<td>  
+✅ Coberto nos docs 20 e 24
+</td>
+</tr>
+<tr>
+<td>  
+F2
+</td>
+<td>  
+API Key
+</td>
+<td>  
+✅ Coberto no doc 21
+</td>
+</tr>
+<tr>
+<td>  
+F3
+</td>
+<td>  
+OAuth 2.0
+</td>
+<td>  
+✅ Coberto nos docs 22 e 24
+</td>
+</tr>
+<tr>
+<td>  
+F4
+</td>
+<td>  
+Keystore, Client Certificate e mTLS
+</td>
+<td>  
+✅ [Doc 26](../docs/26-f4-b2b-client-certificate-mtls.md)
+</td>
+</tr>
+<tr>
+<td>  
+F5
+</td>
+<td>  
+CSRF Token Validation
+</td>
+<td>  
+✅ [Doc 27](../docs/27-f5-csrf-token-validation.md)
+</td>
+</tr>
+<tr>
+<td>  
+F6
+</td>
+<td>  
+API Threat Protection
+</td>
+<td>  
+✅ [Doc 28](../docs/28-f6-api-threat-protection.md)
+</td>
+</tr>
+<tr>
+<td>  
+F7
+</td>
+<td>  
+PGP Message-Level Security
+</td>
+<td>  
+✅ [Doc 29](../docs/29-f7-pgp-message-level-security.md)
+</td>
+</tr>
+<tr>
+<td>  
+F8A–F8B
+</td>
+<td>  
+Authentication Context e Technical User SAML Bearer
+</td>
+<td>  
+✅ [Doc 30](../docs/30-f8-authentication-context-technical-user-saml-bearer.md)
+</td>
+</tr>
+<tr>
+<td>  
+F8E
+</td>
+<td>  
+End-User SAML Bearer Group-Based Authorization
+</td>
+<td>  
+✅ [Doc 31](../docs/31-f8e-end-user-saml-bearer-group-based-authorization.md)
+</td>
+</tr>
+</table>
 
-#### 🎯 Progresso geral
+  
+Melhorias adicionais de Basic Auth, API Key e OAuth e o cenário combinado mTLS + CSRF ficam para hardening pós-certificação.
 
-- **Blocos concluídos:** 5 de 8, A até E.
-- **Bloco atual:** F — Segurança.
-- **Laboratórios de segurança concluídos:** F4, F5, F6, F7, F8A e F8B.
-- **Próximo laboratório:** F8C — End-User Principal Propagation.
-- **Prova:** a agendar.
+##### Ⓗ Bloco H — Event-Driven (Event Mesh)
 
-#### 🧪 Simulados
+<table>
+<tr>
+<th>  
+Cenário
+</th>
+<th>  
+Tema
+</th>
+<th>  
+Status
+</th>
+</tr>
+<tr>
+<td>  
+H1
+</td>
+<td>  
+Solace PubSub+ Event Mesh Foundation (Direct e Guaranteed Messaging)
+</td>
+<td>  
+✅ [Doc 32](../docs/32-h1-solace-pubsub-event-mesh-foundation.md)
+</td>
+</tr>
+<tr>
+<td>  
+H2
+</td>
+<td>  
+CPI Publisher para Solace via AMQP 1.0
+</td>
+<td>  
+✅ [Doc 33](../docs/33-h2-sap-cloud-integration-publisher-solace-amqp.md)
+</td>
+</tr>
+<tr>
+<td>  
+H3
+</td>
+<td>  
+CPI Subscriber do Solace via AMQP (SAP PP/MES)
+</td>
+<td>  
+✅ [Doc 34](../docs/34-h3-sap-cloud-integration-subscriber-solace-amqp.md)
+</td>
+</tr>
+<tr>
+<td>  
+H4
+</td>
+<td>  
+Competing Consumers e Escala Horizontal (SAP WM)
+</td>
+<td>  
+✅ [Doc 35](../docs/35-h4-solace-competing-consumers-scaling.md)
+</td>
+</tr>
+</table>
 
-| Item | Status |
-|---|---|
-| Simulado por bloco | ⬜ |
-| Simulado final | ⬜ |
 
-#### 📎 Certificado
+##### 🎯 Progresso geral
+- **Blocos concluídos:** A, B, C, D, E e F.
+- **Bloco atual:** H — Event-Driven Integration (Event Mesh).
+- **Laboratórios de segurança concluídos:** F4, F5, F6, F7, F8A, F8B e F8E.
+- **Laboratórios de Event Mesh concluídos:** H1, H2, H3 e H4.
 
-O certificado oficial será anexado após a aprovação no exame.
-
+##### 📎 Certificado
+  
+O certificado oficial será anexado após a aprovação no exame.  
 📌 Voltar para o [README principal do projeto](../README.md)
