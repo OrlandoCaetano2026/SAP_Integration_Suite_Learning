@@ -28,7 +28,7 @@
 | Delivery | Persistent |
 | Domínio | SAP MM — Purchase Order |
 | Test client | Postman |
-| Evidências | `evidences/Lab31/` |
+| Evidências | `evidences/lab31/` |
 
 ---
 
@@ -190,7 +190,7 @@ Configuração ativa:
 
 ### Evidência 01 — Durable Exclusive Queue
 
-![Evidência 01 — Durable Exclusive Queue](../evidences/Lab31/01-solace-h2-durable-exclusive-queue.png)
+![Evidência 01 — Durable Exclusive Queue](../evidences/lab31/01-solace-h2-durable-exclusive-queue.png)
 
 **O que esta evidência comprova:** criação e dimensionamento da queue exclusiva do H2 no broker compartilhado do Bloco H.
 
@@ -208,7 +208,7 @@ Esse topic diferencia os eventos efetivamente produzidos pelo CPI dos eventos ut
 
 ### Evidência 02 — CPI Topic Subscription
 
-![Evidência 02 — CPI Topic Subscription](../evidences/Lab31/02-solace-h2-cpi-topic-subscription.png)
+![Evidência 02 — CPI Topic Subscription](../evidences/lab31/02-solace-h2-cpi-topic-subscription.png)
 
 **O que esta evidência comprova:** a queue H2 atrai mensagens publicadas no topic dedicado à integração vinda do Cloud Integration.
 
@@ -228,7 +228,7 @@ A captura publicada no portfólio foi sanitizada para não expor password ou con
 
 ### Evidência 03 — Secured AMQP connectivity redacted
 
-![Evidência 03 — Secured AMQP connectivity redacted](../evidences/Lab31/03-solace-h2-amqp-secured-connectivity-redacted.png)
+![Evidência 03 — Secured AMQP connectivity redacted](../evidences/lab31/03-solace-h2-amqp-secured-connectivity-redacted.png)
 
 **O que esta evidência comprova:** uso de Secured AMQP e endpoint TLS na porta 5671 sem revelar credenciais sensíveis.
 
@@ -244,7 +244,7 @@ H2_SOLACE_AMQP_CREDENTIALS
 
 ### Evidência 04 — AMQP Security Material
 
-![Evidência 04 — AMQP Security Material](../evidences/Lab31/04-cpi-solace-amqp-security-material.png)
+![Evidência 04 — AMQP Security Material](../evidences/lab31/04-cpi-solace-amqp-security-material.png)
 
 **O que esta evidência comprova:** credential alias está `Deployed` e pode ser referenciado pelo iFlow sem exposição de password.
 
@@ -266,7 +266,7 @@ O Content Modifier `Prepare_Event_Context` externaliza metadata funcional do eve
 
 ### Evidência 05 — Event Context
 
-![Evidência 05 — Event Context](../evidences/Lab31/05-cpi-h2-prepare-event-context.png)
+![Evidência 05 — Event Context](../evidences/lab31/05-cpi-h2-prepare-event-context.png)
 
 **O que esta evidência comprova:** metadata utilizada para construir o evento não está dispersa pelo código e pode ser administrada de forma explícita no Integration Process.
 
@@ -375,7 +375,7 @@ def Message processData(Message message) {
 
 ### Evidência 06 — AMQP Receiver Connection
 
-![Evidência 06 — AMQP Receiver Connection](../evidences/Lab31/06-cpi-h2-amqp-receiver-connection.png)
+![Evidência 06 — AMQP Receiver Connection](../evidences/lab31/06-cpi-h2-amqp-receiver-connection.png)
 
 **O que esta evidência comprova:** configuração técnica da sessão AMQP segura entre SAP Cloud Integration e Solace PubSub+.
 
@@ -393,7 +393,7 @@ def Message processData(Message message) {
 
 ### Evidência 07 — Persistent Topic Configuration
 
-![Evidência 07 — Persistent Topic Configuration](../evidences/Lab31/07-cpi-h2-amqp-persistent-topic-config.png)
+![Evidência 07 — Persistent Topic Configuration](../evidences/lab31/07-cpi-h2-amqp-persistent-topic-config.png)
 
 **O que esta evidência comprova:** o CPI publica em topic e solicita Persistent delivery, permitindo que a durable queue mantenha o evento até consumo.
 
@@ -450,7 +450,7 @@ O Postman enviou o Purchase Order ao endpoint H2 e recebeu `200 OK`. A resposta 
 
 ### Evidência 08 — Purchase Order published
 
-![Evidência 08 — Purchase Order published](../evidences/Lab31/08-postman-h2-purchase-order-published-200.png)
+![Evidência 08 — Purchase Order published](../evidences/lab31/08-postman-h2-purchase-order-published-200.png)
 
 **O que esta evidência comprova:** chamada HTTPS bem-sucedida, payload SAP MM completo e resposta com `specversion`, `type`, `source`, Event ID, timestamp, subject, domain, Correlation ID e `data`.
 
@@ -462,7 +462,7 @@ O Message Processing Run mostra execução de HTTPS, `Prepare_Event_Context`, `B
 
 ### Evidência 09 — AMQP publish completed
 
-![Evidência 09 — AMQP publish completed](../evidences/Lab31/09-cpi-h2-amqp-publish-completed.png)
+![Evidência 09 — AMQP publish completed](../evidences/lab31/09-cpi-h2-amqp-publish-completed.png)
 
 **O que esta evidência comprova:** a execução alcançou o AMQP Adapter após concluir as etapas internas do Integration Process.
 
@@ -474,7 +474,7 @@ Antes do step AMQP, o CPI apresenta o conteúdo exato que será entregue ao brok
 
 ### Evidência 10 — Event Envelope before AMQP
 
-![Evidência 10 — Event Envelope before AMQP](../evidences/Lab31/10-cpi-h2-event-envelope-before-amqp.png)
+![Evidência 10 — Event Envelope before AMQP](../evidences/lab31/10-cpi-h2-event-envelope-before-amqp.png)
 
 **O que esta evidência comprova:** o evento saiu do CPI com identidade própria, `source = SAP_INTEGRATION_SUITE`, Purchase Order `4500020001`, Event ID, Correlation ID e todos os itens do pedido.
 
@@ -498,7 +498,7 @@ Após o POST, a durable queue H2 registrou uma mensagem e nenhum consumer ativo.
 
 ### Evidência 11 — Persistent Event queued
 
-![Evidência 11 — Persistent Event queued](../evidences/Lab31/11-solace-h2-persistent-event-queued.png)
+![Evidência 11 — Persistent Event queued](../evidences/lab31/11-solace-h2-persistent-event-queued.png)
 
 **O que esta evidência comprova:** `Messages Queued = 1`, `Current Consumers = 0`, Durable `Yes`, Access Type `Exclusive` e quota 5000 MB. O evento produzido pelo CPI permaneceu armazenado no broker enquanto não havia consumidor.
 
@@ -510,7 +510,7 @@ Um guaranteed consumer fez bind à `H2.Q.MM.PURCHASE_ORDER`. O payload recebido 
 
 ### Evidência 12 — CPI-generated event consumed
 
-![Evidência 12 — CPI-generated event consumed](../evidences/Lab31/12-solace-h2-cpi-generated-event-consumed.png)
+![Evidência 12 — CPI-generated event consumed](../evidences/lab31/12-solace-h2-cpi-generated-event-consumed.png)
 
 **O que esta evidência comprova:** delivery mode `Persistent`, topic H2 e payload completo com o mesmo `eventId`, `correlationId`, Purchase Order, fornecedor, valor e itens gerados pelo CPI. A correlação ponta a ponta demonstra que o evento atravessou CPI → AMQP → broker → durable queue sem perder identidade.
 
@@ -520,7 +520,7 @@ Um guaranteed consumer fez bind à `H2.Q.MM.PURCHASE_ORDER`. O payload recebido 
 
 Após o consumo garantido e acknowledgement, a queue foi verificada com `Messages Queued = 0` e `Current Consumers = 0`, encerrando o ciclo operacional.
 
-> **Validação operacional final:** a imagem final foi conferida durante a execução. Antes do commit definitivo do documento, mantenha o arquivo físico dessa captura no `Lab31` com o nome adotado no repositório caso deseje renderizá-la também no Markdown.
+> **Validação operacional final:** a imagem final foi conferida durante a execução. Antes do commit definitivo do documento, mantenha o arquivo físico dessa captura no `lab31` com o nome adotado no repositório caso deseje renderizá-la também no Markdown.
 
 ---
 
