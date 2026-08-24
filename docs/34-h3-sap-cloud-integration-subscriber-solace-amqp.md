@@ -32,7 +32,7 @@
 | Backend externo | webhook.site |
 | Domínio | SAP PP + MES — Production Order Confirmation |
 | Volume de teste | 5 eventos Persistent |
-| Evidências | `evidences/Lab32/` — 14 imagens |
+| Evidências | `evidences/lab32/` — 14 imagens |
 
 ---
 
@@ -210,7 +210,7 @@ A queue foi criada isolada para o cenário, no broker compartilhado do Bloco H.
 
 ### Evidência 01 — Durable Exclusive Queue
 
-![Evidência 01 — Durable Exclusive Queue](../evidences/Lab32/01-solace-h3-production-confirmation-queue.png)
+![Evidência 01 — Durable Exclusive Queue](../evidences/lab32/01-solace-h3-production-confirmation-queue.png)
 
 **O que esta evidência comprova:** criação da queue exclusiva e durável dedicada às confirmações de produção do H3.
 
@@ -226,7 +226,7 @@ mes/pp/productionorder/confirmed/v1
 
 ### Evidência 02 — Topic Subscription
 
-![Evidência 02 — Topic Subscription](../evidences/Lab32/02-solace-h3-production-confirmation-subscription.png)
+![Evidência 02 — Topic Subscription](../evidences/lab32/02-solace-h3-production-confirmation-subscription.png)
 
 **O que esta evidência comprova:** a queue H3 atrai mensagens publicadas no topic dedicado às confirmações de produção MES.
 
@@ -248,13 +248,13 @@ Com o CPI ainda offline, o MES publicou cinco confirmações diferentes de opera
 
 ### Evidência 03 — Backlog de cinco confirmações
 
-![Evidência 03 — Backlog de cinco confirmações](../evidences/Lab32/03-solace-h3-five-production-confirmations-backlog.png)
+![Evidência 03 — Backlog de cinco confirmações](../evidences/lab32/03-solace-h3-five-production-confirmations-backlog.png)
 
 **O que esta evidência comprova:** cinco mensagens distintas armazenadas na durable queue, todas Undelivered e com Redeliveries = 0, aguardando um consumidor.
 
 ### Evidência 04 — Cinco eventos Persistent publicados
 
-![Evidência 04 — Cinco eventos Persistent publicados](../evidences/Lab32/04-solace-h3-five-mes-persistent-events-published.png)
+![Evidência 04 — Cinco eventos Persistent publicados](../evidences/lab32/04-solace-h3-five-mes-persistent-events-published.png)
 
 **O que esta evidência comprova:** o produtor MES publicou 5 Persistent e 0 Direct, confirmando que o backlog foi criado com entrega garantida.
 
@@ -272,7 +272,7 @@ SOLACE_AMQP_CREDENTIALS
 
 ### Evidência 05 — Credencial AMQP compartilhada
 
-![Evidência 05 — Credencial AMQP compartilhada](../evidences/Lab32/05-cpi-h3-shared-solace-amqp-credentials.png)
+![Evidência 05 — Credencial AMQP compartilhada](../evidences/lab32/05-cpi-h3-shared-solace-amqp-credentials.png)
 
 **O que esta evidência comprova:** o alias `SOLACE_AMQP_CREDENTIALS` está implantado como User Credentials e pode ser referenciado pelo iFlow sem expor a senha.
 
@@ -293,7 +293,7 @@ SOLACE_AMQP_CREDENTIALS
 
 ### Evidência 06 — AMQP Sender Connection
 
-![Evidência 06 — AMQP Sender Connection](../evidences/Lab32/06-cpi-h3-amqp-sender-connection.png)
+![Evidência 06 — AMQP Sender Connection](../evidences/lab32/06-cpi-h3-amqp-sender-connection.png)
 
 **O que esta evidência comprova:** sessão AMQP segura entre SAP Cloud Integration e Solace, com TLS, SASL e credential alias, sem exposição de senha.
 
@@ -312,7 +312,7 @@ SOLACE_AMQP_CREDENTIALS
 
 ### Evidência 07 — AMQP Sender Processing
 
-![Evidência 07 — AMQP Sender Processing](../evidences/Lab32/07-cpi-h3-amqp-sender-processing.png)
+![Evidência 07 — AMQP Sender Processing](../evidences/lab32/07-cpi-h3-amqp-sender-processing.png)
 
 **O que esta evidência comprova:** consumo controlado da queue H3, com concorrência 1, prefetch 1 e política de retry explícita para evitar retries ilimitados.
 
@@ -338,7 +338,7 @@ End
 
 ### Evidência 08 — Fluxo de validação SAP PP
 
-![Evidência 08 — Fluxo de validação SAP PP](../evidences/Lab32/08-cpi-h3-pp-validation-flow.png)
+![Evidência 08 — Fluxo de validação SAP PP](../evidences/lab32/08-cpi-h3-pp-validation-flow.png)
 
 **O que esta evidência comprova:** arquitetura completa do consumidor, incluindo validação de envelope, validação SAP PP, construção do payload e preparação do request HTTP.
 
@@ -621,7 +621,7 @@ def Message processData(Message message) {
 
 ### Evidência 09 — HTTP Receiver
 
-![Evidência 09 — HTTP Receiver](../evidences/Lab32/09-cpi-h3-webhook-http-receiver.png)
+![Evidência 09 — HTTP Receiver](../evidences/lab32/09-cpi-h3-webhook-http-receiver.png)
 
 **O que esta evidência comprova:** entrega POST ao backend externo real, encerrando a cadeia broker → CPI → aplicação externa.
 
@@ -635,7 +635,7 @@ Ao iniciar o iFlow, o AMQP Sender conectou-se à queue exclusiva como consumidor
 
 ### Evidência 10 — Backlog drenado com consumer ativo
 
-![Evidência 10 — Backlog drenado com consumer ativo](../evidences/Lab32/10-solace-h3-backlog-drained-consumer-active.png)
+![Evidência 10 — Backlog drenado com consumer ativo](../evidences/lab32/10-solace-h3-backlog-drained-consumer-active.png)
 
 **O que esta evidência comprova:** após o Deploy, a queue passou a ter um consumidor ativo e o backlog foi processado, com Messages Queued retornando a zero.
 
@@ -647,7 +647,7 @@ O Monitor do CPI registrou cinco Message Processing Logs distintos, todos Comple
 
 ### Evidência 11 — Cinco confirmações concluídas
 
-![Evidência 11 — Cinco confirmações concluídas](../evidences/Lab32/11-cpi-h3-five-production-confirmations-completed.png)
+![Evidência 11 — Cinco confirmações concluídas](../evidences/lab32/11-cpi-h3-five-production-confirmations-completed.png)
 
 **O que esta evidência comprova:** cada mensagem AMQP disparou uma execução independente do Integration Flow. Cinco eventos resultaram em cinco processamentos concluídos, e não em um único processamento em lote.
 
@@ -659,7 +659,7 @@ O backend externo recebeu cinco requisições distintas. O payload entregue é o
 
 ### Evidência 12 — Cinco confirmações recebidas no backend
 
-![Evidência 12 — Cinco confirmações recebidas no backend](../evidences/Lab32/12-webhook-h3-five-production-confirmations-received.png)
+![Evidência 12 — Cinco confirmações recebidas no backend](../evidences/lab32/12-webhook-h3-five-production-confirmations-received.png)
 
 **O que esta evidência comprova:** o backend recebeu 5 requisições e, no evento da operação 0050, o campo `finalConfirmation` foi corretamente derivado como `true` a partir de `AUERU = X`. Isso confirma que o CPI interpretou e transformou os campos SAP, atuando como orquestrador e não como proxy passivo.
 
@@ -700,7 +700,7 @@ Payload representativo entregue ao backend:
 
 ### Evidência 13 — Queue vazia após o backlog
 
-![Evidência 13 — Queue vazia após o backlog](../evidences/Lab32/13-solace-h3-queue-empty-after-backlog-processing.png)
+![Evidência 13 — Queue vazia após o backlog](../evidences/lab32/13-solace-h3-queue-empty-after-backlog-processing.png)
 
 **O que esta evidência comprova:** após o processamento, a durable queue voltou a Messages Queued = 0, encerrando o ciclo de backlog.
 
@@ -710,7 +710,7 @@ Payload representativo entregue ao backend:
 
 ### Evidência 14 — Cinco entregas confirmadas sem redelivery
 
-![Evidência 14 — Cinco entregas confirmadas sem redelivery](../evidences/Lab32/14-solace-h3-five-confirmed-deliveries-no-redelivery.png)
+![Evidência 14 — Cinco entregas confirmadas sem redelivery](../evidences/lab32/14-solace-h3-five-confirmed-deliveries-no-redelivery.png)
 
 **O que esta evidência comprova:** o consumidor AMQP ficou Active, com Messages Confirmed Delivered = 5, Messages Delivered Using Store and Forward = 5, Messages Redelivered = 0 e Unacknowledged Messages = 0. O caminho feliz foi limpo, sem reentregas e sem mensagens pendentes de acknowledgement.
 
