@@ -302,69 +302,15 @@ Diferencial de mercado:
 ## 🗺️ Roadmap por blocos
 
 <table>
-<tr>
-<th>Bloco</th>
-<th>Foco</th>
-<th>Cenários</th>
-<th>Status</th>
-<th>Índice</th>
-</tr>
-<tr>
-<td>Ⓐ</td>
-<td>CPI Fundamentos</td>
-<td>A1–A4</td>
-<td>style=flat-square" alt="concluído"/></td>
-<td>docs/docsREADME.md</td>
-</tr>
-<tr>
-<td>Ⓑ</td>
-<td>Padrões de Integração</td>
-<td>B1–B5</td>
-<td>https://img.shields.io/badge/-concluído-success?style=flat-square</td>
-<td>docs/docsREADME.md</td>
-</tr>
-<tr>
-<td>Ⓒ</td>
-<td>Resiliência e Erros</td>
-<td>C1–C4</td>
-<td>https://img.shields.io/badge/-concluído-success?style=flat-square</td>
-<td>docs/docsREADME.md</td>
-</tr>
-<tr>
-<td>Ⓓ</td>
-<td>Conectividade / Adapters</td>
-<td>D1–D4</td>
-<td>://img.shields.io/badge/-concluído-success?style=flat-square" alt="concluído"/></td>
-<td>docs/docsREADME.md</td>
-</tr>
-<tr>
-<td>Ⓔ</td>
-<td>API Management</td>
-<td>E0–E12</td>
-<td>https://img.shields.io/badge/-concluído-success?style=flat-square</td>
-<td>docs/docsREADME.md</td>
-</tr>
-<tr>
-<td>Ⓕ</td>
-<td>Segurança</td>
-<td>F4–F8</td>
-<td>https://img.shields.io/badge/-concluído-success?style=flat-square</td>
-<td>docs/docsREADME.mddocs</a></td>
-</tr>
-<tr>
-<td>Ⓖ</td>
-<td>SAP MM / PP / QM</td>
-<td>G1–G3</td>
-<td>ightgrey?style=flat-square" alt="planejado"/></td>
-<td>—</td>
-</tr>
-<tr>
-<td>Ⓗ</td>
-<td>Event-Driven (Event Mesh)</td>
-<td>H1–H4</td>
-<td>https://img.shields.io/badge/-em%20andamento-yellow?style=flat-square</td>
-<td>docs/docsREADME.md</td>
-</tr>
+<tr><th>Bloco</th><th>Foco</th><th>Cenários</th><th>Status</th><th>Índice</th></tr>
+<tr><td>Ⓐ</td><td>CPI Fundamentos</td><td>A1–A4</td><td><img src="https://s.io/badge/status-conclu%C3%ADdo-success?style=flat-square</td><td>README.md">docs</a></td></tr>
+<tr><td>Ⓑ</td><td>Padrões de Integração</td><td>B1–B5</td><td>flat-square" alt="concluído"/></td><td>docs/docsREADME.md</td></tr>
+<tr><td>Ⓒ</td><td>Resiliência e Erros</td><td>C1–C4</td><td>io/badge/status-conclu%C3%ADdo-success?style=flat-square" alt="concluído"/></td><td>docs/docsREADME.md</td></tr>
+<tr><td>Ⓓ</td><td>Conectividade / Adapters</td><td>D1–D4</td><td>https://img.shields.io/badge/status-conclu%C3%ADdo-success?style=flat-square</td><td>docs/docsREADME.md</td></tr>
+<tr><td>Ⓔ</td><td>API Management</td><td>E0–E12</td><td>https://img.shields.io/badge/status-conclu%C3%ADdo-success?style=flat-square</td><td>docs/docsREADME.mddocs</a></td></tr>
+<tr><td>Ⓕ</td><td>Segurança</td><td>F4–F8</td><td>https://img.shields.io/badge/status-conclu%C3%ADdo-success?style=flat-square</td><td>docs/docsREADME.md</td></tr>
+<tr><td>Ⓖ</td><td>SAP MM / PP / QM</td><td>G1–G3</td><td>ejado-lightgrey?style=flat-square" alt="planejado"/></td><td>—</td></tr>
+<tr><td>Ⓗ</td><td>Event-Driven (Event Mesh)</td><td>H1–H4</td><td><ttps://img.shields.io/badge/status-em%20andamento-yellow?style=flat-square</td><td>docs/docsREADME.md</td></tr>
 </table>
 ---
 
