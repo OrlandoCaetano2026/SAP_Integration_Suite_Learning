@@ -77,12 +77,14 @@ Message Replay
 
 ## 4.1 Retry, redelivery, DMQ e Replay
 
-| Recurso | Responsabilidade | Evidência no H6 |
-|---|---|---|
-| Retry | repetir uma operação dentro do processamento atual | duas chamadas HTTP 500 seguidas de 200 |
-| Redelivery | broker entregar novamente uma mensagem não reconhecida | contador permaneceu 0 na falha temporária |
-| DMQ | isolar mensagem removida da source queue após falha/rejeição | poison message preservado na DMQ |
-| Replay | reproduzir mensagem histórica já reconhecida | evento 000004 processado duas vezes |
+Estes quatro conceitos aparecem juntos em discussões de resiliência e costumam ser confundidos. O H6 os separa com evidências concretas.
+
+| Recurso | Responsabilidade | Onde atua | Evidência no H6 |
+|---|---|---|---|
+| Retry | repetir uma operação dentro do processamento atual | no consumidor (adapter) | duas chamadas HTTP 500 seguidas de 200 |
+| Redelivery | broker entregar novamente uma mensagem não reconhecida | no broker | contador permaneceu 0 na falha temporária |
+| DMQ | isolar mensagem removida da source queue após falha/rejeição | no broker | poison message preservado na DMQ |
+| Replay | reproduzir mensagem histórica já reconhecida | no broker | evento 000004 processado duas vezes |
 
 ## 4.2 Retry interno não é redelivery
 
@@ -108,13 +110,15 @@ Mockoon Requests = 3
 Messages Redelivered no Solace = 0
 ```
 
+Essa distinção é decisiva em produção: dimensionar o `Maximum Redelivery Count` da queue pensando que ele conta os retries do adapter levaria a um comportamento muito diferente do esperado.
+
 ## 4.3 DMQ como área de isolamento
 
-A DMQ não possui subscription. Ela recebe mensagens transferidas internamente pelo broker quando a mensagem deixa de ser elegível na source queue ou recebe um outcome final de rejeição.
+A DMQ não possui subscription. Ela recebe mensagens transferidas internamente pelo broker quando a mensagem deixa de ser elegível na source queue ou recebe um outcome final de rejeição. Seu papel é preservar — e não descartar — a mensagem defeituosa, para que ela possa ser investigada e recuperada.
 
 ## 4.4 Replay não substitui DMQ
 
-A DMQ preserva mensagens que falharam. O Replay Log preserva mensagens Guaranteed, inclusive aquelas já processadas e reconhecidas, para reprodução histórica.
+A DMQ preserva mensagens que **falharam**. O Replay Log preserva mensagens Guaranteed, inclusive aquelas **já processadas e reconhecidas**, para reprodução histórica. São mecanismos complementares: um trata exceção, o outro trata recuperação de histórico.
 
 ---
 
@@ -175,85 +179,96 @@ flowchart LR
 
 # 6. Configuração do broker
 
+> Nesta seção construímos a espinha dorsal da resiliência: a DMQ dedicada, a source queue, a política de redelivery que as conecta e a subscription que alimenta a fila. Cada evidência traz o contexto da configuração, a captura e uma explicação detalhada do que ela garante no comportamento do cenário.
+
+
 ## Evidência 01 — DMQ dedicada
 
-![Evidência 01](../evidences/lab35/01-solace-h6-dedicated-supplier-confirmation-dmq.png)
+A primeira etapa da resiliência é ter para onde enviar as mensagens que não podem ser processadas. Por isso, antes mesmo da source queue, criamos a Dead Message Queue dedicada `H6.DMQ.MM.SUPPLIER_CONFIRMATION`, Durable e Exclusive, com quota de 100 MB. Ela nasce vazia e permanecerá vazia durante todo o caminho feliz e a falha temporária, só recebendo tráfego quando um poison message esgotar as tentativas.
 
-**Comprova:** criação da DMQ Durable e Exclusive, com quota de 100 MB, zero mensagens e zero consumers.
+![Evidência 01 — DMQ dedicada](../evidences/lab35/01-solace-h6-dedicated-supplier-confirmation-dmq.png)
 
-## Evidência 02 — Source queue
+**O que esta evidência comprova:** a existência de uma área de isolamento operacional própria para esta integração, comprovada por `Messages Queued = 0`, `Current Consumers = 0`, `Access Type = Exclusive`, `Durable = Yes` e quota de 100 MB. Uma DMQ dedicada por endpoint é a base para investigar e recuperar mensagens sem contaminar outras filas, e é pré-requisito para que o broker consiga mover mensagens rejeitadas em vez de descartá-las silenciosamente.
 
-![Evidência 02](../evidences/lab35/02-solace-h6-source-queue-resilience-config.png)
+## Evidência 02 — Source queue de confirmação
 
-**Comprova:** criação da source queue Durable e Exclusive, inicialmente zerada.
+Com a DMQ pronta, criamos a source queue `H6.Q.MM.SUPPLIER_CONFIRMATION`, também Durable e Exclusive, com quota de 100 MB. É nela que os eventos de confirmação de fornecedor serão persistidos ao chegar do topic. Neste momento ela ainda não está associada à DMQ nem tem política de redelivery ajustada — isso será feito na configuração avançada, evidenciada a seguir.
 
-## Evidência 03 — Associação DMQ e redelivery
+![Evidência 02 — Source queue de confirmação](../evidences/lab35/02-solace-h6-source-queue-resilience-config.png)
 
-![Evidência 03](../evidences/lab35/03-solace-h6-source-queue-dmq-redelivery-config.png)
+**O que esta evidência comprova:** o endpoint principal do cenário existe, é durável e está zerado, estabelecendo o baseline limpo antes de qualquer publicação. A escolha por `Exclusive` garante um único consumidor ativo e ordem preservada, o que é adequado para um fluxo transacional de confirmação em que não queremos concorrência, e sim tratamento confiável mensagem a mensagem.
 
-**Comprova:** associação com `H6.DMQ.MM.SUPPLIER_CONFIRMATION`, redelivery habilitado, `Try Forever = Off`, Maximum Redelivery Count igual a 5 e Client Delivery Count habilitado.
+## Evidência 03 — Associação da DMQ e política de redelivery
 
-## Evidência 04 — Topic subscription
+Esta é a configuração técnica central do H6. Nas configurações avançadas da source queue, apontamos o campo `Dead Message Queue Name` para `H6.DMQ.MM.SUPPLIER_CONFIRMATION`, mantivemos `Respect DMQ Eligible = Off` (para que mensagens removidas sejam encaminhadas à DMQ independentemente de flag do publisher), desligamos `Try Forever` e definimos `Maximum Redelivery Count = 5`. Também habilitamos `Enable Client Delivery Count` para observar as tentativas de entrega ao consumidor.
 
-![Evidência 04](../evidences/lab35/04-solace-h6-supplier-confirmation-topic-subscription.png)
+![Evidência 03 — Associação da DMQ e política de redelivery](../evidences/lab35/03-solace-h6-source-queue-dmq-redelivery-config.png)
 
-**Comprova:** atração dos eventos publicados em `sap/mm/supplier/confirmation/received/v1` para a source queue.
+**O que esta evidência comprova:** o vínculo lógico `source queue → DMQ` está estabelecido, e a queue possui um limite finito de reentrega broker-side (`Try Forever = Off`, `Maximum Redelivery Count = 5`). Essa combinação é o que garante que um poison message eventualmente deixe de ser elegível na source queue e seja transferido para a DMQ, em vez de circular indefinidamente. É a diferença prática entre uma fila que trava com uma mensagem defeituosa e uma fila que se protege e continua operando.
+
+## Evidência 04 — Topic subscription da source queue
+
+Para que a source queue receba os eventos, associamos a ela a subscription do topic de negócio `sap/mm/supplier/confirmation/received/v1`. Assim, o produtor publica no topic sem conhecer a fila física, e o broker roteia cada confirmação para a queue por meio da subscription.
+
+![Evidência 04 — Topic subscription da source queue](../evidences/lab35/04-solace-h6-supplier-confirmation-topic-subscription.png)
+
+**O que esta evidência comprova:** o desacoplamento entre produtor e endpoint físico. Todo evento publicado no topic de confirmação de fornecedor é atraído para `H6.Q.MM.SUPPLIER_CONFIRMATION`. Esse é o ponto de entrada de toda a cadeia de resiliência: a partir daqui, qualquer falha de processamento será tratada pela política de redelivery e, em última instância, pela DMQ configurada na evidência anterior.
 
 ---
 
 # 7. Mock ERP com três comportamentos
 
-O Mockoon foi configurado com uma única rota:
+> Um laboratório de resiliência precisa de um backend previsível. Em vez de um sistema real, usamos um ERP simulado no Mockoon capaz de alternar, de forma controlada, entre sucesso, falha temporária e falha permanente. Isso permite reproduzir cada fase do H6 quantas vezes forem necessárias.
 
-```text
-POST /h6/erp/supplier-confirmation
-```
+## Evidência 05 — Mock ERP com três comportamentos
 
-E três respostas:
+Para exercitar retry, recuperação e poison message de forma determinística, o backend não pode ser aleatório. Configuramos no Mockoon uma única rota `POST /h6/erp/supplier-confirmation` com três respostas controláveis: `H6_SUCCESS_200` (processa com sucesso), `H6_TEMPORARY_FAILURE_500` (falha que permite retry) e `H6_PERMANENT_FAILURE_500` (falha não recuperável). Alternando qual delas é o default, controlamos exatamente qual comportamento o ERP simulado apresenta.
 
-```text
-H6_SUCCESS_200
-H6_TEMPORARY_FAILURE_500
-H6_PERMANENT_FAILURE_500
-```
+![Evidência 05 — Mock ERP com três comportamentos](../evidences/lab35/05-mockoon-h6-erp-supplier-confirmation-responses.png)
 
-## Evidência 05 — Respostas do Mock ERP
-
-![Evidência 05](../evidences/lab35/05-mockoon-h6-erp-supplier-confirmation-responses.png)
-
-**Comprova:** backend controlável com sucesso, falha temporária e falha permanente.
-
-Os testes locais e públicos validaram HTTP 200, HTTP 500 temporário e HTTP 500 permanente. Essas validações foram preparação técnica e não geraram evidências adicionais.
+**O que esta evidência comprova:** temos um ERP simulado totalmente determinístico, com os três desfechos possíveis de uma integração real: sucesso, indisponibilidade temporária e falha permanente. Os campos `code` e `retryable` de cada resposta (`H6-ERP-200/false`, `H6-ERP-500-TEMP/true`, `H6-ERP-500-PERM/false`) documentam a intenção semântica de cada desfecho, permitindo reproduzir cada fase do laboratório de forma controlada e repetível. As validações locais e públicas (HTTP 200, 500 temporário e 500 permanente) confirmaram o comportamento antes de ligar o consumidor.
 
 ---
 
 # 8. Configuração do consumidor CPI
 
-## Evidência 06 — AMQP Connection
+> O consumidor é o `H6_MM_Supplier_Confirmation_Consumer`. Ele lê a source queue por AMQP, valida e transforma o evento em dois scripts Groovy, prepara os headers de rastreabilidade e chama o ERP. A seguir, cada aba de configuração é evidenciada com seu contexto e o papel que exerce na resiliência.
 
-![Evidência 06](../evidences/lab35/06-cpi-h6-amqp-connection.png)
+## Evidência 06 — AMQP Connection do consumidor
 
-**Comprova:** conexão AMQP 1.0 via TLS/SASL na porta 5671.
+No SAP Cloud Integration, o consumidor `H6_MM_Supplier_Confirmation_Consumer` usa o AMQP Sender Adapter para ler a source queue. A aba Connection define host do broker, porta `5671`, `Proxy Type = Internet`, `Connect with TLS` habilitado e autenticação `SASL` com o credential alias compartilhado `SOLACE_AMQP_CREDENTIALS`, mantendo a senha fora do iFlow.
 
-## Evidência 07 — Retry Processing
+![Evidência 06 — AMQP Connection do consumidor](../evidences/lab35/06-cpi-h6-amqp-connection.png)
 
-![Evidência 07](../evidences/lab35/07-cpi-h6-amqp-retry-processing.png)
+**O que esta evidência comprova:** o consumidor estabelece uma sessão AMQP 1.0 segura com o Solace, protegida por TLS e autenticada por SASL, reutilizando a credencial compartilhada do broker. Essa é a base de conectividade sobre a qual todo o comportamento de retry e redelivery será observado — sem uma conexão estável e segura, não seria possível distinguir falhas de rede de falhas de processamento nas fases seguintes.
 
-**Comprova:** queue H6, concorrência 1, prefetch 1, três retries e outcome final `REJECTED`.
+## Evidência 07 — Processing com política de retry
 
-## Evidência 08 — Headers HTTP
+A aba Processing do AMQP Sender é onde amarramos a política de tentativa do lado do adapter à política da queue. Configuramos `Queue Name = H6.Q.MM.SUPPLIER_CONFIRMATION`, `Number of Concurrent Processes = 1`, `Max. Number of Prefetched Messages = 1`, `Max. Number of Retries = 3` e `Delivery Status After Max. Retries = REJECTED`. Concorrência e prefetch mínimos deixam o comportamento observável mensagem a mensagem.
 
-![Evidência 08](../evidences/lab35/08-cpi-h6-http-request-headers.png)
+![Evidência 07 — Processing com política de retry](../evidences/lab35/07-cpi-h6-amqp-retry-processing.png)
 
-**Comprova:** propagação de Content-Type, Event ID, Correlation ID e Processing Mode.
+**O que esta evidência comprova:** o consumidor lê exclusivamente a source queue do H6 e, ao esgotar as tentativas, devolve ao broker o outcome `REJECTED` — que é justamente o gatilho para o broker remover a mensagem da queue e encaminhá-la à DMQ. A coordenação entre `Max. Number of Retries = 3` no adapter e `Maximum Redelivery Count = 5` na queue cria duas camadas de proteção complementares e evita reprocessamento infinito de uma mensagem defeituosa.
 
-## Evidência 09 — HTTP Receiver
+## Evidência 08 — Headers HTTP de rastreabilidade
 
-![Evidência 09](../evidences/lab35/09-cpi-h6-mock-erp-http-receiver.png)
+Antes de chamar o ERP, o Content Modifier `Prepare_HTTP_Headers` monta os cabeçalhos que serão enviados: `Content-Type`, `Accept` e, principalmente, os headers de rastreabilidade `X-Event-ID`, `X-Correlation-ID` e `X-Processing-Mode`, todos alimentados por Exchange Properties preenchidas na validação.
 
-**Comprova:** POST para o endpoint público do Mock ERP via ngrok.
+![Evidência 08 — Headers HTTP de rastreabilidade](../evidences/lab35/08-cpi-h6-http-request-headers.png)
 
-## 8.1 Validação do evento
+**O que esta evidência comprova:** a identidade do evento e a correlação distribuída não ficam apenas no corpo da mensagem — elas viajam também como metadados HTTP até o backend. Isso é o que permitirá, nas fases de falha e replay, confirmar visualmente no Mockoon que as várias tentativas e o evento reprocessado se referem exatamente ao mesmo evento lógico, e não a publicações diferentes.
+
+## Evidência 09 — HTTP Receiver para o Mock ERP
+
+O último passo do pipeline é o HTTP Receiver, que envia o request preparado ao endpoint público do Mock ERP exposto via ngrok. O adapter está configurado como `POST`, `Proxy Type = Internet`, `Authentication = None` e timeout de 60 segundos, encaminhando os headers de rastreabilidade definidos anteriormente.
+
+![Evidência 09 — HTTP Receiver para o Mock ERP](../evidences/lab35/09-cpi-h6-mock-erp-http-receiver.png)
+
+**O que esta evidência comprova:** o consumidor fecha a cadeia entregando a confirmação a um sistema externo real. É neste ponto que a resposta do ERP (200 ou 500) determina se o processamento é bem-sucedido ou entra em retry — ou seja, é o HTTP Receiver que transforma o comportamento do backend simulado nos diferentes desfechos de resiliência que o cenário demonstra.
+
+## 8.1 Groovy — Validate_Supplier_Confirmation
+
+O primeiro script protege o contrato do evento. Ele recusa payloads vazios, valida os campos obrigatórios do envelope e do bloco `data`, confirma `type`, `domain` e `specversion`, e restringe o `processingMode` aos três valores suportados. Além disso, promove Event ID, Correlation ID e Processing Mode a Exchange Properties e headers, garantindo rastreabilidade ao longo de todo o fluxo.
 
 ```groovy
 import com.sap.gateway.ip.core.customdev.util.Message
@@ -299,7 +314,9 @@ def Message processData(Message message) {
 }
 ```
 
-## 8.2 Preparação do request ERP
+## 8.2 Groovy — Prepare_ERP_Request
+
+O segundo script transforma o evento em um request de ERP legível, com um envelope `SUPPLIER_CONFIRMATION_PROCESSING`, timestamps de recebimento e encaminhamento, o `deliveryCount` observado e o bloco `supplierConfirmation` com os campos SAP MM normalizados. Também replica os headers de rastreabilidade e adiciona o `X-Delivery-Count`.
 
 ```groovy
 import com.sap.gateway.ip.core.customdev.util.Message
@@ -345,265 +362,349 @@ def Message processData(Message message) {
 
 # 9. Caminho feliz
 
-## Evidência 10 — Evento publicado
+> Antes de provocar falhas, estabelecemos a linha de base: um evento válido publicado, aguardando com o consumidor offline, e depois processado com sucesso. Este é o comportamento de referência contra o qual todas as falhas serão comparadas.
 
-![Evidência 10](../evidences/lab35/10-nodejs-h6-success-event-published.png)
+## Evidência 10 — Evento de sucesso publicado
 
-**Comprova:** `EVT-H6-000001` enviado como Persistent e aceito pelo broker.
+Com o consumidor ainda offline, o producer Node.js publica o primeiro evento `EVT-H6-000001` com `processingMode = SUCCESS`. O terminal mostra a conexão ao Solace, o destino `topic://sap/mm/supplier/confirmation/received/v1`, o envio e o settlement do broker.
+
+![Evidência 10 — Evento de sucesso publicado](../evidences/lab35/10-nodejs-h6-success-event-published.png)
+
+**O que esta evidência comprova:** a diferença entre *enviar* e *ser aceito*. O `[SENT]` indica a tentativa e o `[ACCEPTED]` confirma que o broker aceitou e persistiu a mensagem Guaranteed (`SUCCESS: 1/1 event accepted by Solace`). Publicar com o consumidor offline é intencional: prepara a próxima evidência, em que veremos o desacoplamento temporal entre produtor e consumidor.
 
 ## Evidência 11 — Evento aguardando consumer offline
 
-![Evidência 11](../evidences/lab35/11-solace-h6-success-event-waiting-consumer-offline.png)
+Esta é uma composição das duas filas logo após a publicação e antes do deploy do consumidor. À esquerda, a source queue `H6.Q.MM.SUPPLIER_CONFIRMATION` mostra `Messages Queued = 1`; à direita, a DMQ `H6.DMQ.MM.SUPPLIER_CONFIRMATION` permanece em `0`. Nenhum consumidor está conectado ainda.
 
-**Comprova:** source queue com uma mensagem, zero consumers e DMQ zerada.
+![Evidência 11 — Evento aguardando consumer offline](../evidences/lab35/11-solace-h6-success-event-waiting-consumer-offline.png)
+
+**O que esta evidência comprova:** o desacoplamento temporal do event-driven na prática. O produtor concluiu sua responsabilidade e o evento ficou preservado na durable queue mesmo sem ninguém para consumi-lo, enquanto a DMQ segue vazia porque nenhuma falha ocorreu. Este é o estado de partida controlado (`source = 1`, `DMQ = 0`, `consumers = 0`) que torna as fases seguintes comparáveis e auditáveis.
 
 ## Evidência 12 — Consumer iniciado
 
-![Evidência 12](../evidences/lab35/12-cpi-h6-consumer-started-successfully.png)
+Com o backend em `H6_SUCCESS_200`, fazemos o deploy do consumidor. A tela de Manage Integration Content mostra o iFlow `H6 MM Supplier Confirmation Consumer` com `Status = Started` e o consumo AMQP estabelecido com sucesso sobre a source queue.
 
-**Comprova:** iFlow iniciado e consumo AMQP operacional.
+![Evidência 12 — Consumer iniciado](../evidences/lab35/12-cpi-h6-consumer-started-successfully.png)
 
-## Evidência 13 — Execução concluída
+**O que esta evidência comprova:** o consumidor entrou em operação e vinculou-se à `H6.Q.MM.SUPPLIER_CONFIRMATION`, tornando-se apto a drenar o evento que estava aguardando. A partir daqui, a responsabilidade passa do broker (que guardou a mensagem) para o SAP Cloud Integration (que vai processá-la e chamar o ERP).
 
-![Evidência 13](../evidences/lab35/13-cpi-h6-success-event-completed.png)
+## Evidência 13 — Execução do caminho feliz concluída
 
-**Comprova:** caminho feliz finalizado como `Completed`.
+No Monitor Message Processing, a execução do `EVT-H6-000001` aparece com `Status = Completed`. O ERP respondeu HTTP 200 na primeira tentativa e o adapter reconheceu a mensagem ao broker.
+
+![Evidência 13 — Execução do caminho feliz concluída](../evidences/lab35/13-cpi-h6-success-event-completed.png)
+
+**O que esta evidência comprova:** o fluxo completo funcionou no caminho feliz — AMQP recebeu, os Groovy validaram e transformaram, o HTTP entregou ao ERP e o retorno 200 encerrou o processamento como `Completed`. Este é o baseline de sucesso contra o qual as falhas das próximas fases serão contrastadas.
 
 ## Evidência 14 — ERP processou com HTTP 200
 
-![Evidência 14](../evidences/lab35/14-mockoon-h6-success-event-processed.png)
+Do lado do backend, o log do Mockoon mostra o request `POST /h6/erp/supplier-confirmation` com resposta `200 OK`. Nos headers e no corpo aparecem `X-Event-ID`, `X-Correlation-ID`, `X-Processing-Mode = SUCCESS` e `X-Delivery-Count = 1`.
 
-**Comprova:** Event ID, Correlation ID, Processing Mode e Delivery Count 1 recebidos pelo backend.
+![Evidência 14 — ERP processou com HTTP 200](../evidences/lab35/14-mockoon-h6-success-event-processed.png)
 
-## Evidência 15 — Queue drenada
+**O que esta evidência comprova:** a entrega efetiva ao sistema externo, com rastreabilidade completa. O `X-Delivery-Count = 1` indica que houve uma única entrega desta mensagem — informação que será fundamental para diferenciar retry interno de redelivery broker-side nas fases seguintes. Também confirma que os headers definidos no CPI chegaram intactos ao destino.
 
-![Evidência 15](../evidences/lab35/15-solace-h6-success-confirmed-delivery-queue-drained.png)
+## Evidência 15 — Queue drenada e entrega confirmada
 
-**Comprova:** mensagem confirmada, source queue zerada e nenhuma mensagem na DMQ.
+Após o processamento, a composição do Solace mostra a source queue novamente em `Messages Queued = 0` com `Current Consumers = 1`, entrega confirmada, zero redeliveries e zero mensagens não reconhecidas, enquanto a DMQ permanece zerada.
+
+![Evidência 15 — Queue drenada e entrega confirmada](../evidences/lab35/15-solace-h6-success-confirmed-delivery-queue-drained.png)
+
+**O que esta evidência comprova:** o ciclo do caminho feliz fechou de forma limpa — a mensagem foi entregue, confirmada e removida da fila, sem qualquer reentrega e sem tocar a DMQ. Fica estabelecida a linha de base: em condições normais, o número de entregas do broker é igual a 1 e o número de redeliveries é 0. Guardar esse comparativo é o que dará força à demonstração de retry interno que vem a seguir.
 
 ---
 
 # 10. Falha temporária e recuperação automática
 
+> Agora o ERP passa a falhar duas vezes antes de se recuperar. O objetivo é demonstrar que falhas transitórias são absorvidas pela política de retry — e provar que esses retries são internos ao adapter, sem gerar redelivery no broker.
+
 ## Evidência 16 — Evento temporário publicado
 
-![Evidência 16](../evidences/lab35/16-nodejs-h6-temporary-failure-event-published.png)
+Iniciando a fase de falha temporária, o producer publica `EVT-H6-000002` com `processingMode = TEMPORARY_FAILURE`. O evento é aceito pelo broker exatamente como o anterior — a diferença de comportamento virá do backend, não do payload.
 
-**Comprova:** publicação de `EVT-H6-000002` com `TEMPORARY_FAILURE`.
+![Evidência 16 — Evento temporário publicado](../evidences/lab35/16-nodejs-h6-temporary-failure-event-published.png)
 
-## Evidência 17 — Sequência 500 → 500 → 200
+**O que esta evidência comprova:** o segundo evento entrou na cadeia de forma idêntica à do caminho feliz (`[ACCEPTED]`, `SUCCESS: 1/1`). Isso é importante metodologicamente: como a publicação é igual, qualquer diferença observada adiante é atribuível exclusivamente ao comportamento do ERP simulado, e não a variações no evento.
 
-![Evidência 17](../evidences/lab35/17-mockoon-h6-sequential-responses-500-500-200-config.png)
+## Evidência 17 — Mockoon em modo sequencial 500 → 500 → 200
 
-**Comprova:** Mockoon em modo sequencial, tornando a falha temporária determinística.
+Para tornar a falha temporária determinística, o Mockoon é colocado em modo `Sequential response mode`, com as respostas ordenadas como `H6_TEMPORARY_FAILURE_500_ATTEMPT_1`, `H6_TEMPORARY_FAILURE_500_ATTEMPT_2` e `H6_SUCCESS_200`. Assim, as três primeiras chamadas seguem obrigatoriamente a sequência `500 → 500 → 200`.
 
-## Evidência 18 — Primeira tentativa 500
+![Evidência 17 — Mockoon em modo sequencial 500 → 500 → 200](../evidences/lab35/17-mockoon-h6-sequential-responses-500-500-200-config.png)
 
-![Evidência 18](../evidences/lab35/18-mockoon-h6-temporary-failure-first-attempt-500.png)
+**O que esta evidência comprova:** a simulação de uma indisponibilidade temporária controlada, em que o ERP falha duas vezes e se recupera na terceira. O modo sequencial elimina qualquer dependência de troca manual durante o retry, garantindo que a demonstração de recuperação seja reproduzível e não dependa da velocidade de reação do operador.
 
-**Comprova:** primeira chamada do mesmo evento retornou HTTP 500.
+## Evidência 18 — Primeira tentativa com HTTP 500
 
-## Evidência 19 — Segunda tentativa 500
+O log do Mockoon registra a primeira chamada do `EVT-H6-000002` com resposta `500`. Os headers preservam `X-Event-ID`, `X-Correlation-ID` e `X-Processing-Mode = TEMPORARY_FAILURE`.
 
-![Evidência 19](../evidences/lab35/19-mockoon-h6-temporary-failure-second-attempt-500.png)
+![Evidência 18 — Primeira tentativa com HTTP 500](../evidences/lab35/18-mockoon-h6-temporary-failure-first-attempt-500.png)
 
-**Comprova:** retry preservando Event ID e Correlation ID.
+**O que esta evidência comprova:** o primeiro contato do consumidor com o backend indisponível resultou em `HTTP 500` com `code = H6-ERP-500-TEMP` e `retryable = true`. É o disparo da lógica de resiliência: a partir desta resposta, o adapter iniciará suas tentativas em vez de considerar a mensagem processada.
 
-## Evidência 20 — Terceira tentativa 200
+## Evidência 19 — Segunda tentativa com HTTP 500
 
-![Evidência 20](../evidences/lab35/20-mockoon-h6-temporary-failure-third-attempt-success-200.png)
+A segunda chamada ao ERP, ainda dentro da sequência configurada, também retorna `500`. O ponto-chave é que os identificadores permanecem idênticos aos da primeira tentativa.
 
-**Comprova:** recuperação na terceira chamada.
+![Evidência 19 — Segunda tentativa com HTTP 500](../evidences/lab35/19-mockoon-h6-temporary-failure-second-attempt-500.png)
 
-## Evidência 21 — Retry → Retry → Completed
+**O que esta evidência comprova:** que houve uma nova tentativa do **mesmo** evento, e não a chegada de um evento novo — comprovado pela preservação de `X-Event-ID` e `X-Correlation-ID`. Isso demonstra visualmente que o SAP Cloud Integration está repetindo a chamada HTTP para a mesma mensagem, caracterizando um retry de processamento.
 
-![Evidência 21](../evidences/lab35/21-cpi-h6-temporary-failure-two-retries-then-completed.png)
+## Evidência 20 — Terceira tentativa com HTTP 200
 
-**Comprova:** três runs no mesmo MPL, com dois retries e conclusão.
+Conforme a sequência `500 → 500 → 200`, a terceira chamada do mesmo evento finalmente retorna `200 OK`, com `code = H6-ERP-200`. O ERP simulado se recuperou.
+
+![Evidência 20 — Terceira tentativa com HTTP 200](../evidences/lab35/20-mockoon-h6-temporary-failure-third-attempt-success-200.png)
+
+**O que esta evidência comprova:** a recuperação automática dentro da política de retry. O mesmo evento que falhou duas vezes foi processado com sucesso na terceira tentativa, sem intervenção manual e sem ir para a DMQ. É a demonstração de que falhas transitórias podem ser absorvidas pela integração de forma transparente para o negócio.
+
+## Evidência 21 — Retry → Retry → Completed no CPI
+
+No Monitor, o `EVT-H6-000002` aparece como um único Message Processing Log com três `Runs`: os dois primeiros marcados como `Retry` e o terceiro como `Completed`. O tempo total agrega as três tentativas.
+
+![Evidência 21 — Retry → Retry → Completed no CPI](../evidences/lab35/21-cpi-h6-temporary-failure-two-retries-then-completed.png)
+
+**O que esta evidência comprova:** os dois retries e a conclusão aconteceram dentro do **mesmo** processamento AMQP, e não como três entregas separadas. Essa é a visão do lado do consumidor que, combinada com a evidência seguinte do broker, prova a distinção conceitual entre retry de aplicação e redelivery de broker.
 
 ## Evidência 22 — Sem redelivery broker-side
 
-![Evidência 22](../evidences/lab35/22-solace-h6-temporary-failure-confirmed-without-broker-redelivery.png)
+As estatísticas da source queue no Solace, após a recuperação, mostram a mensagem confirmada, `Messages Redelivered = 0`, `Redelivery Requests = 0` e `Unacknowledged Messages = 0`, apesar de o CPI ter feito três chamadas HTTP.
 
-**Comprova:** entrega confirmada e contador de redelivery em zero, pois os retries foram internos ao CPI.
+![Evidência 22 — Sem redelivery broker-side](../evidences/lab35/22-solace-h6-temporary-failure-confirmed-without-broker-redelivery.png)
 
-## Evidência 23 — Source e DMQ zeradas
+**O que esta evidência comprova:** o ponto conceitual mais importante desta fase — **retry de aplicação não é redelivery de broker**. O Solace entregou a mensagem uma única vez e os três requests HTTP foram tentativas internas do adapter dentro dessa mesma entrega. Por isso o contador de redelivery permaneceu em zero. Confundir esses dois conceitos leva a dimensionar erroneamente políticas de reprocessamento em produção.
 
-![Evidência 23](../evidences/lab35/23-solace-h6-temporary-failure-source-and-dmq-zero.png)
+## Evidência 23 — Source e DMQ zeradas após recuperação
 
-**Comprova:** falha temporária recuperada antes da DMQ.
+Encerrando a fase temporária, a composição mostra a source queue em `0`, `Current Consumers = 1` e a DMQ também em `0`.
+
+![Evidência 23 — Source e DMQ zeradas após recuperação](../evidences/lab35/23-solace-h6-temporary-failure-source-and-dmq-zero.png)
+
+**O que esta evidência comprova:** a falha temporária foi integralmente resolvida dentro da política de retry, sem gerar poison message. A DMQ permaneceu vazia porque a mensagem nunca esgotou suas tentativas. Este resultado contrasta diretamente com a próxima fase, em que a falha será permanente e a mensagem terminará isolada na DMQ.
 
 ---
 
-# 11. Poison message e DMQ
+# 11. Poison message e Dead Message Queue
 
-## Evidência 24 — Falha permanente como default
+> Aqui o ERP recusa a mensagem de forma persistente. O evento esgota suas tentativas e é isolado na DMQ, em vez de bloquear a fila ou ser descartado. Esta é a demonstração central do dead-lettering.
 
-![Evidência 24](../evidences/lab35/24-mockoon-h6-permanent-failure-default-response-config.png)
+## Evidência 24 — Falha permanente como resposta default
 
-**Comprova:** backend configurado para retornar HTTP 500 permanentemente.
+Para provocar um poison message, desligamos o modo sequencial e definimos `H6_PERMANENT_FAILURE_500` como resposta default do Mockoon. Agora todas as chamadas retornarão `500` com `retryable = false`.
+
+![Evidência 24 — Falha permanente como resposta default](../evidences/lab35/24-mockoon-h6-permanent-failure-default-response-config.png)
+
+**O que esta evidência comprova:** o backend está configurado para uma falha não recuperável e consistente. Diferentemente da falha temporária, aqui não há terceira tentativa bem-sucedida — o que forçará o esgotamento das tentativas e o acionamento do mecanismo de dead-lettering. O `code = H6-ERP-500-PERM` documenta explicitamente a natureza permanente do erro.
 
 ## Evidência 25 — Poison message publicado
 
-![Evidência 25](../evidences/lab35/25-nodejs-h6-permanent-failure-event-published.png)
+O producer publica `EVT-H6-000003` com `processingMode = PERMANENT_FAILURE`. Como nas demais fases, o broker aceita a mensagem normalmente.
 
-**Comprova:** publicação de `EVT-H6-000003` com `PERMANENT_FAILURE`.
+![Evidência 25 — Poison message publicado](../evidences/lab35/25-nodejs-h6-permanent-failure-event-published.png)
 
-## Evidência 26 — Dez HTTP 500
+**O que esta evidência comprova:** o candidato a poison message entrou na cadeia de forma legítima e foi aceito pelo broker (`SUCCESS: 1/1`). Novamente, a publicação idêntica isola a variável: o que tornará este evento um poison message não é o seu conteúdo, mas o fato de o backend recusá-lo persistentemente.
 
-![Evidência 26](../evidences/lab35/26-mockoon-h6-permanent-failure-ten-http-500-attempts.png)
+## Evidência 26 — Dez chamadas HTTP 500
 
-**Comprova:** dez chamadas do mesmo evento, todas sem sucesso.
+O log do Mockoon acumula dez requests `POST /h6/erp/supplier-confirmation`, todos com `500`, todos referentes ao mesmo `EVT-H6-000003`.
 
-## Evidência 27 — Dez runs esgotados
+![Evidência 26 — Dez chamadas HTTP 500](../evidences/lab35/26-mockoon-h6-permanent-failure-ten-http-500-attempts.png)
 
-![Evidência 27](../evidences/lab35/27-cpi-h6-permanent-failure-ten-retries-exhausted.png)
+**O que esta evidência comprova:** o consumidor esgotou suas tentativas contra um backend que nunca aceitou a mensagem. Registramos aqui o número **real** de chamadas observado no runtime (dez), sem forçá-lo a caber em uma expectativa teórica de "tentativa inicial + 3 retries". A preservação do Event ID em todas as chamadas confirma que é sempre a mesma mensagem sendo retentada.
 
-**Comprova:** comportamento real observado no runtime, sem ajustar a evidência à expectativa teórica.
+## Evidência 27 — Dez runs esgotados no CPI
+
+No Monitor, o processamento do `EVT-H6-000003` mostra `Runs (10)`, todos com status `Retry` e a mensagem de erro `HTTP operation failed ... statusCode: 500`. O tempo total do MPL reflete todo o ciclo de tentativas.
+
+![Evidência 27 — Dez runs esgotados no CPI](../evidences/lab35/27-cpi-h6-permanent-failure-ten-retries-exhausted.png)
+
+**O que esta evidência comprova:** o comportamento real do runtime diante de uma falha permanente. Mesmo com o MPL exibido como `Retry`, o desfecho efetivo é a remoção da mensagem da source queue e sua transferência para a DMQ, confirmada na evidência seguinte. Documentar os dez runs observados, em vez de um número idealizado, mantém a honestidade técnica do laboratório.
 
 ## Evidência 28 — Mensagem movida para a DMQ
 
-![Evidência 28](../evidences/lab35/28-solace-h6-poison-message-moved-from-source-to-dmq.png)
+Após o esgotamento, a composição do Solace mostra a inversão de estado: a source queue voltou a `Messages Queued = 0` e a DMQ passou a `Messages Queued = 1`.
 
-**Comprova:** source queue igual a zero e DMQ igual a um.
+![Evidência 28 — Mensagem movida para a DMQ](../evidences/lab35/28-solace-h6-poison-message-moved-from-source-to-dmq.png)
 
-## Evidência 29 — Detalhes da mensagem na DMQ
+**O que esta evidência comprova:** o mecanismo de dead-lettering funcionou exatamente como projetado. A mensagem que não pôde ser entregue foi automaticamente movida da `H6.Q.MM.SUPPLIER_CONFIRMATION` para a `H6.DMQ.MM.SUPPLIER_CONFIRMATION`, liberando a source queue para continuar operando. Isso evita o cenário clássico em que uma única mensagem defeituosa bloqueia toda a fila.
 
-![Evidência 29](../evidences/lab35/29-solace-h6-poison-message-dmq-details.png)
+## Evidência 29 — Detalhes do poison message na DMQ
 
-**Comprova:** mensagem preservada para investigação, incluindo propriedades de DMQ e conteúdo.
+Na aba Messages Queued da DMQ, abrimos a mensagem isolada. Aparecem propriedades como `Message ID`, `Content Size`, `Undelivered = Yes`, `Redeliveries`, `DMQ Eligible` e `DMQ Eligible As Published`.
+
+![Evidência 29 — Detalhes do poison message na DMQ](../evidences/lab35/29-solace-h6-poison-message-dmq-details.png)
+
+**O que esta evidência comprova:** a mensagem não foi descartada — foi **preservada** com seus metadados para investigação. O `DMQ Eligible As Published = Yes` mostra que a mensagem era elegível para dead-lettering desde a publicação, enquanto o `DMQ Eligible = No` (já na DMQ) é coerente, pois uma mensagem já isolada não deve ser reencaminhada para outra DMQ. Preservar o conteúdo é o que torna possível a recuperação operacional demonstrada a seguir.
 
 ---
 
 # 12. Recuperação operacional
 
-## Evidência 30 — Copy não exposto na lista da DMQ
+> Com a causa raiz corrigida, recuperamos a mensagem sem perder rastreabilidade: documentamos a limitação da interface, restauramos o backend, republicamos o mesmo evento lógico, validamos o sucesso e só então removemos o original da DMQ.
 
-![Evidência 30](../evidences/lab35/30-solace-h6-dmq-message-list-copy-action-not-exposed.png)
+## Evidência 30 — Ação de cópia não exposta na lista da DMQ
 
-**Comprova:** na visualização da mensagem da DMQ, a ação disponível era exclusão; a cópia não estava exposta nessa tela específica.
+Ao tentar devolver a mensagem à source queue a partir da própria DMQ, o menu `Action` da lista de mensagens exibiu apenas `Delete Messages`, sem uma opção gráfica de copiar para outra fila.
 
-> Posteriormente foi identificado que a source queue oferece `Copy Message From Queue`. Como a recuperação por republicação já havia sido concluída, essa opção administrativa foi registrada, mas não executada.
+![Evidência 30 — Ação de cópia não exposta na lista da DMQ](../evidences/lab35/30-solace-h6-dmq-message-list-copy-action-not-exposed.png)
 
-## Evidência 31 — Backend recuperado
+**O que esta evidência comprova:** uma limitação real da operação disponível nessa tela e perfil de acesso, documentada de forma transparente. Posteriormente identificamos que o Broker Manager expõe `Copy Message From Queue` a partir da **fila de destino**, não da mensagem na DMQ. Como a recuperação por republicação controlada já havia sido validada, essa alternativa administrativa foi registrada mas não executada, evitando dependência de CLI/SEMP e preservando a mensagem original.
 
-![Evidência 31](../evidences/lab35/31-mockoon-h6-backend-recovered-success-default.png)
+## Evidência 31 — Backend recuperado para HTTP 200
 
-**Comprova:** retorno do Mock ERP para `H6_SUCCESS_200`.
+Simulando a correção da causa raiz, voltamos o Mockoon para `H6_SUCCESS_200` como default, com o modo sequencial e o fallback desligados. O ERP volta a processar confirmações normalmente.
+
+![Evidência 31 — Backend recuperado para HTTP 200](../evidences/lab35/31-mockoon-h6-backend-recovered-success-default.png)
+
+**O que esta evidência comprova:** o pré-requisito da recuperação foi atendido — o sistema externo que causava a falha permanente agora responde com sucesso. Importante notar a sequência operacional correta: **primeiro** se corrige a causa, **depois** se reprocessa. Reprocessar antes de corrigir apenas devolveria a mensagem à DMQ.
 
 ## Evidência 32 — Mesmo evento lógico republicado
 
-![Evidência 32](../evidences/lab35/32-nodejs-h6-poison-event-republished-after-backend-recovery.png)
+Com o backend recuperado, o producer republica o mesmo evento lógico `EVT-H6-000003` (mesmos Event ID e Correlation ID), preservando o `processingMode = PERMANENT_FAILURE` original. O broker aceita a nova publicação.
 
-**Comprova:** preservação de Event ID e Correlation ID após a correção operacional.
+![Evidência 32 — Mesmo evento lógico republicado](../evidences/lab35/32-nodejs-h6-poison-event-republished-after-backend-recovery.png)
 
-## Evidência 33 — Evento recuperado com HTTP 200
+**O que esta evidência comprova:** a recuperação por republicação controlada, preservando a identidade funcional do evento. O `processingMode` continua `PERMANENT_FAILURE` intencionalmente — não adulteramos o payload para forçar sucesso; o que mudou foi o **estado operacional do backend**. A mensagem original permanece intacta na DMQ enquanto validamos o reprocessamento.
 
-![Evidência 33](../evidences/lab35/33-mockoon-h6-republished-poison-event-processed-200.png)
+## Evidência 33 — Evento recuperado processado com HTTP 200
 
-**Comprova:** o mesmo evento anteriormente rejeitado foi aceito pelo ERP recuperado.
+O log do Mockoon mostra que o evento republicado foi processado com `200 OK`, com os mesmos identificadores do poison message original.
 
-## Evidência 34 — Reprocessamento concluído
+![Evidência 33 — Evento recuperado processado com HTTP 200](../evidences/lab35/33-mockoon-h6-republished-poison-event-processed-200.png)
 
-![Evidência 34](../evidences/lab35/34-cpi-h6-republished-poison-event-reprocessed-completed.png)
+**O que esta evidência comprova:** o mesmo evento que anteriormente recebeu dez respostas `500` agora foi aceito pelo ERP recuperado. É a prova de que a falha era realmente do backend (operacional) e não do evento (dado), e de que a correção da causa raiz é suficiente para reprocessar com sucesso.
 
-**Comprova:** transição do processamento problemático para `Completed`.
+## Evidência 34 — Reprocessamento concluído no CPI
 
-## Evidência 35 — Original preservado durante validação
+No Monitor, o processamento do evento recuperado é exibido com `Status = Completed`. Os Run Steps mostram o pipeline completo — AMQP, validação, preparação do request, headers e HTTP — executado com sucesso.
 
-![Evidência 35](../evidences/lab35/35-solace-h6-reprocessed-success-dmq-original-preserved.png)
+![Evidência 34 — Reprocessamento concluído no CPI](../evidences/lab35/34-cpi-h6-republished-poison-event-reprocessed-completed.png)
 
-**Comprova:** source queue zerada, consumer ativo e original ainda na DMQ.
+**O que esta evidência comprova:** a transição de um evento antes problemático para um desfecho `Completed`, atravessando todo o pipeline do consumidor sem interrupção. Fecha a demonstração de que a integração é capaz de recuperar mensagens que haviam falhado, uma vez corrigida a condição externa.
 
-## Evidência 36 — Exclusão manual controlada
+## Evidência 35 — Original preservado na DMQ durante a validação
 
-![Evidência 36](../evidences/lab35/36-solace-h6-original-dmq-message-deleted-after-recovery.png)
+Neste instante intermediário, a composição mostra a source queue em `0` com `Current Consumers = 1` (o evento republicado já foi consumido) e a DMQ ainda em `1` (a mensagem original continua lá).
 
-**Comprova:** remoção do registro original somente após validar o sucesso.
+![Evidência 35 — Original preservado na DMQ durante a validação](../evidences/lab35/35-solace-h6-reprocessed-success-dmq-original-preserved.png)
+
+**O que esta evidência comprova:** a recuperação foi validada **antes** de qualquer exclusão. A republicação foi processada e reconhecida, mas o registro original permaneceu preservado na DMQ até termos certeza do sucesso. Essa disciplina operacional — validar primeiro, excluir depois — evita perda de dados caso o reprocessamento falhasse.
+
+## Evidência 36 — Exclusão manual controlada da DMQ
+
+Com o reprocessamento confirmado, selecionamos a mensagem original na DMQ e executamos `Action → Delete Messages` como etapa final de encerramento operacional.
+
+![Evidência 36 — Exclusão manual controlada da DMQ](../evidences/lab35/36-solace-h6-original-dmq-message-deleted-after-recovery.png)
+
+**O que esta evidência comprova:** o fechamento consciente do ciclo de tratamento do poison message. A exclusão foi uma **ação manual controlada**, executada somente após a validação da recuperação — e não um descarte automático. Em produção, essa etapa corresponderia a marcar o incidente como resolvido em um processo auditável.
 
 ## Evidência 37 — Estado final da recuperação
 
-![Evidência 37](../evidences/lab35/37-solace-h6-final-source-and-dmq-zero-after-recovery.png)
+A composição final da fase de recuperação mostra a source queue em `0`, a DMQ em `0` e o consumidor ativo.
 
-**Comprova:** source queue e DMQ zeradas, com consumer ativo.
+![Evidência 37 — Estado final da recuperação](../evidences/lab35/37-solace-h6-final-source-and-dmq-zero-after-recovery.png)
+
+**O que esta evidência comprova:** o cenário de falha permanente foi completamente encerrado — a mensagem foi recuperada, o original foi removido de forma controlada e ambas as filas voltaram ao estado limpo, com o consumidor pronto para novos eventos. É o marco que separa a fase de dead-lettering da fase de Message Replay.
 
 ---
 
 # 13. Message Replay
 
-## Evidência 38 — Replay Log
+> A última fase demonstra um mecanismo diferente da DMQ: reproduzir um evento **já processado e reconhecido**. Criamos um Replay Log filtrado, publicamos um evento dedicado, iniciamos o replay e comprovamos que o mesmo evento foi processado duas vezes.
 
-![Evidência 38](../evidences/lab35/38-solace-h6-message-replay-log-configuration.png)
+## Evidência 38 — Configuração do Replay Log
 
-**Comprova:** Incoming e Outgoing habilitados, quota de 100 MB e topic filter ativo.
+Iniciando a fase de Message Replay, criamos o Replay Log do Message VPN. Habilitamos `Incoming = On` (gravar mensagens) e `Outgoing = On` (reproduzir mensagens), definimos `Maximum Spool Usage = 100 MB` e ativamos `Topic Filter Enabled`.
 
-## Evidência 39 — Filtro do topic H6
+![Evidência 38 — Configuração do Replay Log](../evidences/lab35/38-solace-h6-message-replay-log-configuration.png)
 
-![Evidência 39](../evidences/lab35/39-solace-h6-message-replay-topic-filter.png)
+**O que esta evidência comprova:** o Message VPN foi preparado para reter e reproduzir mensagens Guaranteed. Diferente da DMQ — que guarda o que falhou — o Replay Log guarda mensagens **mesmo após terem sido processadas e reconhecidas**, permitindo reprodução histórica. O topic filter será usado para restringir o log apenas ao namespace do H6.
 
-**Comprova:** apenas o topic H6 é registrado no log.
+## Evidência 39 — Filtro de topic do Replay Log
 
-## Evidência 40 — Evento exclusivo do Replay
+Na aba Subscriptions do Replay Log, adicionamos exatamente o topic `sap/mm/supplier/confirmation/received/v1`, evitando registrar eventos dos demais laboratórios (H1 a H5) que compartilham o mesmo Message VPN.
 
-![Evidência 40](../evidences/lab35/40-nodejs-h6-replay-event-published-and-accepted.png)
+![Evidência 39 — Filtro de topic do Replay Log](../evidences/lab35/39-solace-h6-message-replay-topic-filter.png)
 
-**Comprova:** publicação e aceite de `EVT-H6-000004` após ativação do Replay Log.
+**O que esta evidência comprova:** o Replay Log está restrito ao namespace de negócio do H6. Sem esse filtro, o log capturaria toda mensagem Guaranteed do VPN, misturando domínios e consumindo quota desnecessariamente. É uma boa prática de governança: registrar para replay apenas o que realmente pode precisar ser reproduzido.
 
-## Evidência 41 — Primeiro processamento HTTP 200
+## Evidência 40 — Evento exclusivo do Replay publicado
 
-![Evidência 41](../evidences/lab35/41-mockoon-h6-replay-event-first-processing-200.png)
+Com o Replay Log já ativo e filtrado, o producer publica `EVT-H6-000004` com `processingMode = SUCCESS`. Este evento é novo e exclusivo desta fase, pois só mensagens publicadas **após** a criação do log entram nele.
 
-**Comprova:** processamento original do evento.
+![Evidência 40 — Evento exclusivo do Replay publicado](../evidences/lab35/40-nodejs-h6-replay-event-published-and-accepted.png)
 
-## Evidência 42 — Primeiro processamento CPI
+**O que esta evidência comprova:** a criação de uma mensagem que será, ao mesmo tempo, processada normalmente e registrada no histórico de replay. Os eventos anteriores (000001 a 000003) não podem ser reproduzidos porque foram publicados antes do log existir — por isso a fase de replay usa um evento dedicado.
 
-![Evidência 42](../evidences/lab35/42-cpi-h6-replay-event-first-processing-completed.png)
+## Evidência 41 — Primeiro processamento com HTTP 200
 
-**Comprova:** evento reconhecido e removido da source queue.
+O log do Mockoon registra o primeiro `POST 200` para o `EVT-H6-000004`, correspondendo ao processamento normal do evento recém-publicado.
+
+![Evidência 41 — Primeiro processamento com HTTP 200](../evidences/lab35/41-mockoon-h6-replay-event-first-processing-200.png)
+
+**O que esta evidência comprova:** o processamento original do evento ocorreu como qualquer caminho feliz. Este é o primeiro dos **dois** processamentos que este mesmo evento terá — o segundo virá do replay — e serve de referência para comprovar, adiante, que a reprodução histórica de fato reexecutou a integração.
+
+## Evidência 42 — Primeiro processamento concluído no CPI
+
+No Monitor, o processamento inicial do `EVT-H6-000004` aparece como `Completed`. A source queue é drenada normalmente após o reconhecimento.
+
+![Evidência 42 — Primeiro processamento concluído no CPI](../evidences/lab35/42-cpi-h6-replay-event-first-processing-completed.png)
+
+**O que esta evidência comprova:** o evento foi consumido, processado com sucesso e removido da source queue — comportamento idêntico ao caminho feliz. O ponto sutil, que a próxima evidência revela, é que apesar de removido da fila, o evento continua preservado no Replay Log.
 
 ## Evidência 43 — Evento preservado no Replay Log
 
-![Evidência 43](../evidences/lab35/43-solace-h6-replay-log-event-recorded.png)
+Na aba Messages Logged do Replay, aparece a mensagem registrada com seu `Message ID`, `Spooled Time`, `Content Size`, `DMQ Eligible` e um `Replication Group Message ID`, mesmo após o evento já ter sido consumido e reconhecido.
 
-**Comprova:** mensagem histórica disponível mesmo após o reconhecimento.
+![Evidência 43 — Evento preservado no Replay Log](../evidences/lab35/43-solace-h6-replay-log-event-recorded.png)
 
-## Evidência 44 — Start Replay from Beginning
+**O que esta evidência comprova:** a diferença fundamental entre a fila e o Replay Log. Na fila, uma mensagem reconhecida desaparece; no Replay Log, ela **permanece disponível para reprodução**. O `Replication Group Message ID` é o identificador que permitiria, se quiséssemos, iniciar o replay a partir de um ponto específico do histórico.
 
-![Evidência 44](../evidences/lab35/44-solace-h6-message-replay-start-from-beginning.png)
+## Evidência 44 — Início do Replay a partir do começo do log
 
-**Comprova:** queue correta, ação Start Replay, modo From Beginning e confirmação da operação.
+Esta composição documenta o procedimento administrativo completo em quatro passos numerados: (1) abrir o menu `Action` da source queue, (2) selecionar `Start Replay`, (3) escolher `Start Replay from Beginning` e (4) confirmar em `Start Replay`. A source queue está zerada no momento da operação.
 
-## Evidência 45 — Segundo POST 200
+![Evidência 44 — Início do Replay a partir do começo do log](../evidences/lab35/44-solace-h6-message-replay-start-from-beginning.png)
 
-![Evidência 45](../evidences/lab35/45-mockoon-h6-replayed-event-second-processing-200.png)
+**O que esta evidência comprova:** a decisão e a configuração exatas usadas para iniciar a reprodução histórica sobre a `H6.Q.MM.SUPPLIER_CONFIRMATION`, a partir da mensagem mais antiga do log. A sequência numerada torna o procedimento reproduzível por qualquer pessoa que consulte a documentação, sem ambiguidade sobre onde clicar.
 
-**Comprova:** o mesmo evento histórico chegou novamente ao ERP.
+## Evidência 45 — Segundo POST 200 originado pelo Replay
 
-## Evidência 46 — Segundo processamento CPI
+Após o início do replay, o log do Mockoon passa a exibir **dois** `POST 200` para o `EVT-H6-000004`: o processamento original e, agora, o processamento originado pela reprodução histórica.
 
-![Evidência 46](../evidences/lab35/46-cpi-h6-replayed-event-second-processing-completed.png)
+![Evidência 45 — Segundo POST 200 originado pelo Replay](../evidences/lab35/45-mockoon-h6-replayed-event-second-processing-200.png)
 
-**Comprova:** duas execuções `Completed` para o mesmo Event ID.
+**O que esta evidência comprova:** o mesmo evento chegou novamente ao ERP, desta vez entregue pelo broker a partir do Replay Log — e não por uma nova publicação do producer. Os identificadores idênticos confirmam que é o evento histórico sendo reproduzido, comprovando na prática o mecanismo de Message Replay.
 
-## Evidência 47 — Replay concluído
+## Evidência 46 — Segundo processamento concluído no CPI
 
-![Evidência 47](../evidences/lab35/47-solace-h6-message-replay-completed.png)
+No Monitor, agora aparecem **duas** execuções `Completed` para o mesmo Event ID, uma referente ao processamento original e outra à mensagem reproduzida.
 
-**Comprova:** transição `Pending Complete → Complete`, mensagem histórica consumida e consumer reconectado.
+![Evidência 46 — Segundo processamento concluído no CPI](../evidences/lab35/46-cpi-h6-replayed-event-second-processing-completed.png)
+
+**O que esta evidência comprova:** o SAP Cloud Integration processou o mesmo evento lógico duas vezes — a primeira ao vivo e a segunda via replay — ambas com sucesso. Isso evidencia por que, em produção com replay habilitado, a **idempotência do consumidor** é essencial: sem ela, um replay reprocessaria efeitos colaterais já aplicados.
+
+## Evidência 47 — Replay concluído (Before/After)
+
+Esta composição Before/After captura o ciclo de vida do replay na source queue. No estado **Before**, a queue mostra `Messages Queued = 1`, `Current Consumers = 0` e `Replay State = Pending Complete`. No estado **After**, mostra `Messages Queued = 0`, `Current Consumers = 1` e `Replay State = Complete`.
+
+![Evidência 47 — Replay concluído (Before/After)](../evidences/lab35/47-solace-h6-message-replay-completed.png)
+
+**O que esta evidência comprova:** o comportamento operacional completo do Message Replay. Ao iniciar, o broker desconecta os consumer flows e recoloca a mensagem histórica na fila (`Pending Complete`, `0 consumers`); em seguida, o consumidor se reconecta automaticamente, processa a mensagem reproduzida e o estado transiciona para `Complete` com a fila novamente zerada. É o fechamento visual de toda a demonstração de resiliência do H6.
 
 ---
 
 # 14. Storytelling técnico consolidado
 
-O H6 começou como uma integração aparentemente simples: receber uma confirmação do fornecedor e encaminhá-la ao ERP. O caminho feliz demonstrou entrega garantida e reconhecimento. Porém, o valor real do laboratório surgiu quando o backend passou a falhar.
+O H6 começou como uma integração aparentemente simples: receber uma confirmação do fornecedor e encaminhá-la ao ERP. O caminho feliz demonstrou entrega garantida e reconhecimento, estabelecendo a linha de base — uma entrega, zero redeliveries, fila zerada. Porém, o valor real do laboratório surgiu quando o backend passou a falhar.
 
-Na falha temporária, o Mock ERP retornou dois erros consecutivos antes de se recuperar. O CPI realizou os retries dentro do mesmo processamento AMQP. O Solace contabilizou uma única entrega e zero redeliveries, provando que retries da aplicação não equivalem automaticamente a redelivery do broker.
+Na falha temporária, o Mock ERP retornou dois erros consecutivos antes de se recuperar. O CPI realizou os retries dentro do mesmo processamento AMQP. O Solace contabilizou uma única entrega e zero redeliveries, provando que retries da aplicação não equivalem automaticamente a redelivery do broker — uma distinção que muda a forma de dimensionar políticas de reprocessamento em produção.
 
-Na falha permanente, o ERP retornou dez erros HTTP 500. O evento deixou a source queue e foi preservado na DMQ dedicada. A mensagem permaneceu disponível para investigação, em vez de ser silenciosamente descartada.
+Na falha permanente, o ERP retornou dez erros HTTP 500. O evento deixou a source queue e foi preservado na DMQ dedicada. A mensagem permaneceu disponível para investigação, com seus metadados intactos, em vez de ser silenciosamente descartada ou de travar a fila para os demais eventos.
 
-A recuperação operacional não mascarou a falha. Primeiro, o backend foi restaurado. Depois, o mesmo evento lógico foi republicado com Event ID e Correlation ID preservados. Somente após o CPI concluir e o ERP responder 200 a mensagem original foi removida da DMQ.
+A recuperação operacional não mascarou a falha. Primeiro, o backend foi restaurado. Depois, o mesmo evento lógico foi republicado com Event ID e Correlation ID preservados. Somente após o CPI concluir e o ERP responder 200 a mensagem original foi removida da DMQ — validar primeiro, excluir depois.
 
-Por fim, o Message Replay demonstrou uma capacidade diferente. Um evento já processado e reconhecido permaneceu no Replay Log. A operação `Start Replay from Beginning` desconectou temporariamente o consumer, recolocou a mensagem histórica na queue e permitiu que o mesmo evento fosse processado novamente. O broker concluiu o Replay e o consumer se reconectou automaticamente.
+Por fim, o Message Replay demonstrou uma capacidade diferente. Um evento já processado e reconhecido permaneceu no Replay Log. A operação `Start Replay from Beginning` desconectou temporariamente o consumer, recolocou a mensagem histórica na queue e permitiu que o mesmo evento fosse processado novamente. O broker concluiu o Replay e o consumer se reconectou automaticamente, evidenciando por que a idempotência do consumidor é essencial quando o replay está habilitado.
 
 O resultado é um ciclo completo de resiliência operacional:
 
@@ -623,23 +724,23 @@ processar
 
 ## 15.1 `topic://` é obrigatório no publisher AMQP
 
-O destino deve ser explicitamente qualificado como topic. Sem o prefixo, o broker pode interpretar o endereço como queue.
+O destino deve ser explicitamente qualificado como topic. Sem o prefixo, o broker pode interpretar o endereço como queue, resultando em rejeição da publicação.
 
 ## 15.2 Quantidade real de runs
 
-`Max. Number of Retries = 3` não produziu apenas quatro requests na falha permanente. Foram observados dez runs. A documentação deve registrar o comportamento real do runtime e não impor uma simplificação teórica.
+`Max. Number of Retries = 3` não produziu apenas quatro requests na falha permanente. Foram observados dez runs. A documentação registra o comportamento real do runtime, sem impor uma simplificação teórica que não corresponderia às evidências.
 
 ## 15.3 Retry interno versus redelivery
 
-A falha temporária produziu três chamadas HTTP, mas zero redeliveries no Solace. A mensagem permaneceu na mesma entrega AMQP até o resultado final.
+A falha temporária produziu três chamadas HTTP, mas zero redeliveries no Solace. A mensagem permaneceu na mesma entrega AMQP até o resultado final, comprovando que os dois conceitos são independentes.
 
 ## 15.4 Copy no Broker Manager
 
-Na lista de mensagens da DMQ, a ação de cópia não estava exposta. Depois foi identificada, na source queue, a opção `Copy Message From Queue`. O laboratório já havia concluído a recuperação por republicação controlada, portanto a alternativa foi registrada sem alterar a evidência executada.
+Na lista de mensagens da DMQ, a ação de cópia não estava exposta — apenas `Delete Messages`. Depois foi identificada, na source queue, a opção `Copy Message From Queue`. O laboratório já havia concluído a recuperação por republicação controlada, portanto a alternativa foi registrada sem alterar a evidência executada, preservando a mensagem original.
 
 ## 15.5 Replay desconecta consumers
 
-Durante o Replay, a queue mostrou zero consumers e estado `Pending Complete`. Após o reprocessamento, o consumer retornou e o estado passou a `Complete`.
+Durante o Replay, a queue mostrou zero consumers e estado `Pending Complete`. Após o reprocessamento, o consumer retornou e o estado passou a `Complete`. Clientes compatíveis se reconectam automaticamente, mas esse comportamento precisa ser considerado no desenho de operações críticas.
 
 ---
 
@@ -651,7 +752,7 @@ Durante o Replay, a queue mostrou zero consumers e estado `Pending Complete`. Ap
 4. Retry do CPI coordenado com outcome final `REJECTED`.
 5. Poison message preservado para análise.
 6. Backend controlável e testes determinísticos.
-7. Event ID e Correlation ID preservados.
+7. Event ID e Correlation ID preservados em properties e headers.
 8. Exclusão da DMQ somente após validação da recuperação.
 9. Replay Log filtrado para o namespace necessário.
 10. Source queue zerada antes do Replay.
