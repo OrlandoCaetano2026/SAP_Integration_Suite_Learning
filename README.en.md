@@ -169,15 +169,60 @@ flowchart TB
 ## 🗺️ Roadmap by blocks
 
 <table>
-<tr><th>Block</th><th>Focus</th><th>Scenarios</th><th>Status</th></tr>
-<tr><td>Ⓐ</td><td>CPI Fundamentals</td><td>A1–A4</td><td>![](https://img.shields.io/badge/-completed-success)</td></tr>
-<tr><td>Ⓑ</td><td>Integration Patterns</td><td>B1–B5</td><td>![](https://img.shields.io/badge/-completed-success)</td></tr>
-<tr><td>Ⓒ</td><td>Resilience and Errors</td><td>C1–C4</td><td>![](https://img.shields.io/badge/-completed-success)</td></tr>
-<tr><td>Ⓓ</td><td>Connectivity / Adapters</td><td>D1–D4</td><td>![](https://img.shields.io/badge/-completed-success)</td></tr>
-<tr><td>Ⓔ</td><td>API Management</td><td>E0–E12</td><td>![](https://img.shields.io/badge/-completed-success)</td></tr>
-<tr><td>Ⓕ</td><td>Security</td><td>F4–F8</td><td>![](https://img.shields.io/badge/-completed-success)</td></tr>
-<tr><td>Ⓖ</td><td>SAP MM / PP / QM</td><td>G1–G3</td><td>![](https://img.shields.io/badge/-planned-lightgrey)</td></tr>
-<tr><td>Ⓗ</td><td>Event-Driven (Event Mesh)</td><td>H1–H4</td><td>![](https://img.shields.io/badge/-in%20progress-yellow)</td></tr>
+<tr>
+<th>Block</th>
+<th>Focus</th>
+<th>Scenarios</th>
+<th>Status</th>
+</tr>
+<tr>
+<td>Ⓐ</td>
+<td>CPI Fundamentals</td>
+<td>A1–A4</td>
+<td>https://img.shields.io/badge/-completed-success?style=flat-square/></td>
+</tr>
+<tr>
+<td>Ⓑ</td>
+<td>Integration Patterns</td>
+<td>B1–B5</td>
+<td>https://img.shields.io/badge/-completed-success?style=flat-square</td>
+</tr>
+<tr>
+<td>Ⓒ</td>
+<td>Resilience and Errors</td>
+<td>C1–C4</td>
+<td>https://img.shields.io/badge/-completed-success?style=flat-square</td>
+</tr>
+<tr>
+<td>Ⓓ</td>
+<td>Connectivity / Adapters</td>
+<td>D1–D4</td>
+<td>https://img.shields.io/badge/-completed-success?style=flat-square</td>
+</tr>
+<tr>
+<td>Ⓔ</td>
+<td>API Management</td>
+<td>E0–E12</td>
+<td>https://img.shields.io/badge/-completed-success?style=flat-square</td>
+</tr>
+<tr>
+<td>Ⓕ</td>
+<td>Security</td>
+<td>F4–F8</td>
+<td>https://img.shields.io/badge/-completed-success?style=flat-square</td>
+</tr>
+<tr>
+<td>Ⓖ</td>
+<td>SAP MM / PP / QM</td>
+<td>G1–G3</td>
+<td>https://img.shields.io/badge/-planned-lightgrey?style=flat-square</td>
+</tr>
+<tr>
+<td>Ⓗ</td>
+<td>Event-Driven (Event Mesh)</td>
+<td>H1–H4</td>
+<td>https://img.shields.io/badge/-in%20progress-yellow?style=flat-square</td>
+</tr>
 </table>
 
 ---
