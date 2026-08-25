@@ -76,11 +76,11 @@ This lab is structured to cover the **SAP Certified Associate – Integration De
 
 ```mermaid
 flowchart LR
-    A[Design\narchitecture and contract] --> B[Build\niFlow / policy / broker]
-    B --> C[Test\nPostman · Node.js · Monitor]
-    C --> D[Evidence\ntraceable captures]
-    D --> E[Document\ntechnical storytelling]
-    E --> F[Version\nGit · GitHub]
+    A[Design - architecture and contract] --> B[Build - iFlow / policy / broker]
+    B --> C[Test - Postman / Node.js / Monitor]
+    C --> D[Evidence - traceable captures]
+    D --> E[Document - technical storytelling]
+    E --> F[Version - Git / GitHub]
     F --> A
 
     classDef step fill:#174a7e,color:#fff,stroke:#65a8e5;
@@ -124,19 +124,19 @@ flowchart LR
 flowchart TB
     subgraph EXT[External Systems and Tools]
         OMS[OMS / MES Simulators]
-        BACK[Webhook.site · RequestBin · Beeceptor · Mockoon]
+        BACK[Webhook.site / RequestBin / Beeceptor / Mockoon]
         DB[(Neon PostgreSQL)]
         SFTP[(SFTP Server)]
     end
     subgraph BTP[SAP Business Technology Platform]
-        CPI[Cloud Integration\niFlows]
-        APIM[API Management\nProxies · Policies]
+        CPI[Cloud Integration - iFlows]
+        APIM[API Management - Proxies and Policies]
     end
     subgraph EDA[Event-Driven Layer]
-        SOL[Solace PubSub+\nAMQP 1.0]
+        SOL[Solace PubSub+ - AMQP 1.0]
     end
     OMS -->|HTTPS / AMQP| CPI
-    CPI <-->|OData · SOAP · SFTP · JDBC| EXT
+    CPI <-->|OData / SOAP / SFTP / JDBC| EXT
     CPI <-->|AMQP publish/subscribe| SOL
     SOL -->|Competing Consumers| CPI
     APIM -->|governance and security| CPI
@@ -168,19 +168,18 @@ flowchart TB
 
 ## 🗺️ Roadmap by blocks
 
-## 🗺️ Roadmap by blocks
-
 <table>
 <tr><th>Block</th><th>Focus</th><th>Scenarios</th><th>Status</th></tr>
-<tr><td>Ⓐ</td><td>CPI Fundamentals</td><td>A1–A4</td><td>https://img.shields.io/badge/status-completed-success?style=flat-square</td></tr>
-<tr><td>Ⓑ</td><td>Integration Patterns</td><td>B1–B5</td><td>https://img.shields.io/badge/status-completed-success?style=flat-square</td></tr>
-<tr><td>Ⓒ</td><td>Resilience and Errors</td><td>C1–C4</td><td>https://img.shields.io/badge/status-completed-success?style=flat-square</td></tr>
-<tr><td>Ⓓ</td><td>Connectivity / Adapters</td><td>D1–D4</td><td>//img.shields.io/badge/status-completed-success?style=flat-square" alt="completed"/></td></tr>
-<tr><td>Ⓔ</td><td>API Management</td><td>E0–E12</td><td>-success?style=flat-square" alt="completed"/></td></tr>
-<tr><td>Ⓕ</td><td>Security</td><td>F4–F8</td><td>https://img.shields.io/badge/status-completed-success?style=flat-square></td></tr>
-<tr><td>Ⓖ</td><td>SAP MM / PP / QM</td><td>G1–G3</td><td>https://img.shields.io/badge/status-planned-lightgrey?style=flat-square</td></tr>
-<tr><td>Ⓗ</td><td>Event-Driven (Event Mesh)</td><td>H1–H4</td><td>-square" alt="in progress"/></td></tr>
+<tr><td>Ⓐ</td><td>CPI Fundamentals</td><td>A1–A4</td><td><img src="https://img.shields.io/badge/status-completed-success?style=flat-square" alt="completed"/></td></tr>
+<tr><td>Ⓑ</td><td>Integration Patterns</td><td>B1–B5</td><td><img src="https://img.shields.io/badge/status-completed-success?style=flat-square" alt="completed"/></td></tr>
+<tr><td>Ⓒ</td><td>Resilience and Errors</td><td>C1–C4</td><td><img src="https://img.shields.io/badge/status-completed-success?style=flat-square" alt="completed"/></td></tr>
+<tr><td>Ⓓ</td><td>Connectivity / Adapters</td><td>D1–D4</td><td><img src="https://img.shields.io/badge/status-completed-success?style=flat-square" alt="completed"/></td></tr>
+<tr><td>Ⓔ</td><td>API Management</td><td>E0–E12</td><td><img src="https://img.shields.io/badge/status-completed-success?style=flat-square" alt="completed"/></td></tr>
+<tr><td>Ⓕ</td><td>Security</td><td>F4–F8</td><td><img src="https://img.shields.io/badge/status-completed-success?style=flat-square" alt="completed"/></td></tr>
+<tr><td>Ⓖ</td><td>SAP MM / PP / QM</td><td>G1–G3</td><td><img src="https://img.shields.io/badge/status-planned-lightgrey?style=flat-square" alt="planned"/></td></tr>
+<tr><td>Ⓗ</td><td>Event-Driven (Event Mesh)</td><td>H1–H4</td><td><img src="https://img.shields.io/badge/status-in%20progress-yellow?style=flat-square" alt="in progress"/></td></tr>
 </table>
+
 ---
 
 ## 🧱 Blocks and scenarios

@@ -20,10 +20,10 @@
 
 ![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow?style=flat-square)
 ![Blocos](https://img.shields.io/badge/blocos-8-blue?style=flat-square)
-![Documentos](https://img.shields.io/badge/documentos%20técnicos-35%2B-success?style=flat-square)
-![Laboratórios](https://img.shields.io/badge/laboratórios-33-success?style=flat-square)
+![Documentos](https://img.shields.io/badge/documentos%20t%C3%A9cnicos-35%2B-success?style=flat-square)
+![Laboratórios](https://img.shields.io/badge/laborat%C3%B3rios-33-success?style=flat-square)
 ![iFlows](https://img.shields.io/badge/iFlows-40%2B-success?style=flat-square)
-![Evidências](https://img.shields.io/badge/evidências-300%2B-success?style=flat-square)
+![Evidências](https://img.shields.io/badge/evid%C3%AAncias-300%2B-success?style=flat-square)
 ![Ferramentas](https://img.shields.io/badge/ferramentas-15%2B-informational?style=flat-square)
 
 <br/>
@@ -87,51 +87,15 @@ Este repositório reúne a jornada completa de aprendizagem prática nessa plata
 Este laboratório foi estruturado para cobrir os domínios do exame **SAP Certified Associate – Integration Developer**, mapeando cada área a blocos e documentos concretos.
 
 <table>
-<tr>
-<th>Domínio do exame (foco)</th>
-<th>Onde é praticado</th>
-<th>Cobertura</th>
-</tr>
-<tr>
-<td>Cloud Integration — modelagem de iFlows</td>
-<td>Blocos A, B, C</td>
-<td>✅ Alta</td>
-</tr>
-<tr>
-<td>Mapeamentos e transformação de mensagens</td>
-<td>A3, B2, E6+E7</td>
-<td>✅ Alta</td>
-</tr>
-<tr>
-<td>Conectividade e adapters</td>
-<td>Bloco D (OData, SOAP, SFTP, JDBC, ProcessDirect)</td>
-<td>✅ Alta</td>
-</tr>
-<tr>
-<td>Tratamento de erros e resiliência</td>
-<td>Bloco C (Exception, Retry, Dead Letter, Idempotência)</td>
-<td>✅ Alta</td>
-</tr>
-<tr>
-<td>API Management (proxies, policies, produtos)</td>
-<td>Bloco E</td>
-<td>✅ Alta</td>
-</tr>
-<tr>
-<td>Segurança (Basic, API Key, OAuth, mTLS, CSRF, PGP, SAML)</td>
-<td>Bloco F</td>
-<td>✅ Alta</td>
-</tr>
-<tr>
-<td>Arquitetura orientada a eventos (Event Mesh)</td>
-<td>Bloco H</td>
-<td>🔄 Em andamento</td>
-</tr>
-<tr>
-<td>Monitoramento e operações</td>
-<td>Transversal (todos os blocos)</td>
-<td>✅ Alta</td>
-</tr>
+<tr><th>Domínio do exame (foco)</th><th>Onde é praticado</th><th>Cobertura</th></tr>
+<tr><td>Cloud Integration — modelagem de iFlows</td><td>Blocos A, B, C</td><td>✅ Alta</td></tr>
+<tr><td>Mapeamentos e transformação de mensagens</td><td>A3, B2, E6+E7</td><td>✅ Alta</td></tr>
+<tr><td>Conectividade e adapters</td><td>Bloco D (OData, SOAP, SFTP, JDBC, ProcessDirect)</td><td>✅ Alta</td></tr>
+<tr><td>Tratamento de erros e resiliência</td><td>Bloco C (Exception, Retry, Dead Letter, Idempotência)</td><td>✅ Alta</td></tr>
+<tr><td>API Management (proxies, policies, produtos)</td><td>Bloco E</td><td>✅ Alta</td></tr>
+<tr><td>Segurança (Basic, API Key, OAuth, mTLS, CSRF, PGP, SAML)</td><td>Bloco F</td><td>✅ Alta</td></tr>
+<tr><td>Arquitetura orientada a eventos (Event Mesh)</td><td>Bloco H</td><td>🔄 Em andamento</td></tr>
+<tr><td>Monitoramento e operações</td><td>Transversal (todos os blocos)</td><td>✅ Alta</td></tr>
 </table>
 
 📊 Acompanhamento detalhado em **[certification/](certification/certification_README.md)**.
@@ -144,11 +108,11 @@ Cada cenário segue um ciclo disciplinado de engenharia, não apenas execução 
 
 ```mermaid
 flowchart LR
-    A[Design\narquitetura e contrato] --> B[Build\niFlow / policy / broker]
-    B --> C[Test\nPostman · Node.js · Monitor]
-    C --> D[Evidence\ncapturas rastreáveis]
-    D --> E[Document\nstorytelling técnico]
-    E --> F[Version\nGit · GitHub]
+    A[Design - arquitetura e contrato] --> B[Build - iFlow / policy / broker]
+    B --> C[Test - Postman / Node.js / Monitor]
+    C --> D[Evidence - capturas rastreáveis]
+    D --> E[Document - storytelling técnico]
+    E --> F[Version - Git / GitHub]
     F --> A
 
     classDef step fill:#174a7e,color:#fff,stroke:#65a8e5;
@@ -219,22 +183,22 @@ flowchart LR
 flowchart TB
     subgraph EXT[Sistemas e Ferramentas Externas]
         OMS[OMS / MES Simulators]
-        BACK[Webhook.site · RequestBin · Beeceptor · Mockoon]
+        BACK[Webhook.site / RequestBin / Beeceptor / Mockoon]
         DB[(Neon PostgreSQL)]
         SFTP[(SFTP Server)]
     end
 
     subgraph BTP[SAP Business Technology Platform]
-        CPI[Cloud Integration\niFlows]
-        APIM[API Management\nProxies · Policies]
+        CPI[Cloud Integration - iFlows]
+        APIM[API Management - Proxies e Policies]
     end
 
     subgraph EDA[Event-Driven Layer]
-        SOL[Solace PubSub+\nAMQP 1.0]
+        SOL[Solace PubSub+ - AMQP 1.0]
     end
 
     OMS -->|HTTPS / AMQP| CPI
-    CPI <-->|OData · SOAP · SFTP · JDBC| EXT
+    CPI <-->|OData / SOAP / SFTP / JDBC| EXT
     CPI <-->|AMQP publish/subscribe| SOL
     SOL -->|Competing Consumers| CPI
     APIM -->|governança e segurança| CPI
@@ -257,10 +221,7 @@ flowchart TB
 O projeto combina o núcleo exigido na certificação com cenários de mercado que ampliam o alcance profissional.
 
 <table>
-<tr>
-<th>🥇 Camada 1 — Trilha oficial SAP</th>
-<th>🥈 Camada 2 — Cenários de mercado</th>
-</tr>
+<tr><th>🥇 Camada 1 — Trilha oficial SAP</th><th>🥈 Camada 2 — Cenários de mercado</th></tr>
 <tr>
 <td valign="top">
 Núcleo da certificação:
@@ -303,15 +264,16 @@ Diferencial de mercado:
 
 <table>
 <tr><th>Bloco</th><th>Foco</th><th>Cenários</th><th>Status</th><th>Índice</th></tr>
-<tr><td>Ⓐ</td><td>CPI Fundamentos</td><td>A1–A4</td><td><img src="https://s.io/badge/status-conclu%C3%ADdo-success?style=flat-square</td><td>README.md">docs</a></td></tr>
-<tr><td>Ⓑ</td><td>Padrões de Integração</td><td>B1–B5</td><td>flat-square" alt="concluído"/></td><td>docs/docsREADME.md</td></tr>
-<tr><td>Ⓒ</td><td>Resiliência e Erros</td><td>C1–C4</td><td>io/badge/status-conclu%C3%ADdo-success?style=flat-square" alt="concluído"/></td><td>docs/docsREADME.md</td></tr>
-<tr><td>Ⓓ</td><td>Conectividade / Adapters</td><td>D1–D4</td><td>https://img.shields.io/badge/status-conclu%C3%ADdo-success?style=flat-square</td><td>docs/docsREADME.md</td></tr>
-<tr><td>Ⓔ</td><td>API Management</td><td>E0–E12</td><td>https://img.shields.io/badge/status-conclu%C3%ADdo-success?style=flat-square</td><td>docs/docsREADME.mddocs</a></td></tr>
-<tr><td>Ⓕ</td><td>Segurança</td><td>F4–F8</td><td>https://img.shields.io/badge/status-conclu%C3%ADdo-success?style=flat-square</td><td>docs/docsREADME.md</td></tr>
-<tr><td>Ⓖ</td><td>SAP MM / PP / QM</td><td>G1–G3</td><td>ejado-lightgrey?style=flat-square" alt="planejado"/></td><td>—</td></tr>
-<tr><td>Ⓗ</td><td>Event-Driven (Event Mesh)</td><td>H1–H4</td><td><ttps://img.shields.io/badge/status-em%20andamento-yellow?style=flat-square</td><td>docs/docsREADME.md</td></tr>
+<tr><td>Ⓐ</td><td>CPI Fundamentos</td><td>A1–A4</td><td><img src="https://img.shields.io/badge/status-conclu%C3%ADdo-success?style=flat-square" alt="concluído"/></td><td><a href="docs/docsREADME.md">docs</a></td></tr>
+<tr><td>Ⓑ</td><td>Padrões de Integração</td><td>B1–B5</td><td><img src="https://img.shields.io/badge/status-conclu%C3%ADdo-success?style=flat-square" alt="concluído"/></td><td><a href="docs/docsREADME.md">docs</a></td></tr>
+<tr><td>Ⓒ</td><td>Resiliência e Erros</td><td>C1–C4</td><td><img src="https://img.shields.io/badge/status-conclu%C3%ADdo-success?style=flat-square" alt="concluído"/></td><td><a href="docs/docsREADME.md">docs</a></td></tr>
+<tr><td>Ⓓ</td><td>Conectividade / Adapters</td><td>D1–D4</td><td><img src="https://img.shields.io/badge/status-conclu%C3%ADdo-success?style=flat-square" alt="concluído"/></td><td><a href="docs/docsREADME.md">docs</a></td></tr>
+<tr><td>Ⓔ</td><td>API Management</td><td>E0–E12</td><td><img src="https://img.shields.io/badge/status-conclu%C3%ADdo-success?style=flat-square" alt="concluído"/></td><td><a href="docs/docsREADME.md">docs</a></td></tr>
+<tr><td>Ⓕ</td><td>Segurança</td><td>F4–F8</td><td><img src="https://img.shields.io/badge/status-conclu%C3%ADdo-success?style=flat-square" alt="concluído"/></td><td><a href="docs/docsREADME.md">docs</a></td></tr>
+<tr><td>Ⓖ</td><td>SAP MM / PP / QM</td><td>G1–G3</td><td><img src="https://img.shields.io/badge/status-planejado-lightgrey?style=flat-square" alt="planejado"/></td><td>—</td></tr>
+<tr><td>Ⓗ</td><td>Event-Driven (Event Mesh)</td><td>H1–H4</td><td><img src="https://img.shields.io/badge/status-em%20andamento-yellow?style=flat-square" alt="em andamento"/></td><td><a href="docs/docsREADME.md">docs</a></td></tr>
 </table>
+
 ---
 
 ## 🧱 Blocos e cenários de prática
@@ -425,11 +387,11 @@ SAP_Integration_Suite_Learning/
 
 ```mermaid
 flowchart LR
-    D[Desenvolver iFlow\nno Integration Suite] --> T[Testar e capturar\nevidências]
+    D[Desenvolver iFlow no Integration Suite] --> T[Testar e capturar evidências]
     T --> X[Exportar iFlow .zip]
-    X --> A[Adicionar artefato\ne evidências]
-    A --> Doc[Documentar\ncenário em docs/]
-    Doc --> G[Commit e push\nvia VS Code]
+    X --> A[Adicionar artefato e evidências]
+    A --> Doc[Documentar cenário em docs/]
+    Doc --> G[Commit e push via VS Code]
 
     classDef s fill:#0f6b78,color:#fff,stroke:#58c7d1;
     class D,T,X,A,Doc,G s;
