@@ -1,104 +1,72 @@
+<div align="center">
 
-#### 📮 Postman — SAP Integration Suite Learning
-  
-As collections foram divididas por bloco para reduzir tamanho, facilitar manutenção e permitir importar apenas o conteúdo necessário.
+# 📮 Collections Postman
 
-##### 📦 Collections
+### Testes de integração — SAP Integration Suite Learning
 
-<table>
-<tr>
-<th>Arquivo</th>
-<th>Conteúdo</th>
-</tr>
-<tr>
-<td>[Postman\_Block\_A\_collection.json](./Postman_Block_A_collection.json)</td>
-<td>CPI Fundamentos</td>
-</tr>
-<tr>
-<td>[Postman\_Block\_B\_collection.json](./Postman_Block_B_collection.json)</td>
-<td>Padrões de Integração</td>
-</tr>
-<tr>
-<td>[Postman\_Block\_C\_collection.json](./Postman_Block_C_collection.json)</td>
-<td>Resiliência e Erros</td>
-</tr>
-<tr>
-<td>[Postman\_Block\_D\_collection.json](./Postman_Block_D_collection.json)</td>
-<td>Conectividade e Adapters</td>
-</tr>
-<tr>
-<td>[Postman\_Block\_E\_collection.json](./Postman_Block_E_collection.json)</td>
-<td>API Management</td>
-</tr>
-<tr>
-<td>[Postman\_Block\_F\_collection.json](./Postman_Block_F_collection.json)</td>
-<td>Segurança, mTLS e CSRF</td>
-</tr>
-</table>
+![Postman](https://img.shields.io/badge/Postman-Collections-FF6C37?style=for-the-badge&logo=postman&logoColor=white)
+![Organização](https://img.shields.io/badge/organização-por%20bloco-success?style=for-the-badge)
 
-  
-O arquivo [Postman\_collection.json](./Postman_collection.json) foi mantido apenas como índice de compatibilidade e não concentra mais todos os requests.
+</div>
 
-##### ⚙️ Variáveis principais
+---
+
+> 📮 As collections são divididas por bloco para reduzir tamanho, facilitar manutenção e permitir importar apenas o necessário. Cada collection cobre os requests de teste dos cenários do bloco correspondente.
+
+**🧭 Navegação:** [🏠 Principal](../README.md) · [📚 Documentação](../docs/docsREADME.md) · [📨 Payloads](../payloads/payloads_README.md)
+
+---
+
+## 📦 Collections disponíveis
 
 <table>
-<tr>
-<th>Variável</th>
-<th>Uso</th>
-</tr>
-<tr>
-<td>{{base\_url}}</td>
-<td>Runtime Cloud Integration</td>
-</tr>
-<tr>
-<td>{{clientid}}</td>
-<td>Client ID da Service Key</td>
-</tr>
-<tr>
-<td>{{clientsecret}}</td>
-<td>Client Secret da Service Key</td>
-</tr>
-<tr>
-<td>{{apim\_base\_url}}</td>
-<td>Base URL do API Management</td>
-</tr>
-<tr>
-<td>{{consumer\_api\_key}}</td>
-<td>Consumer Key do Developer App</td>
-</tr>
-<tr>
-<td>{{access\_token\_manual}}</td>
-<td>Token OAuth manual, quando aplicável</td>
-</tr>
-<tr>
-<td>{{mes\_legacy\_access\_token}}</td>
-<td>Token do App legado E6+E7</td>
-</tr>
-<tr>
-<td>{{mes\_ops\_access\_token}}</td>
-<td>Token do App interno E6+E7</td>
-</tr>
-<tr>
-<td>{{f5\_csrf\_token}}</td>
-<td>Token salvo automaticamente pelo Fetch do F5</td>
-</tr>
+<tr><th>Collection</th><th>Conteúdo</th></tr>
+<tr><td><a href="./Postman_Block_A_collection.json"><code>Postman_Block_A_collection.json</code></a></td><td>CPI Fundamentos</td></tr>
+<tr><td><a href="./Postman_Block_B_collection.json"><code>Postman_Block_B_collection.json</code></a></td><td>Padrões de Integração</td></tr>
+<tr><td><a href="./Postman_Block_C_collection.json"><code>Postman_Block_C_collection.json</code></a></td><td>Resiliência e Erros</td></tr>
+<tr><td><a href="./Postman_Block_D_collection.json"><code>Postman_Block_D_collection.json</code></a></td><td>Conectividade e Adapters</td></tr>
+<tr><td><a href="./Postman_Block_E_collection.json"><code>Postman_Block_E_collection.json</code></a></td><td>API Management</td></tr>
+<tr><td><a href="./Postman_Block_F_collection.json"><code>Postman_Block_F_collection.json</code></a></td><td>Segurança, mTLS e CSRF</td></tr>
 </table>
 
+> 💡 O arquivo <code>Postman_collection.json</code> foi mantido apenas como índice de compatibilidade.
 
-##### 🔒 Segurança
+---
+
+## ⚙️ Variáveis principais
+
+<table>
+<tr><th>Variável</th><th>Uso</th></tr>
+<tr><td><code>{{base_url}}</code></td><td>Runtime Cloud Integration</td></tr>
+<tr><td><code>{{clientid}}</code> · <code>{{clientsecret}}</code></td><td>Credenciais da Service Key</td></tr>
+<tr><td><code>{{apim_base_url}}</code></td><td>Base URL do API Management</td></tr>
+<tr><td><code>{{consumer_api_key}}</code></td><td>Consumer Key do Developer App</td></tr>
+<tr><td><code>{{access_token_manual}}</code></td><td>Token OAuth manual, quando aplicável</td></tr>
+<tr><td><code>{{mes_legacy_access_token}}</code> · <code>{{mes_ops_access_token}}</code></td><td>Tokens dos Apps E6+E7</td></tr>
+<tr><td><code>{{f5_csrf_token}}</code></td><td>Token salvo automaticamente pelo Fetch do F5</td></tr>
+</table>
+
+---
+
+## 🔒 Segurança
+
 - Nunca versione Client Secret, tokens, cookies, PFX, PEM ou chaves privadas.
-- O certificado do F4 é configurado localmente em Postman Settings → Certificates.
-- O F5 depende do Cookie Jar para preservar JSESSIONID e cookies da sessão.
-- Os valores reais devem permanecer somente no Environment local.
+- O certificado do **F4** é configurado localmente em Postman Settings → Certificates.
+- O **F5** depende do Cookie Jar para preservar JSESSIONID e cookies da sessão.
+- Valores reais devem permanecer somente no Environment local.
 
-##### 🧩 Bloco H — Event-Driven (Event Mesh)
-- Os cenários do Bloco H utilizam o **AMQP 1.0** do Solace PubSub+, e não requests REST/Postman para publicação/consumo de eventos.
-- A publicação de eventos foi feita via **Try-Me** do broker e via um **OMS Simulator em Node.js** (biblioteca `rhea`, AMQP 1.0/TLS/SASL).
-- O consumo é feito pelos iFlows do Cloud Integration (AMQP Sender Adapter), com entrega a backends externos (Webhook.site, RequestBin e Beeceptor).
-- Os payloads de exemplo de cada cenário estão documentados nos próprios documentos 32 a 35.
+---
 
-##### 📍 Status
-- Collections A até D consolidadas.
-- Collection E atualizada com E6+E7 e E10.
-- Collection F com F4 e F5; testes de F6 e F7 documentados nos respectivos docs.  
-📌 Voltar para o [README principal do projeto](../README.md)
+## 🧩 Bloco H — Event-Driven (Event Mesh)
+
+Os cenários do Bloco H utilizam **AMQP 1.0** (Solace PubSub+), e não requests REST/Postman para publicação e consumo de eventos:
+
+- Publicação via **Try-Me** do broker e via **OMS Simulator em Node.js** (`rhea`, AMQP 1.0/TLS/SASL).
+- Consumo pelos iFlows do Cloud Integration (AMQP Sender Adapter), com entrega a backends externos (Webhook.site, RequestBin e Beeceptor).
+- Payloads de exemplo documentados diretamente nos documentos **32 a 35**.
+
+<div align="center">
+
+📌 [Voltar ao README principal](../README.md)
+
+</div>

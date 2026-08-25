@@ -1,569 +1,522 @@
+<div align="center">
 
-### 🔗 SAP Integration Suite Learning
-  
-**🌐 Idioma / Language:** 🇧🇷 **Português**  [🇺🇸 English](README.en.md)  
-[SAP](https://img.shields.io/badge/SAP-Integration%20Suite-0FAAFF?logo=sap&logoColor=white) [BTP](https://img.shields.io/badge/SAP-BTP-2570B8?logo=sap&logoColor=white) [Postman](https://img.shields.io/badge/Testes-Postman-FF6C37?logo=postman&logoColor=white) [Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)  
-Projeto prático de estudo, desenvolvimento e preparação para a certificação **SAP Integration Suite**. O projeto acompanha a trilha oficial [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite) **e vai além dela**, incluindo cenários complementares muito valorizados no mercado.  
-O objetivo é ir além da teoria: construir **cenários reais de integração** de ponta a ponta, documentar cada etapa e gerar evidências de execução, formando um portfólio técnico consistente.
+# 🔗 SAP Integration Suite Learning
 
-#### 📑 Índice
-- [O que é SAP Integration Suite](#-o-que-é-sap-integration-suite)
-- [Principais capabilities](#-principais-capabilities)
-- [Cloud Integration (CPI)](#-cloud-integration-cpi)
-- [API e API Management](#-api-e-api-management)
+### Laboratório prático de engenharia de integração e preparação para certificação
+
+*Hands-on certification lab & enterprise integration engineering portfolio*
+
+**🌐 Idioma / Language:** 🇧🇷 **Português** · [🇺🇸 English](README.en.md)
+
+<br/>
+
+![SAP Integration Suite](https://img.shields.io/badge/SAP-Integration%20Suite-0FAAFF?style=for-the-badge&logo=sap&logoColor=white)
+![SAP BTP](https://img.shields.io/badge/SAP-BTP-1A6CB3?style=for-the-badge&logo=sap&logoColor=white)
+![Cloud Integration](https://img.shields.io/badge/Cloud%20Integration-CPI-005A9E?style=for-the-badge&logo=sap&logoColor=white)
+![API Management](https://img.shields.io/badge/API-Management-6C2EB9?style=for-the-badge&logo=sap&logoColor=white)
+![Event Mesh](https://img.shields.io/badge/Advanced-Event%20Mesh-00C1D4?style=for-the-badge&logo=sap&logoColor=white)
+
+<br/>
+
+![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow?style=flat-square)
+![Blocos](https://img.shields.io/badge/blocos-8-blue?style=flat-square)
+![Documentos](https://img.shields.io/badge/documentos%20técnicos-35%2B-success?style=flat-square)
+![Laboratórios](https://img.shields.io/badge/laboratórios-33-success?style=flat-square)
+![iFlows](https://img.shields.io/badge/iFlows-40%2B-success?style=flat-square)
+![Evidências](https://img.shields.io/badge/evidências-300%2B-success?style=flat-square)
+![Ferramentas](https://img.shields.io/badge/ferramentas-15%2B-informational?style=flat-square)
+
+<br/>
+
+![Last Commit](https://img.shields.io/github/last-commit/OrlandoCaetano2026/SAP_Integration_Suite_Learning?style=flat-square&color=informational)
+![Repo Size](https://img.shields.io/github/repo-size/OrlandoCaetano2026/SAP_Integration_Suite_Learning?style=flat-square)
+![Commit Activity](https://img.shields.io/github/commit-activity/m/OrlandoCaetano2026/SAP_Integration_Suite_Learning?style=flat-square)
+![Top Language](https://img.shields.io/github/languages/top/OrlandoCaetano2026/SAP_Integration_Suite_Learning?style=flat-square)
+
+</div>
+
+---
+
+> 💡 Projeto prático de estudo, desenvolvimento e **preparação para a certificação SAP Integration Suite**. Acompanha a trilha oficial [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite) **e vai além dela**, adicionando cenários de mercado com segurança avançada, mensageria e arquitetura orientada a eventos.
+>
+> O objetivo é ir além da teoria: **construir cenários reais de integração de ponta a ponta**, documentar cada etapa com storytelling técnico, gerar evidências rastreáveis e formar um portfólio de engenharia consistente.
+
+---
+
+### 🧭 Navegação rápida
+
+| 📚 [Documentação](docs/docsREADME.md) | 🎓 [Certificação](certification/certification_README.md) | 📸 [Evidências](evidences/evidencesREADME.md) | 📦 [iFlows](iflows/iflows_README.md) | 📨 [Payloads](payloads/payloads_README.md) | 📮 [Postman](postman/postman_README.md) |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+
+---
+
+## 📑 Índice
+
+- [Sobre o projeto](#-sobre-o-projeto)
+- [Preparação para a certificação](#-preparação-para-a-certificação)
+- [Metodologia de engenharia](#-metodologia-de-engenharia)
+- [Stack tecnológica](#-stack-tecnológica)
+- [Arquitetura do landscape simulado](#-arquitetura-do-landscape-simulado)
 - [Abordagem em duas camadas](#-abordagem-em-duas-camadas)
-- [Objetivo do projeto](#-objetivo-do-projeto)
-- [Padrões de mercado abordados](#-padrões-de-mercado-abordados)
-- [Estrutura do repositório](#-estrutura-do-repositório)
+- [Métricas do projeto](#-métricas-do-projeto)
+- [Roadmap por blocos](#-roadmap-por-blocos)
 - [Blocos e cenários de prática](#-blocos-e-cenários-de-prática)
-- [Ferramentas utilizadas](#-ferramentas-utilizadas)
+- [Estrutura do repositório](#-estrutura-do-repositório)
 - [Fluxo de trabalho](#-fluxo-de-trabalho)
 - [Referências oficiais SAP](#-referências-oficiais-sap)
 - [Autor](#-autor--contato)
 
-#### 🧩 O que é SAP Integration Suite
-  
-O **SAP Integration Suite** é a plataforma de integração como serviço (**iPaaS – Integration Platform as a Service**) da SAP, executada no **SAP Business Technology Platform (BTP)**. Ela conecta aplicações, processos, dados e eventos em ambientes **cloud, on-premise e híbridos**, permitindo que sistemas SAP e não-SAP se comuniquem de forma padronizada, segura e escalável.  
-É a evolução do antigo **SAP Cloud Platform Integration (CPI)** e reúne, em um único ambiente, diversas capabilities de integração, além de recursos de inteligência (assistência por IA) e de aceleração por meio de conteúdo pré-construído.
+---
 
-#### 🛠️ Principais capabilities
+## 🧩 Sobre o projeto
+
+O **SAP Integration Suite** é a plataforma de integração como serviço (**iPaaS**) da SAP, executada no **SAP Business Technology Platform (BTP)**. Ela conecta aplicações, processos, dados e eventos em ambientes **cloud, on-premise e híbridos**, permitindo que sistemas SAP e não-SAP se comuniquem de forma padronizada, segura e escalável.
+
+Este repositório reúne a jornada completa de aprendizagem prática nessa plataforma, tratada como um **laboratório de engenharia**: cada cenário é projetado, construído, testado, evidenciado, documentado e versionado. O resultado é simultaneamente um **material de preparação para a certificação** e um **portfólio técnico demonstrável**.
+
+---
+
+## 🎓 Preparação para a certificação
+
+<div align="center">
+
+![Certification](https://img.shields.io/badge/SAP%20Certified%20Associate-Integration%20Developer-0FAAFF?style=for-the-badge&logo=sap&logoColor=white)
+
+</div>
+
+Este laboratório foi estruturado para cobrir os domínios do exame **SAP Certified Associate – Integration Developer**, mapeando cada área a blocos e documentos concretos.
 
 <table>
 <tr>
-<th>Capability</th>
-<th>Descrição</th>
+<th>Domínio do exame (foco)</th>
+<th>Onde é praticado</th>
+<th>Cobertura</th>
 </tr>
 <tr>
-<td>**Cloud Integration (CPI)**</td>
-<td>Desenvolvimento de fluxos de integração (Integration Flows / iFlows) entre sistemas</td>
+<td>Cloud Integration — modelagem de iFlows</td>
+<td>Blocos A, B, C</td>
+<td>✅ Alta</td>
 </tr>
 <tr>
-<td>**API Management**</td>
-<td>Criação, publicação, segurança, governança e monitoramento de APIs</td>
+<td>Mapeamentos e transformação de mensagens</td>
+<td>A3, B2, E6+E7</td>
+<td>✅ Alta</td>
 </tr>
 <tr>
-<td>**Event Mesh / Advanced Event Mesh**</td>
-<td>Integração orientada a eventos (event-driven)</td>
+<td>Conectividade e adapters</td>
+<td>Bloco D (OData, SOAP, SFTP, JDBC, ProcessDirect)</td>
+<td>✅ Alta</td>
 </tr>
 <tr>
-<td>**Open Connectors**</td>
-<td>Conectores prontos para aplicações de terceiros (SaaS)</td>
+<td>Tratamento de erros e resiliência</td>
+<td>Bloco C (Exception, Retry, Dead Letter, Idempotência)</td>
+<td>✅ Alta</td>
 </tr>
 <tr>
-<td>**Integration Advisor**</td>
-<td>Aceleração de integrações B2B/EDI com apoio de IA</td>
+<td>API Management (proxies, policies, produtos)</td>
+<td>Bloco E</td>
+<td>✅ Alta</td>
 </tr>
 <tr>
-<td>**Trading Partner Management**</td>
-<td>Gestão de parceiros comerciais em cenários B2B</td>
+<td>Segurança (Basic, API Key, OAuth, mTLS, CSRF, PGP, SAML)</td>
+<td>Bloco F</td>
+<td>✅ Alta</td>
 </tr>
 <tr>
-<td>**Graph**</td>
-<td>Modelo de dados unificado para acesso via API</td>
+<td>Arquitetura orientada a eventos (Event Mesh)</td>
+<td>Bloco H</td>
+<td>🔄 Em andamento</td>
+</tr>
+<tr>
+<td>Monitoramento e operações</td>
+<td>Transversal (todos os blocos)</td>
+<td>✅ Alta</td>
 </tr>
 </table>
 
+📊 Acompanhamento detalhado em **[certification/](certification/certification_README.md)**.
 
-#### 🔄 Cloud Integration (CPI)
-  
-O **Cloud Integration**, historicamente chamado de **CPI**, é o coração da plataforma. Nele são desenvolvidos os **Integration Flows (iFlows)** — fluxos que recebem, transformam, roteiam e entregam mensagens entre sistemas.  
-Principais recursos praticados neste projeto:
-- **Adapters** (HTTP, HTTPS, SOAP, OData, SFTP, JDBC, ProcessDirect, JMS, AMQP, etc.)
-- **Content Modifier** (manipulação de headers, properties e body)
-- **Message Mapping** (transformação JSON ↔ XML)
-- **Groovy Script** (lógica customizada)
-- **Router / Splitter / Aggregator / Gather / Multicast** (padrões de integração)
-- **Exception Subprocess** (tratamento de erros)
-- **Data Store** (persistência temporária)
-- **Security Material** (User Credentials, SSH Known Hosts, JDBC Data Sources, chaves e certificados)
-- **Monitoramento** (Message Processing, logs e payloads)
+---
 
-#### 🌐 API e API Management
-  
-Uma **API (Application Programming Interface)** é o contrato que permite que sistemas troquem dados de forma padronizada. Em integrações modernas, o modelo **API-First** é padrão — especialmente no **S/4HANA**, que expõe grande parte de suas funções via **APIs OData e REST**.  
-O **API Management** é a capability responsável por **expor, proteger e governar** essas APIs. Com ele é possível:
-- Criar **API Proxies** que abstraem o backend real
-- Aplicar **Policies** de segurança e controle: Verify API Key, OAuth, Quota (limite de chamadas), Spike Arrest (proteção contra picos de tráfego), JSON ↔ XML, Assign Message (manipulação de request/response)
-- Agrupar APIs em **API Products** e planos de consumo
-- Publicar no **Developer Portal**
-- Monitorar uso e performance via **Analytics**
+## ⚙️ Metodologia de engenharia
 
-#### 🧭 Abordagem em duas camadas
-  
-Este projeto é organizado em **duas camadas complementares**. A ideia é dominar o núcleo exigido na certificação e, ao mesmo tempo, ir além com cenários que fazem diferença no mercado real.
+Cada cenário segue um ciclo disciplinado de engenharia, não apenas execução de tutoriais:
 
-##### 🥇 Camada 1 — Trilha oficial SAP (núcleo da certificação)
-  
-Segue o repertório oficial da trilha [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite), com foco em:
-- Cloud Integration (CPI) e Integration Flows
-- API Management
-- Mapeamentos e transformação de mensagens
-- Monitoramento e operações
+```mermaid
+flowchart LR
+    A[Design\narquitetura e contrato] --> B[Build\niFlow / policy / broker]
+    B --> C[Test\nPostman · Node.js · Monitor]
+    C --> D[Evidence\ncapturas rastreáveis]
+    D --> E[Document\nstorytelling técnico]
+    E --> F[Version\nGit · GitHub]
+    F --> A
 
-##### 🥈 Camada 2 — Cenários complementares (diferencial de mercado)
-  
-Vai **além da trilha oficial**, cobrindo temas muito valorizados em projetos reais que **não são aprofundados** no repertório oficial da certificação:
-- **Event-Driven Integration** com Event Mesh / Advanced Event Mesh
-- **B2B / EDI** (pedido de compra, nota fiscal, ASN)
-- **OData / API-First** (padrão S/4HANA)
-- **Integração híbrida** (cloud + on-premise via Cloud Connector)
-- **Conectividade com bancos de dados externos** (JDBC) e **reuso interno de lógica** (ProcessDirect)  
-⚠️ **Importante:** os cenários da Camada 2 são estudados a partir de conteúdos oficiais SAP **específicos de cada tema** (fora da trilha principal). Por exemplo, o Event Mesh tem sua própria jornada de aprendizagem: [Discovering Event-Driven Integration with SAP Integration Suite, advanced event mesh](https://learning.sap.com/courses/discovering-event-driven-integration-with-sap-integration-suite-advanved-event-mesh). Ou seja, o projeto vai propositalmente **além do escopo da prova**, agregando processos e práticas extras.
+    classDef step fill:#174a7e,color:#fff,stroke:#65a8e5;
+    class A,B,C,D,E,F step;
+```
 
-#### 🎯 Objetivo do projeto
-- Dominar **Cloud Integration (CPI)** e **API Management** na prática
-- Aplicar **padrões corporativos de integração** (EIP)
-- Implementar **segurança, tratamento de erros e resiliência**
-- Explorar **arquitetura orientada a eventos** (Event Mesh)
-- Simular **processos SAP MM, PP, QM e WM** em cenários realistas
-- Construir um **portfólio técnico documentado** com evidências
-- Preparar para a **certificação oficial SAP Integration Suite**
+**Padrões de qualidade aplicados em cada documento:**
 
-#### 🌍 Padrões de mercado abordados
-- **Event-Driven Integration** (SAP Event Mesh / Advanced Event Mesh) — arquitetura orientada a eventos, tendência forte no mercado.
-- **API-First / OData** — padrão de integração do S/4HANA.
-- **B2B / EDI** (pedido de compra, nota fiscal, ASN) — muito usado no setor industrial.
-- **Integração híbrida** (cloud + on-premise via Cloud Connector) — conceito essencial e recorrente em provas e projetos.
-- **Conectividade a banco de dados externo (JDBC)** e **reuso interno de lógica (ProcessDirect)** — padrões comuns em arquiteturas corporativas de médio/grande porte.
+- 🎯 Visão executiva e **storytelling técnico** do cenário
+- 🏛️ Arquitetura **geral e detalhada em Mermaid**
+- 🔧 Códigos completos e autocontidos (Groovy, JSON, scripts)
+- 📸 **Evidências contextualizadas** com explicação do que comprovam
+- 🐞 Troubleshooting com **sintoma → causa raiz → solução**
+- ✅ Boas práticas SAP com **links oficiais**
+- 🚀 Recomendações para produção e navegação clicável entre cenários
 
-#### 📁 Estrutura do repositório
+---
+
+## 🛠️ Stack tecnológica
+
+<div align="center">
+
+**SAP Core**
+
+![Integration Suite](https://img.shields.io/badge/SAP-Integration%20Suite-0FAAFF?style=flat-square&logo=sap&logoColor=white)
+![Cloud Integration](https://img.shields.io/badge/Cloud-Integration-005A9E?style=flat-square&logo=sap&logoColor=white)
+![API Management](https://img.shields.io/badge/API-Management-6C2EB9?style=flat-square&logo=sap&logoColor=white)
+![BTP](https://img.shields.io/badge/SAP-BTP-1A6CB3?style=flat-square&logo=sap&logoColor=white)
+![Cloud Foundry](https://img.shields.io/badge/Cloud-Foundry-2C3E50?style=flat-square&logo=cloudfoundry&logoColor=white)
+
+**Protocolos & Adapters**
+
+![OData](https://img.shields.io/badge/OData-V4-0088CC?style=flat-square)
+![SOAP](https://img.shields.io/badge/SOAP-Web%20Service-8E44AD?style=flat-square)
+![SFTP](https://img.shields.io/badge/SFTP-File-27AE60?style=flat-square)
+![JDBC](https://img.shields.io/badge/JDBC-PostgreSQL-336791?style=flat-square&logo=postgresql&logoColor=white)
+![JMS](https://img.shields.io/badge/JMS-Message%20Queue-E67E22?style=flat-square)
+![AMQP](https://img.shields.io/badge/AMQP-1.0-FF6600?style=flat-square)
+
+**Event-Driven**
+
+![Solace](https://img.shields.io/badge/Solace-PubSub%2B-00C895?style=flat-square&logo=solace&logoColor=white)
+![Event Mesh](https://img.shields.io/badge/Advanced-Event%20Mesh-00C1D4?style=flat-square)
+![Node.js](https://img.shields.io/badge/Node.js-Producer-339933?style=flat-square&logo=node.js&logoColor=white)
+
+**Segurança**
+
+![OAuth2](https://img.shields.io/badge/OAuth-2.0-EB5424?style=flat-square&logo=auth0&logoColor=white)
+![SAML](https://img.shields.io/badge/SAML-Bearer-1F6FEB?style=flat-square)
+![mTLS](https://img.shields.io/badge/mTLS-X.509-C0392B?style=flat-square)
+![PGP](https://img.shields.io/badge/PGP-Message%20Level-4B0082?style=flat-square)
+
+**Ferramentas & DevX**
+
+![Groovy](https://img.shields.io/badge/Groovy-Script-4298B8?style=flat-square&logo=apachegroovy&logoColor=white)
+![Postman](https://img.shields.io/badge/Postman-Testing-FF6C37?style=flat-square&logo=postman&logoColor=white)
+![Git](https://img.shields.io/badge/Git-Version%20Control-F05032?style=flat-square&logo=git&logoColor=white)
+![GitHub](https://img.shields.io/badge/GitHub-Portfolio-181717?style=flat-square&logo=github&logoColor=white)
+![VS Code](https://img.shields.io/badge/VS%20Code-Editor-007ACC?style=flat-square&logo=visualstudiocode&logoColor=white)
+
+</div>
+
+---
+
+## 🏛️ Arquitetura do landscape simulado
+
+```mermaid
+flowchart TB
+    subgraph EXT[Sistemas e Ferramentas Externas]
+        OMS[OMS / MES Simulators]
+        BACK[Webhook.site · RequestBin · Beeceptor · Mockoon]
+        DB[(Neon PostgreSQL)]
+        SFTP[(SFTP Server)]
+    end
+
+    subgraph BTP[SAP Business Technology Platform]
+        CPI[Cloud Integration\niFlows]
+        APIM[API Management\nProxies · Policies]
+    end
+
+    subgraph EDA[Event-Driven Layer]
+        SOL[Solace PubSub+\nAMQP 1.0]
+    end
+
+    OMS -->|HTTPS / AMQP| CPI
+    CPI <-->|OData · SOAP · SFTP · JDBC| EXT
+    CPI <-->|AMQP publish/subscribe| SOL
+    SOL -->|Competing Consumers| CPI
+    APIM -->|governança e segurança| CPI
+    CPI -->|HTTPS| BACK
+    CPI <-->|JDBC| DB
+    CPI <-->|files| SFTP
+
+    classDef sap fill:#174a7e,color:#fff,stroke:#65a8e5;
+    classDef eda fill:#00695c,color:#fff,stroke:#4db6ac;
+    classDef ext fill:#5d4037,color:#fff,stroke:#a1887f;
+    class CPI,APIM sap;
+    class SOL eda;
+    class OMS,BACK,DB,SFTP ext;
+```
+
+---
+
+## 🧭 Abordagem em duas camadas
+
+O projeto combina o núcleo exigido na certificação com cenários de mercado que ampliam o alcance profissional.
 
 <table>
 <tr>
-<th>Pasta</th>
-<th>Descrição</th>
+<th>🥇 Camada 1 — Trilha oficial SAP</th>
+<th>🥈 Camada 2 — Cenários de mercado</th>
 </tr>
 <tr>
-<td>docs/</td>
-<td>Documentação técnica de cada cenário (objetivo, arquitetura, passo a passo e aprendizados)</td>
-</tr>
-<tr>
-<td>iflows/</td>
-<td>Integration Flows exportados do Integration Suite (artefatos .zip)</td>
-</tr>
-<tr>
-<td>payloads/</td>
-<td>Mensagens de entrada e saída utilizadas nos testes (JSON/XML)</td>
-</tr>
-<tr>
-<td>postman/</td>
-<td>Coleções de testes do Postman para envio de mensagens</td>
-</tr>
-<tr>
-<td>evidences/</td>
-<td>Evidências de execução: prints do monitoramento, logs e payloads processados</td>
-</tr>
-<tr>
-<td>certification/</td>
-<td>Status de preparação e progresso rumo à certificação</td>
+<td valign="top">
+Núcleo da certificação:
+<ul>
+<li>Cloud Integration e Integration Flows</li>
+<li>API Management</li>
+<li>Mapeamentos e transformação</li>
+<li>Monitoramento e operações</li>
+</ul>
+</td>
+<td valign="top">
+Diferencial de mercado:
+<ul>
+<li>Event-Driven Integration (Event Mesh)</li>
+<li>B2B / EDI e mTLS</li>
+<li>OData / API-First (S/4HANA)</li>
+<li>Integração híbrida e conectividade a banco (JDBC)</li>
+</ul>
+</td>
 </tr>
 </table>
 
+⚠️ Os cenários da Camada 2 são estudados a partir de conteúdos oficiais SAP **específicos de cada tema**, como a jornada [Discovering Event-Driven Integration with SAP Integration Suite, advanced event mesh](https://learning.sap.com/courses/discovering-event-driven-integration-with-sap-integration-suite-advanved-event-mesh).
 
-#### 🧱 Blocos e cenários de prática
-  
-🥇 = Camada 1 (trilha oficial)  🥈 = Camada 2 (complementar / além da trilha)
+---
 
-##### Ⓐ Bloco A — CPI Fundamentos 🥇
+## 📊 Métricas do projeto
 
-<table>
-<tr>
-<th>\#</th>
-<th>Cenário</th>
-<th>Objetivo</th>
-<th>Doc</th>
-</tr>
-<tr>
-<td>A1</td>
-<td>HTTP → Content Modifier → Webhook.site</td>
-<td>Primeiro iFlow: receber, ajustar e encaminhar mensagem</td>
-<td>[ver](docs/03-a1-http-to-webhook.md)</td>
-</tr>
-<tr>
-<td>A2</td>
-<td>Timer → Request Reply → API pública</td>
-<td>Consumir API externa de forma agendada</td>
-<td>[ver](docs/04-a2-timer-to-api.md)</td>
-</tr>
-<tr>
-<td>A3</td>
-<td>Message Mapping (JSON → JSON / JSON → XML)</td>
-<td>Transformação de mensagens</td>
-<td>[ver](docs/05-a3-message-mapping.md)</td>
-</tr>
-<tr>
-<td>A4</td>
-<td>Groovy Script para manipulação de payload</td>
-<td>Lógica customizada no fluxo</td>
-<td>[ver](docs/06-a4-groovy-script.md)</td>
-</tr>
-</table>
+<div align="center">
 
+| 📦 Blocos | 📚 Documentos | 🧪 Laboratórios | 🔀 iFlows | 📸 Evidências | 🧰 Ferramentas |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| **8** | **35+** | **33** | **40+** | **300+** | **15+** |
 
-##### Ⓑ Bloco B — CPI Padrões de Integração 🥇
+</div>
+
+---
+
+## 🗺️ Roadmap por blocos
 
 <table>
 <tr>
-<th>\#</th>
-<th>Cenário</th>
-<th>Objetivo</th>
-<th>Doc</th>
-</tr>
-<tr>
-<td>B1</td>
-<td>Content-Based Router</td>
-<td>Rotear mensagens por condição</td>
-<td>[ver](docs/07-b1-content-based-router.md)</td>
-</tr>
-<tr>
-<td>B2</td>
-<td>Content Enricher (Request Reply)</td>
-<td>Enriquecer dados a partir de outra fonte</td>
-<td>[ver](docs/08-b2-content-enricher.md)</td>
-</tr>
-<tr>
-<td>B3</td>
-<td>Splitter</td>
-<td>Quebrar lote de itens em mensagens individuais</td>
-<td>[ver](docs/09-b3-splitter.md)</td>
-</tr>
-<tr>
-<td>B4</td>
-<td>Aggregator / Gather</td>
-<td>Consolidar respostas</td>
-<td>[ver](docs/10-b4-aggregator.md)</td>
-</tr>
-<tr>
-<td>B5</td>
-<td>Multicast</td>
-<td>Enviar para múltiplos destinos</td>
-<td>[ver](docs/11-b5-multicast.md)</td>
-</tr>
-</table>
-
-
-##### Ⓒ Bloco C — CPI Resiliência e Erros 🥇
-
-<table>
-<tr>
-<th>\#</th>
-<th>Cenário</th>
-<th>Objetivo</th>
-<th>Doc</th>
-</tr>
-<tr>
-<td>C1</td>
-<td>Exception Subprocess</td>
-<td>Tratamento padronizado de erros</td>
-<td>[ver](docs/12-c1-exception-subprocess.md)</td>
-</tr>
-<tr>
-<td>C2</td>
-<td>Retry e tratamento de timeout</td>
-<td>Resiliência em falhas temporárias</td>
-<td>[ver](docs/13-c2-retry-timeout.md)</td>
-</tr>
-<tr>
-<td>C3</td>
-<td>Dead Letter / reprocessamento (JMS)</td>
-<td>Recuperação de mensagens com falha</td>
-<td>[ver](docs/14-c3-dead-letter.md)</td>
-</tr>
-<tr>
-<td>C4</td>
-<td>Data Store & Idempotência (2 abordagens)</td>
-<td>Persistência temporária e deduplicação de mensagens</td>
-<td>[ver](docs/15-c4-data-store.md)</td>
-</tr>
-</table>
-
-
-##### Ⓓ Bloco D — CPI Conectividade / Adapters 🥇
-
-<table>
-<tr>
-<th>\#</th>
-<th>Cenário</th>
-<th>Objetivo</th>
-<th>Doc</th>
-</tr>
-<tr>
-<td>D1</td>
-<td>OData Adapter</td>
-<td>Integração no padrão SAP S/4HANA</td>
-<td>[ver](docs/16-d1-odata-adapter.md)</td>
-</tr>
-<tr>
-<td>D2</td>
-<td>SOAP Adapter</td>
-<td>Integração com serviços SOAP externos (Split/Gather)</td>
-<td>[ver](docs/17-d2-soap-adapter.md)</td>
-</tr>
-<tr>
-<td>D3</td>
-<td>SFTP Adapter</td>
-<td>Integração de arquivos (hot folder Producer/Consumer)</td>
-<td>[ver](docs/18-d3-sftp-adapter.md)</td>
-</tr>
-<tr>
-<td>D4</td>
-<td>ProcessDirect + JDBC</td>
-<td>Chamar um iFlow a partir de outro + conectividade a banco de dados</td>
-<td>[ver](docs/19-d4-processdirect.md)</td>
-</tr>
-</table>
-
-  
-💡 O cenário **D5 — JDBC Adapter**, originalmente planejado separadamente, foi incorporado ao **D4**, que já cobre ProcessDirect + JDBC de forma integrada e realista.
-
-##### Ⓔ Bloco E — API Management 🥇
-
-<table>
-<tr>
-<th>\#</th>
-<th>Cenário</th>
-<th>Objetivo</th>
-<th>Doc</th>
+<th>Bloco</th>
+<th>Foco</th>
+<th>Cenários</th>
 <th>Status</th>
+<th>Índice</th>
 </tr>
 <tr>
-<td>E0, E1, E12</td>
-<td>Capability, API Proxy e Basic Authentication</td>
-<td>Expor backend com autenticação técnica via KVM</td>
-<td>[20](docs/20-e-api-management-proxy-basic-auth.md)</td>
-<td>✅</td>
+<td>Ⓐ</td>
+<td>CPI Fundamentos</td>
+<td>A1–A4</td>
+<td>![](https://img.shields.io/badge/-concluído-success)</td>
+<td>[docs](docs/docsREADME.md)</td>
 </tr>
 <tr>
-<td>E2</td>
-<td>Verify API Key</td>
-<td>Controlar acesso por Consumer Key</td>
-<td>[21](docs/21-e2-verify-api-key.md)</td>
-<td>✅</td>
+<td>Ⓑ</td>
+<td>Padrões de Integração</td>
+<td>B1–B5</td>
+<td>![](https://img.shields.io/badge/-concluído-success)</td>
+<td>[docs](docs/docsREADME.md)</td>
 </tr>
 <tr>
-<td>E3</td>
-<td>OAuth 2.0 e Scopes</td>
-<td>Client Credentials, Products, Apps e autorização por escopo</td>
-<td>[22](docs/22-e3-oauth-scopes.md)</td>
-<td>✅</td>
+<td>Ⓒ</td>
+<td>Resiliência e Erros</td>
+<td>C1–C4</td>
+<td>![](https://img.shields.io/badge/-concluído-success)</td>
+<td>[docs](docs/docsREADME.md)</td>
 </tr>
 <tr>
-<td>E4+E5</td>
-<td>Quota e Spike Arrest</td>
-<td>Limitar consumo e proteger contra rajadas</td>
-<td>[23](docs/23-e4-e5-quota-spike-arrest.md)</td>
-<td>✅</td>
+<td>Ⓓ</td>
+<td>Conectividade / Adapters</td>
+<td>D1–D4</td>
+<td>![](https://img.shields.io/badge/-concluído-success)</td>
+<td>[docs](docs/docsREADME.md)</td>
 </tr>
 <tr>
-<td>E6+E7</td>
-<td>JSON → XML e Assign Message</td>
-<td>Resposta XML e visibilidade condicional por scope</td>
-<td>[24](docs/24-e6-e7-mes-order-status-backend.md)</td>
-<td>✅</td>
+<td>Ⓔ</td>
+<td>API Management</td>
+<td>E0–E12</td>
+<td>![](https://img.shields.io/badge/-concluído-success)</td>
+<td>[docs](docs/docsREADME.md)</td>
 </tr>
 <tr>
-<td>E8+E9</td>
-<td>Products, Rate Plans, Apps e Developer Hub</td>
-<td>Distribuição e consumo governado</td>
-<td>[21](docs/21-e2-verify-api-key.md), [22](docs/22-e3-oauth-scopes.md), [23](docs/23-e4-e5-quota-spike-arrest.md), [24](docs/24-e6-e7-mes-order-status-backend.md)</td>
-<td>✅</td>
+<td>Ⓕ</td>
+<td>Segurança</td>
+<td>F4–F8</td>
+<td>![](https://img.shields.io/badge/-concluído-success)</td>
+<td>[docs](docs/docsREADME.md)</td>
 </tr>
 <tr>
-<td>E10</td>
-<td>API Analytics</td>
-<td>Overview, Health, Usage e Custom View</td>
-<td>[25](docs/25-e10-api-analytics.md)</td>
-<td>✅</td>
-</tr>
-</table>
-
-  
-✅ **Bloco E concluído em 16/08/2026.**
-
-##### Ⓕ Bloco F — Segurança (transversal) 🥇
-
-<table>
-<tr>
-<th>\#</th>
-<th>Cenário</th>
-<th>Objetivo</th>
-<th>Doc</th>
-<th>Status</th>
-</tr>
-<tr>
-<td>F1</td>
-<td>Basic Authentication</td>
-<td>Já praticado no Bloco E; melhorias ficam para pós-certificação</td>
-<td>[20](docs/20-e-api-management-proxy-basic-auth.md), [24](docs/24-e6-e7-mes-order-status-backend.md)</td>
-<td>✅ Coberto</td>
-</tr>
-<tr>
-<td>F2</td>
-<td>API Key</td>
-<td>Já praticado no E2</td>
-<td>[21](docs/21-e2-verify-api-key.md)</td>
-<td>✅ Coberto</td>
-</tr>
-<tr>
-<td>F3</td>
-<td>OAuth 2.0</td>
-<td>Já praticado no E3 e E6+E7</td>
-<td>[22](docs/22-e3-oauth-scopes.md), [24](docs/24-e6-e7-mes-order-status-backend.md)</td>
-<td>✅ Coberto</td>
-</tr>
-<tr>
-<td>F4</td>
-<td>Keystore, Client Certificate e mTLS</td>
-<td>Autenticação B2B inbound com X.509</td>
-<td>[26](docs/26-f4-b2b-client-certificate-mtls.md)</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>F5</td>
-<td>CSRF real</td>
-<td>Token e cookies de sessão em alteração de pedido SAP MM</td>
-<td>[27](docs/27-f5-csrf-token-validation.md)</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>F6</td>
-<td>API Threat Protection</td>
-<td>JSON, XML e Regular Expression Protection</td>
-<td>[28](docs/28-f6-api-threat-protection.md)</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>F7</td>
-<td>PGP Message-Level Security</td>
-<td>Criptografia, assinatura, verificação e testes negativos</td>
-<td>[29](docs/29-f7-pgp-message-level-security.md)</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>F8A–F8B</td>
-<td>Authentication Context e Technical User SAML Bearer</td>
-<td>Contexto inbound, anti-spoofing, RFC 7522, introspecção e autorização</td>
-<td>[30](docs/30-f8-authentication-context-technical-user-saml-bearer.md)</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>F8E</td>
-<td>End-User SAML Bearer Group-Based Authorization</td>
-<td>Autorização por grupos com usuários reais (Buyer/Manager) no WSO2</td>
-<td>[31](docs/31-f8e-end-user-saml-bearer-group-based-authorization.md)</td>
-<td>✅</td>
-</tr>
-</table>
-
-  
-🔒 Hardening futuro pós-certificação: combinar **mTLS + CSRF** e aprofundar testes já cobertos de Basic Auth, API Key e OAuth.
-
-##### Ⓖ Bloco G — Cenários SAP MM / PP / QM 🥈
-
-<table>
-<tr>
-<th>\#</th>
-<th>Cenário</th>
-<th>Objetivo</th>
-<th>Doc</th>
-</tr>
-<tr>
-<td>G1</td>
-<td>SAP MM — Validação de material</td>
-<td>Validar movimentação de estoque</td>
+<td>Ⓖ</td>
+<td>SAP MM / PP / QM</td>
+<td>G1–G3</td>
+<td>![](https://img.shields.io/badge/-planejado-lightgrey)</td>
 <td>—</td>
 </tr>
 <tr>
-<td>G2</td>
-<td>SAP PP — Ordem de produção</td>
-<td>Processar confirmação de produção</td>
-<td>—</td>
-</tr>
-<tr>
-<td>G3</td>
-<td>SAP QM — Inspeção de qualidade</td>
-<td>Tratar resultado de inspeção</td>
-<td>—</td>
+<td>Ⓗ</td>
+<td>Event-Driven (Event Mesh)</td>
+<td>H1–H4</td>
+<td>![](https://img.shields.io/badge/-em%20andamento-yellow)</td>
+<td>[docs](docs/docsREADME.md)</td>
 </tr>
 </table>
 
+---
 
-##### Ⓗ Bloco H — Event-Driven Integration (Event Mesh) 🥈
+## 🧱 Blocos e cenários de prática
+
+🥇 Camada 1 (trilha oficial) · 🥈 Camada 2 (complementar)
+
+### Ⓐ Bloco A — CPI Fundamentos 🥇
 
 <table>
-<tr>
-<th>\#</th>
-<th>Cenário</th>
-<th>Objetivo</th>
-<th>Doc</th>
-<th>Status</th>
-</tr>
-<tr>
-<td>H1</td>
-<td>Solace PubSub+ Event Mesh Foundation</td>
-<td>Broker, topic, durable queue, Direct e Guaranteed Messaging (SAP MM)</td>
-<td>[32](docs/32-h1-solace-pubsub-event-mesh-foundation.md)</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>H2</td>
-<td>CPI Publisher para Solace via AMQP 1.0</td>
-<td>Publicar eventos de negócio com TLS/SASL e correlação ponta a ponta</td>
-<td>[33](docs/33-h2-sap-cloud-integration-publisher-solace-amqp.md)</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>H3</td>
-<td>CPI Subscriber do Solace via AMQP (SAP PP/MES)</td>
-<td>Consumir backlog de confirmações de produção e entregar a backend externo</td>
-<td>[34](docs/34-h3-sap-cloud-integration-subscriber-solace-amqp.md)</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>H4</td>
-<td>Competing Consumers e Escala Horizontal (SAP WM)</td>
-<td>Non-Exclusive Queue, múltiplos workers, falha e recuperação dinâmica</td>
-<td>[35](docs/35-h4-solace-competing-consumers-scaling.md)</td>
-<td>✅</td>
-</tr>
+<tr><th>#</th><th>Cenário</th><th>Objetivo</th><th>Doc</th></tr>
+<tr><td>A1</td><td>HTTP → Content Modifier → Webhook.site</td><td>Primeiro iFlow: receber, ajustar e encaminhar</td><td><a href="docs/03-a1-http-to-webhook.md">📄</a></td></tr>
+<tr><td>A2</td><td>Timer → Request Reply → API pública</td><td>Consumir API externa de forma agendada</td><td><a href="docs/04-a2-timer-to-api.md">📄</a></td></tr>
+<tr><td>A3</td><td>Message Mapping (JSON → XML)</td><td>Transformação de mensagens</td><td><a href="docs/05-a3-message-mapping.md">📄</a></td></tr>
+<tr><td>A4</td><td>Groovy Script</td><td>Lógica customizada no fluxo</td><td><a href="docs/06-a4-groovy-script.md">📄</a></td></tr>
 </table>
 
-  
-🔄 Bloco H em andamento: cenários adicionais de roteamento por tópico, resiliência (DLQ/replay) e integração híbrida (MQTT/Kafka) planejados como continuidade.
+### Ⓑ Bloco B — Padrões de Integração 🥇
 
-#### 🧰 Ferramentas utilizadas
-- **SAP BTP** (Business Technology Platform)
-- **SAP Integration Suite** (Cloud Integration + API Management + Event Mesh)
-- **Solace PubSub+ Cloud** (event broker AMQP 1.0/MQTT/REST usado no Bloco H)
-- **Node.js + rhea** (OMS Simulator AMQP 1.0 para publicação de eventos)
-- **Postman** (envio e teste de mensagens)
-- **Webhook.site, RequestBin e Beeceptor** (validação de recebimento e backends externos)
-- **APIs públicas** (ex.: JSONPlaceholder, dataaccess.com NumberConversion, Northwind OData V4) para simulação de backends
-- **SFTPCloud** (servidor SFTP gratuito de teste, usado na integração de arquivos)
-- **Neon** (banco de dados PostgreSQL serverless gratuito, usado na conectividade JDBC)
-- **Mockoon + ngrok** (simulação local de sistemas externos, como ERP)
-- **SAP Developer Hub** (portal de gestão de Applications e Subscriptions do API Management)
-- **VS Code + Git** (versionamento e documentação)
-- **GitHub** (portfólio e controle de versão)
+<table>
+<tr><th>#</th><th>Cenário</th><th>Objetivo</th><th>Doc</th></tr>
+<tr><td>B1</td><td>Content-Based Router</td><td>Rotear mensagens por condição</td><td><a href="docs/07-b1-content-based-router.md">📄</a></td></tr>
+<tr><td>B2</td><td>Content Enricher</td><td>Enriquecer dados via lookup OData</td><td><a href="docs/08-b2-content-enricher.md">📄</a></td></tr>
+<tr><td>B3</td><td>Splitter</td><td>Quebrar lote em mensagens individuais</td><td><a href="docs/09-b3-splitter.md">📄</a></td></tr>
+<tr><td>B4</td><td>Aggregator / Gather</td><td>Consolidar respostas</td><td><a href="docs/10-b4-aggregator.md">📄</a></td></tr>
+<tr><td>B5</td><td>Multicast</td><td>Enviar para múltiplos destinos</td><td><a href="docs/11-b5-multicast.md">📄</a></td></tr>
+</table>
 
-#### 🔁 Fluxo de trabalho
-- Desenvolver o iFlow no SAP Integration Suite (navegador)
-- Testar e capturar evidências (prints do monitoramento)
-- Exportar o iFlow (.zip) do Integration Suite
-- Adicionar o artefato em iflows/ e as evidências em evidences/
-- Documentar o cenário em docs/
-- Commit e push via VS Code (Source Control)
+### Ⓒ Bloco C — Resiliência e Erros 🥇
 
-#### 📚 Referências oficiais SAP
+<table>
+<tr><th>#</th><th>Cenário</th><th>Objetivo</th><th>Doc</th></tr>
+<tr><td>C1</td><td>Exception Subprocess</td><td>Tratamento padronizado de erros</td><td><a href="docs/12-c1-exception-subprocess.md">📄</a></td></tr>
+<tr><td>C2</td><td>Retry e timeout</td><td>Resiliência em falhas temporárias</td><td><a href="docs/13-c2-retry-timeout.md">📄</a></td></tr>
+<tr><td>C3</td><td>Dead Letter (JMS)</td><td>Recuperação de mensagens com falha</td><td><a href="docs/14-c3-dead-letter.md">📄</a></td></tr>
+<tr><td>C4</td><td>Data Store & Idempotência</td><td>Persistência temporária e deduplicação</td><td><a href="docs/15-c4-data-store.md">📄</a></td></tr>
+</table>
+
+### Ⓓ Bloco D — Conectividade / Adapters 🥇
+
+<table>
+<tr><th>#</th><th>Cenário</th><th>Objetivo</th><th>Doc</th></tr>
+<tr><td>D1</td><td>OData Adapter</td><td>Integração no padrão S/4HANA</td><td><a href="docs/16-d1-odata-adapter.md">📄</a></td></tr>
+<tr><td>D2</td><td>SOAP Adapter</td><td>Serviços SOAP externos (Split/Gather)</td><td><a href="docs/17-d2-soap-adapter.md">📄</a></td></tr>
+<tr><td>D3</td><td>SFTP Adapter</td><td>Integração de arquivos (hot folder)</td><td><a href="docs/18-d3-sftp-adapter.md">📄</a></td></tr>
+<tr><td>D4</td><td>ProcessDirect + JDBC</td><td>Reuso interno + conectividade a banco</td><td><a href="docs/19-d4-processdirect.md">📄</a></td></tr>
+</table>
+
+### Ⓔ Bloco E — API Management 🥇
+
+<table>
+<tr><th>#</th><th>Cenário</th><th>Objetivo</th><th>Doc</th></tr>
+<tr><td>E0/E1/E12</td><td>API Proxy + Basic Authentication</td><td>Expor backend com autenticação via KVM</td><td><a href="docs/20-e-api-management-proxy-basic-auth.md">📄</a></td></tr>
+<tr><td>E2</td><td>Verify API Key</td><td>Controle por Consumer Key</td><td><a href="docs/21-e2-verify-api-key.md">📄</a></td></tr>
+<tr><td>E3</td><td>OAuth 2.0 e Scopes</td><td>Client Credentials e autorização por escopo</td><td><a href="docs/22-e3-oauth-scopes.md">📄</a></td></tr>
+<tr><td>E4+E5</td><td>Quota e Spike Arrest</td><td>Controle de consumo e proteção</td><td><a href="docs/23-e4-e5-quota-spike-arrest.md">📄</a></td></tr>
+<tr><td>E6+E7</td><td>JSON → XML e Assign Message</td><td>Resposta XML e visibilidade por scope</td><td><a href="docs/24-e6-e7-mes-order-status-backend.md">📄</a></td></tr>
+<tr><td>E10</td><td>API Analytics</td><td>Overview, Health, Usage e Custom View</td><td><a href="docs/25-e10-api-analytics.md">📄</a></td></tr>
+</table>
+
+### Ⓕ Bloco F — Segurança 🥇
+
+<table>
+<tr><th>#</th><th>Cenário</th><th>Objetivo</th><th>Doc</th></tr>
+<tr><td>F4</td><td>Keystore, Client Certificate e mTLS</td><td>Autenticação B2B inbound com X.509</td><td><a href="docs/26-f4-b2b-client-certificate-mtls.md">📄</a></td></tr>
+<tr><td>F5</td><td>CSRF real</td><td>Token e cookies de sessão (SAP MM)</td><td><a href="docs/27-f5-csrf-token-validation.md">📄</a></td></tr>
+<tr><td>F6</td><td>API Threat Protection</td><td>JSON, XML e Regex Protection</td><td><a href="docs/28-f6-api-threat-protection.md">📄</a></td></tr>
+<tr><td>F7</td><td>PGP Message-Level Security</td><td>Criptografia, assinatura e testes negativos</td><td><a href="docs/29-f7-pgp-message-level-security.md">📄</a></td></tr>
+<tr><td>F8A–F8B</td><td>Authentication Context e Technical User SAML Bearer</td><td>Anti-spoofing, RFC 7522, introspecção e autorização</td><td><a href="docs/30-f8-authentication-context-technical-user-saml-bearer.md">📄</a></td></tr>
+<tr><td>F8E</td><td>End-User SAML Bearer Group-Based Authorization</td><td>Autorização por grupos (Buyer/Manager) no WSO2</td><td><a href="docs/31-f8e-end-user-saml-bearer-group-based-authorization.md">📄</a></td></tr>
+</table>
+
+### Ⓗ Bloco H — Event-Driven Integration (Event Mesh) 🥈
+
+<table>
+<tr><th>#</th><th>Cenário</th><th>Objetivo</th><th>Doc</th></tr>
+<tr><td>H1</td><td>Solace PubSub+ Event Mesh Foundation</td><td>Broker, topic, durable queue, Direct e Guaranteed Messaging</td><td><a href="docs/32-h1-solace-pubsub-event-mesh-foundation.md">📄</a></td></tr>
+<tr><td>H2</td><td>CPI Publisher para Solace via AMQP 1.0</td><td>Publicar eventos com TLS/SASL e correlação ponta a ponta</td><td><a href="docs/33-h2-sap-cloud-integration-publisher-solace-amqp.md">📄</a></td></tr>
+<tr><td>H3</td><td>CPI Subscriber do Solace via AMQP (SAP PP/MES)</td><td>Consumir backlog e entregar a backend externo</td><td><a href="docs/34-h3-sap-cloud-integration-subscriber-solace-amqp.md">📄</a></td></tr>
+<tr><td>H4</td><td>Competing Consumers e Escala Horizontal (SAP WM)</td><td>Non-Exclusive Queue, múltiplos workers, falha e recuperação</td><td><a href="docs/35-h4-solace-competing-consumers-scaling.md">📄</a></td></tr>
+</table>
+
+---
+
+## 📁 Estrutura do repositório
+
+```
+SAP_Integration_Suite_Learning/
+├── docs/            # 📚 Documentação técnica de cada cenário (35+ documentos)
+├── iflows/          # 📦 Integration Flows exportados (.zip)
+├── payloads/        # 📨 Mensagens de entrada/saída (JSON/XML)
+├── postman/         # 📮 Collections de teste por bloco
+├── evidences/       # 📸 Evidências de execução (labXX)
+├── certification/   # 🎓 Painel de preparação para a certificação
+├── README.md        # 🇧🇷 Este arquivo
+└── README.en.md     # 🇺🇸 English version
+```
+
+<table>
+<tr><th>Pasta</th><th>Descrição</th><th>Índice</th></tr>
+<tr><td><code>docs/</code></td><td>Documentação técnica (objetivo, arquitetura, passo a passo, troubleshooting)</td><td><a href="docs/docsREADME.md">abrir</a></td></tr>
+<tr><td><code>iflows/</code></td><td>Integration Flows exportados do Integration Suite</td><td><a href="iflows/iflows_README.md">abrir</a></td></tr>
+<tr><td><code>payloads/</code></td><td>Mensagens de entrada e saída usadas nos testes</td><td><a href="payloads/payloads_README.md">abrir</a></td></tr>
+<tr><td><code>postman/</code></td><td>Collections de teste por bloco</td><td><a href="postman/postman_README.md">abrir</a></td></tr>
+<tr><td><code>evidences/</code></td><td>Prints de monitoramento, logs e payloads processados</td><td><a href="evidences/evidencesREADME.md">abrir</a></td></tr>
+<tr><td><code>certification/</code></td><td>Status de preparação e progresso rumo à certificação</td><td><a href="certification/certification_README.md">abrir</a></td></tr>
+</table>
+
+---
+
+## 🔁 Fluxo de trabalho
+
+```mermaid
+flowchart LR
+    D[Desenvolver iFlow\nno Integration Suite] --> T[Testar e capturar\nevidências]
+    T --> X[Exportar iFlow .zip]
+    X --> A[Adicionar artefato\ne evidências]
+    A --> Doc[Documentar\ncenário em docs/]
+    Doc --> G[Commit e push\nvia VS Code]
+
+    classDef s fill:#0f6b78,color:#fff,stroke:#58c7d1;
+    class D,T,X,A,Doc,G s;
+```
+
+---
+
+## 📚 Referências oficiais SAP
+
 - 🥇 Trilha principal: [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite)
 - 🥈 Event-Driven: [Discovering Event-Driven Integration with SAP Integration Suite, advanced event mesh](https://learning.sap.com/courses/discovering-event-driven-integration-with-sap-integration-suite-advanved-event-mesh)
 - 🥈 Tutoriais AEM: [Get Started with SAP Integration Suite, advanced event mesh](https://developers.sap.com/mission.advanced-event-mesh-get-started.html)
 - 📖 Visão geral: [SAP Integration Suite — SAP Learning](https://learning.sap.com/products/business-technology-platform/integration-suite)
 
-#### 👤 Autor / 📬 Contato
-  
-[LinkedIn](https://www.linkedin.com/in/orlando-caetano/)[GitHub](https://github.com/OrlandoCaetano2026)  
-**Orlando Caetano**Especialista SAP • Integração • Inteligência Artificial
-Consultor SAP MM com know-how em PP, QM e WM  
-[SAP MM](https://img.shields.io/badge/SAP-MM-0FAAFF?logo=sap&logoColor=white) [SAP PP](https://img.shields.io/badge/SAP-PP-0FAAFF?logo=sap&logoColor=white) [SAP QM](https://img.shields.io/badge/SAP-QM-0FAAFF?logo=sap&logoColor=white) [SAP WM](https://img.shields.io/badge/SAP-WM-0FAAFF?logo=sap&logoColor=white)  
-📌 Projeto de estudo e portfólio. Os cenários SAP MM, PP, QM, WM, MES e Event-Driven são simulações educativas para prática de integração.
+---
+
+## 👤 Autor / 📇 Contato
+
+<div align="center">
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Orlando%20Caetano-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/orlando-caetano/)
+[![GitHub](https://img.shields.io/badge/GitHub-OrlandoCaetano2026-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/OrlandoCaetano2026)
+
+**Orlando Caetano**  
+Especialista SAP • Integração • Inteligência Artificial  
+Consultor SAP MM com know-how em PP, QM e WM
+
+![SAP MM](https://img.shields.io/badge/SAP-MM-0FAAFF?style=flat-square&logo=sap&logoColor=white)
+![SAP PP](https://img.shields.io/badge/SAP-PP-2ECC71?style=flat-square&logo=sap&logoColor=white)
+![SAP QM](https://img.shields.io/badge/SAP-QM-E67E22?style=flat-square&logo=sap&logoColor=white)
+![SAP WM](https://img.shields.io/badge/SAP-WM-E74C3C?style=flat-square&logo=sap&logoColor=white)
+
+</div>
+
+> 📌 Projeto de estudo e portfólio. Os cenários SAP MM, PP, QM, WM, MES e Event-Driven são simulações educativas para prática de arquitetura e integração.
