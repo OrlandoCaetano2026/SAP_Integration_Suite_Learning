@@ -2,7 +2,7 @@
 
 # 🔗 SAP Integration Suite Learning
 
-### Laboratório prático de engenharia de integração e preparação para certificação
+### Laboratório prático de engenharia de integração, portfólio técnico e referência de estudo
 
 *Hands-on certification lab & enterprise integration engineering portfolio*
 
@@ -18,10 +18,10 @@
 
 <br/>
 
-![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow?style=flat-square)
+![Status](https://img.shields.io/badge/status-p%C3%B3s--certifica%C3%A7%C3%A3o-success?style=flat-square)
 ![Blocos](https://img.shields.io/badge/blocos-8-blue?style=flat-square)
-![Documentos](https://img.shields.io/badge/documentos%20t%C3%A9cnicos-35%2B-success?style=flat-square)
-![Laboratórios](https://img.shields.io/badge/laborat%C3%B3rios-33-success?style=flat-square)
+![Documentos](https://img.shields.io/badge/documentos%20t%C3%A9cnicos-38%2B-success?style=flat-square)
+![Laboratórios](https://img.shields.io/badge/laborat%C3%B3rios-36-success?style=flat-square)
 ![iFlows](https://img.shields.io/badge/iFlows-40%2B-success?style=flat-square)
 ![Evidências](https://img.shields.io/badge/evid%C3%AAncias-300%2B-success?style=flat-square)
 ![Ferramentas](https://img.shields.io/badge/ferramentas-15%2B-informational?style=flat-square)
@@ -37,7 +37,7 @@
 
 ---
 
-> 💡 Projeto prático de estudo, desenvolvimento e **preparação para a certificação SAP Integration Suite**. Acompanha a trilha oficial [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite) **e vai além dela**, adicionando cenários de mercado com segurança avançada, mensageria e arquitetura orientada a eventos.
+> 💡 Projeto prático de estudo, desenvolvimento e portfólio técnico, utilizado como base de preparação para a certificação **SAP Certified - Integration Developer**, conquistada em **26/08/2026**. Acompanha a trilha oficial [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite) **e vai além dela**, adicionando cenários de mercado com segurança avançada, mensageria e arquitetura orientada a eventos.
 >
 > O objetivo é ir além da teoria: **construir cenários reais de integração de ponta a ponta**, documentar cada etapa com storytelling técnico, gerar evidências rastreáveis e formar um portfólio de engenharia consistente.
 
@@ -53,7 +53,7 @@
 ## 📑 Índice
 
 - [Sobre o projeto](#-sobre-o-projeto)
-- [Preparação para a certificação](#-preparação-para-a-certificação)
+- [Certificação conquistada](#-certificação-conquistada)
 - [Metodologia de engenharia](#-metodologia-de-engenharia)
 - [Stack tecnológica](#-stack-tecnológica)
 - [Arquitetura do landscape simulado](#-arquitetura-do-landscape-simulado)
@@ -72,11 +72,11 @@
 
 O **SAP Integration Suite** é a plataforma de integração como serviço (**iPaaS**) da SAP, executada no **SAP Business Technology Platform (BTP)**. Ela conecta aplicações, processos, dados e eventos em ambientes **cloud, on-premise e híbridos**, permitindo que sistemas SAP e não-SAP se comuniquem de forma padronizada, segura e escalável.
 
-Este repositório reúne a jornada completa de aprendizagem prática nessa plataforma, tratada como um **laboratório de engenharia**: cada cenário é projetado, construído, testado, evidenciado, documentado e versionado. O resultado é simultaneamente um **material de preparação para a certificação** e um **portfólio técnico demonstrável**.
+Este repositório reúne a jornada completa de aprendizagem prática nessa plataforma, tratada como um **laboratório de engenharia**: cada cenário é projetado, construído, testado, evidenciado, documentado e versionado. O resultado é simultaneamente um **material de referência para estudo**, um **portfólio técnico demonstrável** e a base prática que apoiou a certificação conquistada em 26/08/2026.
 
 ---
 
-## 🎓 Preparação para a certificação
+## 🎓 Certificação conquistada
 
 <div align="center">
 
@@ -84,7 +84,7 @@ Este repositório reúne a jornada completa de aprendizagem prática nessa plata
 
 </div>
 
-Este laboratório foi estruturado para cobrir os domínios do exame **SAP Certified Associate – Integration Developer**, mapeando cada área a blocos e documentos concretos.
+Este laboratório foi estruturado para cobrir os domínios da certificação **SAP Certified - Integration Developer**. A certificação foi conquistada em **26/08/2026**, por meio do **C_CPI_2601 System-Based Assessment**. [Validar credencial no Credly](https://www.credly.com/badges/98eab00c-f5c1-4fe9-b256-d824289f6ed4).
 
 <table>
 <tr><th>Domínio do exame (foco)</th><th>Onde é praticado</th><th>Cobertura</th></tr>
@@ -94,7 +94,7 @@ Este laboratório foi estruturado para cobrir os domínios do exame **SAP Certif
 <tr><td>Tratamento de erros e resiliência</td><td>Bloco C (Exception, Retry, Dead Letter, Idempotência)</td><td>✅ Alta</td></tr>
 <tr><td>API Management (proxies, policies, produtos)</td><td>Bloco E</td><td>✅ Alta</td></tr>
 <tr><td>Segurança (Basic, API Key, OAuth, mTLS, CSRF, PGP, SAML)</td><td>Bloco F</td><td>✅ Alta</td></tr>
-<tr><td>Arquitetura orientada a eventos (Event Mesh)</td><td>Bloco H</td><td>🔄 Em andamento</td></tr>
+<tr><td>Arquitetura orientada a eventos (Event Mesh)</td><td>Bloco H</td><td>✅ H1-H7 concluídos</td></tr>
 <tr><td>Monitoramento e operações</td><td>Transversal (todos os blocos)</td><td>✅ Alta</td></tr>
 </table>
 
@@ -254,7 +254,7 @@ Diferencial de mercado:
 
 | 📦 Blocos | 📚 Documentos | 🧪 Laboratórios | 🔀 iFlows | 📸 Evidências | 🧰 Ferramentas |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-| **8** | **35+** | **33** | **40+** | **300+** | **15+** |
+| **8** | **38+** | **36** | **40+** | **300+** | **15+** |
 
 </div>
 
@@ -271,7 +271,7 @@ Diferencial de mercado:
 <tr><td>Ⓔ</td><td>API Management</td><td>E0–E12</td><td><img src="https://img.shields.io/badge/status-conclu%C3%ADdo-success?style=flat-square" alt="concluído"/></td><td><a href="docs/docsREADME.md">docs</a></td></tr>
 <tr><td>Ⓕ</td><td>Segurança</td><td>F4–F8</td><td><img src="https://img.shields.io/badge/status-conclu%C3%ADdo-success?style=flat-square" alt="concluído"/></td><td><a href="docs/docsREADME.md">docs</a></td></tr>
 <tr><td>Ⓖ</td><td>SAP MM / PP / QM</td><td>G1–G3</td><td><img src="https://img.shields.io/badge/status-planejado-lightgrey?style=flat-square" alt="planejado"/></td><td>—</td></tr>
-<tr><td>Ⓗ</td><td>Event-Driven (Event Mesh)</td><td>H1–H4</td><td><img src="https://img.shields.io/badge/status-em%20andamento-yellow?style=flat-square" alt="em andamento"/></td><td><a href="docs/docsREADME.md">docs</a></td></tr>
+<tr><td>Ⓗ</td><td>Event-Driven (Event Mesh)</td><td>H1-H7</td><td><img src="https://img.shields.io/badge/status-H1--H7%20conclu%C3%ADdos-success?style=flat-square" alt="H1-H7 concluídos"/></td><td><a href="docs/docsREADME.md">docs</a></td></tr>
 </table>
 
 ---
@@ -353,6 +353,9 @@ Diferencial de mercado:
 <tr><td>H2</td><td>CPI Publisher para Solace via AMQP 1.0</td><td>Publicar eventos com TLS/SASL e correlação ponta a ponta</td><td><a href="docs/33-h2-sap-cloud-integration-publisher-solace-amqp.md">📄</a></td></tr>
 <tr><td>H3</td><td>CPI Subscriber do Solace via AMQP (SAP PP/MES)</td><td>Consumir backlog e entregar a backend externo</td><td><a href="docs/34-h3-sap-cloud-integration-subscriber-solace-amqp.md">📄</a></td></tr>
 <tr><td>H4</td><td>Competing Consumers e Escala Horizontal (SAP WM)</td><td>Non-Exclusive Queue, múltiplos workers, falha e recuperação</td><td><a href="docs/35-h4-solace-competing-consumers-scaling.md">📄</a></td></tr>
+<tr><td>H5</td><td>Topic Hierarchy, Wildcards e Fan-out (SAP QM)</td><td>Roteamento seletivo e distribuição por subscriptions</td><td><a href="docs/36-h5-solace-topic-hierarchy-wildcards-fanout.md">📄</a></td></tr>
+<tr><td>H6</td><td>Retry, DMQ, Recuperação e Message Replay (SAP MM)</td><td>Resiliência operacional e reprodução histórica</td><td><a href="docs/37-h6-solace-dead-letter-retry-replay.md">📄</a></td></tr>
+<tr><td>H7</td><td>MQTT Industrial Telemetry (.NET / SAP PM)</td><td>Interoperabilidade MQTT-AMQP, ordem de manutenção e alerta por e-mail</td><td><a href="docs/38-h7-solace-mqtt-industrial-telemetry.md">📄</a></td></tr>
 </table>
 
 ---
@@ -361,12 +364,12 @@ Diferencial de mercado:
 
 ```
 SAP_Integration_Suite_Learning/
-├── docs/            # 📚 Documentação técnica de cada cenário (35+ documentos)
+├── docs/            # 📚 Documentação técnica de cada cenário (38+ documentos)
 ├── iflows/          # 📦 Integration Flows exportados (.zip)
 ├── payloads/        # 📨 Mensagens de entrada/saída (JSON/XML)
 ├── postman/         # 📮 Collections de teste por bloco
 ├── evidences/       # 📸 Evidências de execução (labXX)
-├── certification/   # 🎓 Painel de preparação para a certificação
+├── certification/   # 🎓 Certificação conquistada e jornada de aprendizagem
 ├── README.md        # 🇧🇷 Este arquivo
 └── README.en.md     # 🇺🇸 English version
 ```
@@ -378,7 +381,7 @@ SAP_Integration_Suite_Learning/
 <tr><td><code>payloads/</code></td><td>Mensagens de entrada e saída usadas nos testes</td><td><a href="payloads/payloads_README.md">abrir</a></td></tr>
 <tr><td><code>postman/</code></td><td>Collections de teste por bloco</td><td><a href="postman/postman_README.md">abrir</a></td></tr>
 <tr><td><code>evidences/</code></td><td>Prints de monitoramento, logs e payloads processados</td><td><a href="evidences/evidencesREADME.md">abrir</a></td></tr>
-<tr><td><code>certification/</code></td><td>Status de preparação e progresso rumo à certificação</td><td><a href="certification/certification_README.md">abrir</a></td></tr>
+<tr><td><code>certification/</code></td><td>Certificação conquistada, badge verificável e jornada de aprendizagem</td><td><a href="certification/certification_README.md">abrir</a></td></tr>
 </table>
 
 ---

@@ -72,13 +72,16 @@
 
 ## Ⓗ Bloco H — Event-Driven (Event Mesh)
 
-> Os eventos do Bloco H são publicados via **AMQP 1.0** (Solace PubSub+), usando o **Try-Me** do broker e um **OMS Simulator em Node.js** (biblioteca `rhea`). Por serem gerados dinamicamente com identificadores e correlação próprios, os payloads de referência estão nos próprios documentos.
+> Os eventos do Bloco H são publicados via **AMQP 1.0** e **MQTT** no Solace PubSub+, usando Try-Me, simuladores Node.js e publisher .NET/MQTTnet. Como IDs e correlações são gerados dinamicamente, os contratos de referência permanecem nos respectivos documentos.
 
 <table>
 <tr><th>Evento</th><th>Domínio</th><th>Doc</th></tr>
 <tr><td><code>PurchaseOrderCreated</code></td><td>SAP MM</td><td><a href="../docs/32-h1-solace-pubsub-event-mesh-foundation.md">H1</a> · <a href="../docs/33-h2-sap-cloud-integration-publisher-solace-amqp.md">H2</a></td></tr>
 <tr><td><code>ProductionOrderConfirmed</code></td><td>SAP PP / MES</td><td><a href="../docs/34-h3-sap-cloud-integration-subscriber-solace-amqp.md">H3</a></td></tr>
 <tr><td><code>WarehousePickingRequested</code></td><td>SAP WM</td><td><a href="../docs/35-h4-solace-competing-consumers-scaling.md">H4</a></td></tr>
+<tr><td><code>QualityInspectionCritical</code></td><td>SAP QM</td><td><a href="../docs/36-h5-solace-topic-hierarchy-wildcards-fanout.md">H5</a></td></tr>
+<tr><td><code>SupplierConfirmationReceived</code></td><td>SAP MM</td><td><a href="../docs/37-h6-solace-dead-letter-retry-replay.md">H6</a></td></tr>
+<tr><td><code>IndustrialMachineTelemetryReceived</code></td><td>SAP PM / IoT</td><td><a href="../docs/38-h7-solace-mqtt-industrial-telemetry.md">H7</a></td></tr>
 </table>
 
 <div align="center">

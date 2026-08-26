@@ -63,7 +63,7 @@ Os cenários do Bloco H utilizam **AMQP 1.0** (Solace PubSub+), e não requests 
 
 - Publicação via **Try-Me** do broker e via **OMS Simulator em Node.js** (`rhea`, AMQP 1.0/TLS/SASL).
 - Consumo pelos iFlows do Cloud Integration (AMQP Sender Adapter), com entrega a backends externos (Webhook.site, RequestBin e Beeceptor).
-- Payloads de exemplo documentados diretamente nos documentos **32 a 35**.
+- Payloads de exemplo documentados diretamente nos documentos **32 a 38**. Os cenários H5-H7 usam Solace, Node.js/.NET, Mockoon, RequestBin e Mailtrap; por isso não dependem de collection Postman dedicada.
 
 <div align="center">
 

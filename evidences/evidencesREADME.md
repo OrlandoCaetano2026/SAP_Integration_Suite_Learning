@@ -5,7 +5,7 @@
 ### Rastreabilidade completa — SAP Integration Suite Learning
 
 ![Evidências](https://img.shields.io/badge/evidências-300%2B-0FAAFF?style=for-the-badge&logo=sap&logoColor=white)
-![Labs](https://img.shields.io/badge/laboratórios-33-success?style=for-the-badge)
+![Labs](https://img.shields.io/badge/laboratórios-36-success?style=for-the-badge)
 ![Rastreável](https://img.shields.io/badge/100%25-rastreável-6C2EB9?style=for-the-badge)
 
 </div>
@@ -28,7 +28,7 @@
 <tr><td>Ⓓ Adapters</td><td>lab14–lab17</td><td>OData, SOAP, SFTP, JDBC</td></tr>
 <tr><td>Ⓔ API Management</td><td>lab18–lab23</td><td>Proxies, policies, OAuth, analytics</td></tr>
 <tr><td>Ⓕ Segurança</td><td>lab24–lab29</td><td>mTLS, CSRF, threat, PGP, SAML Bearer</td></tr>
-<tr><td>Ⓗ Event Mesh</td><td>lab30–lab33</td><td>Broker, AMQP, guaranteed messaging, competing consumers</td></tr>
+<tr><td>Ⓗ Event Mesh</td><td>lab30-lab36</td><td>Broker, AMQP, competing consumers, wildcards, DMQ, replay e MQTT</td></tr>
 </table>
 
 ---
@@ -108,6 +108,9 @@
 <tr><td>Lab31</td><td>H2 · CPI Publisher via AMQP</td><td>Publicação AMQP 1.0 com envelope e correlação ponta a ponta</td><td><a href="./Lab31">📁</a> · <a href="../docs/33-h2-sap-cloud-integration-publisher-solace-amqp.md">📄</a></td></tr>
 <tr><td>Lab32</td><td>H3 · CPI Subscriber via AMQP</td><td>Backlog SAP PP/MES consumido e entregue a backend externo</td><td><a href="./Lab32">📁</a> · <a href="../docs/34-h3-sap-cloud-integration-subscriber-solace-amqp.md">📄</a></td></tr>
 <tr><td>lab33</td><td>H4 · Competing Consumers e Escala</td><td>31 evidências: 3 workers SAP WM, 3 backends, falha e recuperação</td><td><a href="./lab33">📁</a> · <a href="../docs/35-h4-solace-competing-consumers-scaling.md">📄</a></td></tr>
+<tr><td>lab34</td><td>H5 · Topic Hierarchy, Wildcards e Fan-out</td><td>Roteamento seletivo, subscriptions e distribuição de eventos SAP QM</td><td><a href="./lab34">📁</a> · <a href="../docs/36-h5-solace-topic-hierarchy-wildcards-fanout.md">📄</a></td></tr>
+<tr><td>lab35</td><td>H6 · Retry, DMQ, Recovery e Message Replay</td><td>47 evidências de resiliência, poison message, recuperação e replay</td><td><a href="./lab35">📁</a> · <a href="../docs/37-h6-solace-dead-letter-retry-replay.md">📄</a></td></tr>
+<tr><td>lab36</td><td>H7 · MQTT Industrial Telemetry</td><td>24 evidências de MQTT/.NET, AMQP, roteamento, ordem de manutenção e e-mail</td><td><a href="./lab36">📁</a> · <a href="../docs/38-h7-solace-mqtt-industrial-telemetry.md">📄</a></td></tr>
 </table>
 
 ---

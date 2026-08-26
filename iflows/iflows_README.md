@@ -115,6 +115,9 @@ Design → pacote de destino → <b>Add → Integration Flow → Upload</b> → 
 <tr><td><code>H4 WM Picking Worker A.zip</code></td><td>Competing Consumer A (SAP WM → Webhook.site)</td><td><a href="../docs/35-h4-solace-competing-consumers-scaling.md">📄</a></td></tr>
 <tr><td><code>H4 WM Picking Worker B.zip</code></td><td>Competing Consumer B (SAP WM → RequestBin)</td><td><a href="../docs/35-h4-solace-competing-consumers-scaling.md">📄</a></td></tr>
 <tr><td><code>H4 WM Picking Worker C.zip</code></td><td>Competing Consumer C (SAP WM → Beeceptor)</td><td><a href="../docs/35-h4-solace-competing-consumers-scaling.md">📄</a></td></tr>
+<tr><td><code>H5 QM Critical Alert Consumer.zip</code></td><td>Consumer SAP QM com roteamento seletivo por topic hierarchy</td><td><a href="../docs/36-h5-solace-topic-hierarchy-wildcards-fanout.md">📄</a></td></tr>
+<tr><td><code>H6 MM Supplier Confirmation Consumer.zip</code></td><td>Consumer SAP MM com retry, DMQ e recuperação operacional</td><td><a href="../docs/37-h6-solace-dead-letter-retry-replay.md">📄</a></td></tr>
+<tr><td><code>H7 PM Industrial Telemetry Consumer.zip</code></td><td>Consumer SAP PM para telemetria MQTT, ordem de manutenção e alerta SMTP</td><td><a href="../docs/38-h7-solace-mqtt-industrial-telemetry.md">📄</a></td></tr>
 </table>
 
 > 💡 O **H1** (Event Mesh Foundation) é executado diretamente no broker Solace PubSub+ (topic, durable queue e Try-Me), sem um iFlow exportável próprio.

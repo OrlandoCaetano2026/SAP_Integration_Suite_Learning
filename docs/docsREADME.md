@@ -4,7 +4,7 @@
 
 ### Biblioteca de cenários — SAP Integration Suite Learning
 
-![Documentos](https://img.shields.io/badge/documentos-35%2B-0FAAFF?style=for-the-badge&logo=sap&logoColor=white)
+![Documentos](https://img.shields.io/badge/documentos-38%2B-0FAAFF?style=for-the-badge&logo=sap&logoColor=white)
 ![Storytelling](https://img.shields.io/badge/padrão-storytelling%20técnico-6C2EB9?style=for-the-badge)
 ![Arquitetura](https://img.shields.io/badge/diagramas-Mermaid-00C1D4?style=for-the-badge)
 
@@ -302,6 +302,9 @@
 <td>Non-Exclusive Queue com três workers SAP WM e três backends distintos, demonstrando escala horizontal, falha controlada e recuperação dinâmica de capacidade.</td>
 <td>✅</td>
 </tr>
+<tr><td></td><td><a href="./36-h5-solace-topic-hierarchy-wildcards-fanout.md"><b>H5 · Topic Hierarchy, Wildcards e Fan-out</b></a></td><td>Roteamento seletivo e fan-out no Solace para eventos SAP QM.</td><td>✅</td></tr>
+<tr><td></td><td><a href="./37-h6-solace-dead-letter-retry-replay.md"><b>H6 · Retry, DMQ, Recovery e Message Replay</b></a></td><td>Retry interno, poison message, DMQ dedicada, recuperação e Message Replay para SAP MM.</td><td>✅</td></tr>
+<tr><td></td><td><a href="./38-h7-solace-mqtt-industrial-telemetry.md"><b>H7 · MQTT Industrial Telemetry</b></a></td><td>Publisher .NET/MQTT, consumo AMQP, classificação, ordem SAP PM-like e alerta SMTP.</td><td>✅</td></tr>
 </table>
 
 ---
@@ -313,7 +316,7 @@
 <tr><td>A–C</td><td>03–15</td><td><a href="../evidences/evidencesREADME.md">lab01–lab13</a></td><td><a href="../iflows/iflows_README.md">A1–C4B</a></td></tr>
 <tr><td>D–E</td><td>16–25</td><td><a href="../evidences/evidencesREADME.md">lab14–lab23</a></td><td><a href="../iflows/iflows_README.md">D1–E6/E7</a></td></tr>
 <tr><td>F</td><td>26–31</td><td><a href="../evidences/evidencesREADME.md">lab24–lab29</a></td><td><a href="../iflows/iflows_README.md">F4–F8E</a></td></tr>
-<tr><td>H</td><td>32–35</td><td><a href="../evidences/evidencesREADME.md">lab30–lab33</a></td><td><a href="../iflows/iflows_README.md">H2–H4</a></td></tr>
+<tr><td>H</td><td>32-38</td><td><a href="../evidences/evidencesREADME.md">lab30-lab36</a></td><td><a href="../iflows/iflows_README.md">H2-H7</a></td></tr>
 </table>
 
 ---
@@ -323,7 +326,7 @@
 - ✅ Blocos **A, B, C, D e E** concluídos.
 - ✅ **F1, F2 e F3** cobertos nos cenários de API Management; **F4, F5, F6 e F7** concluídos.
 - ✅ **F8A/F8B** no Documento 30 (com a exploração arquitetural do F8C) e **F8E** no Documento 31.
-- 🔄 Bloco **H (Event-Driven / Event Mesh)** em andamento: **H1 a H4** concluídos nos Documentos 32 a 35.
+- ✅ Bloco **H (Event-Driven / Event Mesh)** com **H1 a H7 concluídos** nos Documentos 32 a 38; expansão pós-certificação planejada.
 
 <div align="center">
 

@@ -2,7 +2,7 @@
 
 # 🔗 SAP Integration Suite Learning
 
-### Hands-on certification lab & enterprise integration engineering portfolio
+### Hands-on integration engineering lab, technical portfolio and study reference
 
 **🌐 Language / Idioma:** [🇧🇷 Português](README.md) · 🇺🇸 **English**
 
@@ -16,10 +16,10 @@
 
 <br/>
 
-![Status](https://img.shields.io/badge/status-in%20development-yellow?style=flat-square)
+![Status](https://img.shields.io/badge/status-post--certification-success?style=flat-square)
 ![Blocks](https://img.shields.io/badge/blocks-8-blue?style=flat-square)
-![Documents](https://img.shields.io/badge/technical%20documents-35%2B-success?style=flat-square)
-![Labs](https://img.shields.io/badge/labs-33-success?style=flat-square)
+![Documents](https://img.shields.io/badge/technical%20documents-38%2B-success?style=flat-square)
+![Labs](https://img.shields.io/badge/labs-36-success?style=flat-square)
 ![iFlows](https://img.shields.io/badge/iFlows-40%2B-success?style=flat-square)
 ![Evidences](https://img.shields.io/badge/evidences-300%2B-success?style=flat-square)
 ![Tools](https://img.shields.io/badge/tools-15%2B-informational?style=flat-square)
@@ -35,7 +35,7 @@
 
 ---
 
-> 💡 A hands-on project for studying, building, and **preparing for the SAP Integration Suite certification**. It follows the official [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite) journey **and goes beyond it**, adding market-relevant scenarios with advanced security, messaging, and event-driven architecture.
+> 💡 A hands-on learning and engineering portfolio used as the practical foundation for the **SAP Certified - Integration Developer** certification, achieved on **August 26, 2026**. It follows the official [Developing with SAP Integration Suite](https://learning.sap.com/learning-journeys/developing-with-sap-integration-suite) journey **and goes beyond it**, adding market-relevant scenarios with advanced security, messaging, and event-driven architecture.
 >
 > The goal goes beyond theory: to **build real end-to-end integration scenarios**, document every step with technical storytelling, generate traceable evidences, and build a consistent engineering portfolio.
 
@@ -48,7 +48,7 @@
 
 ---
 
-## 🎓 Certification preparation
+## 🎓 Certification achieved
 
 <div align="center">
 
@@ -56,7 +56,7 @@
 
 </div>
 
-This lab is structured to cover the **SAP Certified Associate – Integration Developer** exam domains, mapping each area to concrete blocks and documents.
+This lab maps the **SAP Certified - Integration Developer** domains to concrete blocks and documents. The certification was achieved on **August 26, 2026**, through the **C_CPI_2601 System-Based Assessment**. [Verify the credential on Credly](https://www.credly.com/badges/98eab00c-f5c1-4fe9-b256-d824289f6ed4).
 
 <table>
 <tr><th>Exam domain (focus)</th><th>Where it is practiced</th><th>Coverage</th></tr>
@@ -66,7 +66,7 @@ This lab is structured to cover the **SAP Certified Associate – Integration De
 <tr><td>Error handling and resilience</td><td>Block C</td><td>✅ High</td></tr>
 <tr><td>API Management</td><td>Block E</td><td>✅ High</td></tr>
 <tr><td>Security (Basic, API Key, OAuth, mTLS, CSRF, PGP, SAML)</td><td>Block F</td><td>✅ High</td></tr>
-<tr><td>Event-driven architecture (Event Mesh)</td><td>Block H</td><td>🔄 In progress</td></tr>
+<tr><td>Event-driven architecture (Event Mesh)</td><td>Block H</td><td>✅ H1-H7 completed</td></tr>
 <tr><td>Monitoring and operations</td><td>Cross-cutting</td><td>✅ High</td></tr>
 </table>
 
@@ -160,7 +160,7 @@ flowchart TB
 
 | 📦 Blocks | 📚 Documents | 🧪 Labs | 🔀 iFlows | 📸 Evidences | 🧰 Tools |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-| **8** | **35+** | **33** | **40+** | **300+** | **15+** |
+| **8** | **38+** | **36** | **40+** | **300+** | **15+** |
 
 </div>
 
@@ -250,6 +250,9 @@ flowchart TB
 <tr><td>H2</td><td>CPI Publisher to Solace via AMQP 1.0</td><td><a href="docs/33-h2-sap-cloud-integration-publisher-solace-amqp.md">📄</a></td></tr>
 <tr><td>H3</td><td>CPI Subscriber from Solace via AMQP (SAP PP/MES)</td><td><a href="docs/34-h3-sap-cloud-integration-subscriber-solace-amqp.md">📄</a></td></tr>
 <tr><td>H4</td><td>Competing Consumers and Horizontal Scaling (SAP WM)</td><td><a href="docs/35-h4-solace-competing-consumers-scaling.md">📄</a></td></tr>
+<tr><td>H5</td><td>Topic Hierarchy, Wildcards and Fan-out (SAP QM)</td><td><a href="docs/36-h5-solace-topic-hierarchy-wildcards-fanout.md">📄</a></td></tr>
+<tr><td>H6</td><td>Retry, DMQ, Recovery and Message Replay (SAP MM)</td><td><a href="docs/37-h6-solace-dead-letter-retry-replay.md">📄</a></td></tr>
+<tr><td>H7</td><td>MQTT Industrial Telemetry (.NET / SAP PM)</td><td><a href="docs/38-h7-solace-mqtt-industrial-telemetry.md">📄</a></td></tr>
 </table>
 
 ---
@@ -258,12 +261,12 @@ flowchart TB
 
 ```
 SAP_Integration_Suite_Learning/
-├── docs/            # 📚 Technical documentation (35+ documents)
+├── docs/            # 📚 Technical documentation (38+ documents)
 ├── iflows/          # 📦 Exported Integration Flows (.zip)
 ├── payloads/        # 📨 Input/output messages (JSON/XML)
 ├── postman/         # 📮 Test collections per block
 ├── evidences/       # 📸 Execution evidences (labXX)
-├── certification/   # 🎓 Certification preparation dashboard
+├── certification/   # 🎓 Achieved certification and learning journey
 ├── README.md        # 🇧🇷 Portuguese version
 └── README.en.md     # 🇺🇸 This file
 ```
