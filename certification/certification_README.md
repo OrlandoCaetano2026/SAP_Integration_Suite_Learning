@@ -30,8 +30,45 @@
 | Certificado | [Abrir certificado em PDF](./sap-certified-integration-developer-certificate.pdf) |
 | Badge | [Abrir badge oficial](./sap-certified-integration-developer.png) |
 
-> 🔐 Esta pasta publica apenas a credencial, o certificado e o relato autoral da jornada. Instruções proprietárias, arquivos do assessment, credenciais, URLs internas e evidências do ambiente de prova não são versionados.
+---
 
+## 🖼️ Certificado e badge oficial
+
+<table>
+  <tr>
+    <th align="center" width="60%">Certificado oficial</th>
+    <th align="center" width="40%">Badge oficial</th>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      ./sap-certified-integration-developer-certificate.pdf
+        ./sap-certified-integration-developer-certificate-preview.png
+      </a>
+      <br/>
+      <br/>
+      ./sap-certified-integration-developer-certificate.pdf
+        <strong>📄 Abrir certificado completo em PDF</strong>
+      </a>
+    </td>
+    <td align="center" valign="top">
+      https://www.credly.com/badges/98eab00c-f5c1-4fe9-b256-d824289f6ed4
+        ./sap-certified-integration-developer.png
+      </a>
+      <br/>
+      <br/>
+      https://www.credly.com/badges/98eab00c-f5c1-4fe9-b256-d824289f6ed4
+        <strong>🏆 Validar credencial oficial no Credly</strong>
+      </a>
+    </td>
+  </tr>
+</table>
+
+<p align="center">
+  <strong>SAP Certified - Integration Developer</strong><br/>
+  Conquistada em 26/08/2026 por meio do C_CPI_2601 System-Based Assessment
+</p>
+
+> 🔐 Esta pasta publica apenas a credencial, o certificado e o relato autoral da jornada. Instruções proprietárias, arquivos do assessment, credenciais, URLs internas e evidências do ambiente de prova não são versionados.
 ---
 
 ## 🧭 Da preparação à certificação
