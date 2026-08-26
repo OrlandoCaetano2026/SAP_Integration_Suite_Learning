@@ -30,6 +30,8 @@
 | Certificado | [Abrir certificado em PDF](./sap-certified-integration-developer-certificate.pdf) |
 | Badge | [Abrir badge oficial](./sap-certified-integration-developer.png) |
 
+> 🔐 Esta pasta publica apenas a credencial, o certificado e o relato autoral da jornada. Instruções proprietárias, arquivos do assessment, credenciais, URLs internas e evidências do ambiente de prova não são versionados.
+
 ---
 
 ## 🖼️ Certificado e badge oficial
@@ -41,22 +43,22 @@
   </tr>
   <tr>
     <td align="center" valign="top">
-      ./sap-certified-integration-developer-certificate.pdf
-        ./sap-certified-integration-developer-certificate-preview.png
+      <a href="./sap-certified-integration-developer-certificate.pdf">
+        <img src="./sap-certified-integration-developer-certificate-preview.png" alt="Certificado SAP Certified - Integration Developer" width="720"/>
       </a>
       <br/>
       <br/>
-      ./sap-certified-integration-developer-certificate.pdf
+      <a href="./sap-certified-integration-developer-certificate.pdf">
         <strong>📄 Abrir certificado completo em PDF</strong>
       </a>
     </td>
     <td align="center" valign="top">
-      https://www.credly.com/badges/98eab00c-f5c1-4fe9-b256-d824289f6ed4
-        ./sap-certified-integration-developer.png
+      <a href="https://www.credly.com/badges/98eab00c-f5c1-4fe9-b256-d824289f6ed4">
+        <img src="./sap-certified-integration-developer.png" alt="Badge SAP Certified - Integration Developer" width="360"/>
       </a>
       <br/>
       <br/>
-      https://www.credly.com/badges/98eab00c-f5c1-4fe9-b256-d824289f6ed4
+      <a href="https://www.credly.com/badges/98eab00c-f5c1-4fe9-b256-d824289f6ed4">
         <strong>🏆 Validar credencial oficial no Credly</strong>
       </a>
     </td>
@@ -68,7 +70,6 @@
   Conquistada em 26/08/2026 por meio do C_CPI_2601 System-Based Assessment
 </p>
 
-> 🔐 Esta pasta publica apenas a credencial, o certificado e o relato autoral da jornada. Instruções proprietárias, arquivos do assessment, credenciais, URLs internas e evidências do ambiente de prova não são versionados.
 ---
 
 ## 🧭 Da preparação à certificação
